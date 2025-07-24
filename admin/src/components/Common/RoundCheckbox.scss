@@ -1,0 +1,37 @@
+.round-checkbox-container {
+  display: flex;
+  align-items: center;
+}
+
+.round-checkbox {
+  width: 2rem !important; /* Increase the width */
+  height: 2rem !important; /* Increase the height */
+  border-radius: 16px !important; /* Make it a circle */
+  border: 3px solid #007bff; /* Customize border color and thickness */
+  appearance: none; /* Removes the default checkbox styling */
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+
+  &:checked {
+    background-color: #007bff; /* Color when checked */
+  }
+
+  /* Add checkmark when the checkbox is checked */
+  &:checked::after {
+    content: '✓'; /* Checkmark symbol */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 22px; /* Customize checkmark size to fit the larger circle */
+    color: white; /* Color of the checkmark */
+    transform: translate(-50%, -50%);
+  }
+}
+
+.checkbox-label {
+  margin-left: 15px;
+  font-size: 18px; /* Increase label size for better visual balance */
+  cursor: pointer;
+}
