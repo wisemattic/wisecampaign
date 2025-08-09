@@ -127,7 +127,7 @@ class Menu
             'Direct Checkout',               
             'manage_options',         
             'wisecampaign_checkout',  
-            [$this, 'wisecampaign_checkout_page']
+            'wisecampaign_direct_checkout_settings_page'
         );
 
         add_submenu_page(
