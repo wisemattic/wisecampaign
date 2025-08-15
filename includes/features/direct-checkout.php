@@ -27,12 +27,15 @@ function wisecampaign_direct_checkout_settings_page()
                 </div>
             </div>
             <div class="wisecampaign-settings-pane">
-                <form action="options.php" method="post">
+                <form action="options.php" method="post" id="wisecampaign-dc-settings-form">
                     <?php
                     settings_fields('wisecampaign_dc_settings_group');
                     do_settings_sections('wisecampaign_dc_page');
-                    submit_button('Save Settings');
                     ?>
+                    <div class="wisecampaign-form-footer">
+                        <span id="wisecampaign-dc-feedback" class="wisecampaign-feedback-message"></span>
+                        <?php submit_button('Save Changes'); ?>
+                    </div>
                 </form>
             </div>
         </div>
@@ -92,7 +95,7 @@ function wisecampaign_dc_field_button_text_color_cb()
 
 
 /**
-  * fetches all WordPress pages and adds them to the dropdown.
+ * fetches all WordPress pages and adds them to the dropdown.
  */
 function wisecampaign_dc_field_redirect_to_cb()
 {
@@ -144,6 +147,8 @@ function wisecampaign_dc_field_display_on_cb()
 }
 
 // Enqueues scripts and styles for the admin page
+// In function wisecampaign_direct_checkout_admin_scripts()
+
 function wisecampaign_direct_checkout_admin_scripts($hook)
 {
     if ('toplevel_page_wisecampaign_menu' !== $hook && 'wisecampaign_page_wisecampaign_checkout' !== $hook) {
@@ -151,6 +156,21 @@ function wisecampaign_direct_checkout_admin_scripts($hook)
     }
     wp_enqueue_style('wp-color-picker');
     wp_enqueue_script('wp-color-picker');
+
+    // Enqueue our new admin JavaScript file
+    wp_enqueue_script(
+        'wisecampaign-dc-admin-js',
+        WISECAMPAIGN_DIR_URL . 'includes/js/direct-checkout-admin.js',
+        ['jquery', 'wp-color-picker'],
+        '1.0.0',
+        true
+    );
+
+    // Pass data to our script
+    wp_localize_script('wisecampaign-dc-admin-js', 'wiseCampaignDcAdmin', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'save_nonce' => wp_create_nonce('wisecampaign_dc_save_nonce')
+    ]);
 }
 add_action('admin_enqueue_scripts', 'wisecampaign_direct_checkout_admin_scripts');
 
@@ -207,6 +227,27 @@ function wisecampaign_direct_checkout_admin_head()
             .wisecampaign-settings-layout {
                 grid-template-columns: 1fr;
             }
+        }
+        .wisecampaign-form-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px; /* Adds space between message and button */
+        }
+        .wisecampaign-form-footer .wisecampaign-feedback-message {
+            margin-right: auto; /* Pushes button to the right */
+        }
+        .wisecampaign-feedback-message {
+            font-weight: 600;
+            color: #2271b1;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .wisecampaign-feedback-message.show {
+            opacity: 1;
+        }
+        .wisecampaign-feedback-message.error {
+            color: #d63638;
         }
     </style>
     <script type="text/javascript">
@@ -323,3 +364,64 @@ function wisecampaign_dc_render_buy_now_button()
     $extra_class = (is_shop() || is_product_category() || is_product_tag()) ? ' wisecampaign-buy-now-loop' : '';
     echo '<a href="' . esc_url($buy_now_url) . '" rel="nofollow" class="button alt wisecampaign-buy-now-button' . esc_attr($extra_class) . '">' . esc_html($button_text) . '</a>';
 }
+
+// Add this new function to your PHP file
+
+function wisecampaign_dc_ajax_save_settings()
+{
+    // 1. Verify security
+    check_ajax_referer('wisecampaign_dc_save_nonce', 'nonce');
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(['message' => 'Permission denied.']);
+    }
+
+    // 2. Parse and sanitize form data
+    $form_data = [];
+    if (isset($_POST['form_data'])) {
+        parse_str($_POST['form_data'], $form_data);
+    }
+    $options_to_save = $form_data['wisecampaign_dc_settings'] ?? [];
+
+    // Create a manifest of all settings for sanitization
+    $settings_manifest = [
+        'dc_enabled' => 'bool',
+        'dc_button_text' => 'text',
+        'dc_button_color' => 'color',
+        'dc_button_text_color' => 'color',
+        'dc_redirect_to' => 'url_or_key',
+        'dc_redirect_custom_url' => 'url',
+        'dc_display_on' => 'array_key'
+    ];
+    $sanitized_options = [];
+
+    foreach ($settings_manifest as $key => $type) {
+        $value = $options_to_save[$key] ?? null;
+
+        switch ($type) {
+            case 'bool':
+                $sanitized_options[$key] = $value ? '1' : '0';
+                break;
+            case 'color':
+                $sanitized_options[$key] = $value ? sanitize_hex_color($value) : '';
+                break;
+            case 'url':
+                $sanitized_options[$key] = $value ? esc_url_raw($value) : '';
+                break;
+            case 'array_key':
+                $sanitized_options[$key] = is_array($value) ? array_map('sanitize_key', $value) : [];
+                break;
+            case 'url_or_key':
+            case 'text':
+            default:
+                $sanitized_options[$key] = $value ? sanitize_text_field($value) : '';
+                break;
+        }
+    }
+
+    // 3. Save the sanitized options
+    update_option('wisecampaign_dc_settings', $sanitized_options);
+
+    wp_send_json_success(['message' => 'Settings saved.']);
+}
+// Hook the new function to WordPress AJAX
+add_action('wp_ajax_wisecampaign_dc_save_settings', 'wisecampaign_dc_ajax_save_settings');
