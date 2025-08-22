@@ -21,6 +21,8 @@ if (!defined('ABSPATH')) {
 
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
+
 
 // Import classes from the WISECAMPAIGN namespace
 use WISECAMPAIGN\Classes\Banner;
