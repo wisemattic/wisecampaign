@@ -1,4 +1,6 @@
 <?php
+
+use WISECAMPAIGN\Classes\SalesNotification;
 /*
  * Plugin Name:       wiseCampaign - Powerful WooCommerce Add-ons to Boost Conversions
  * Plugin URI:        https://wisemattic.com/wisecampaign
@@ -21,6 +23,9 @@ if (!defined('ABSPATH')) {
 
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
+require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+
 
 // Import classes from the WISECAMPAIGN namespace
 use WISECAMPAIGN\Classes\Banner;
@@ -103,6 +108,7 @@ class Wisecampaign
         Register::getInstance(); // Initialize the Register class
         Banner::getInstance(); // Initialize the Banner class
         StockBar::getInstance();
+        WISECAMPAIGN\Classes\SalesNotification::getInstance();
     }
 
     /**
