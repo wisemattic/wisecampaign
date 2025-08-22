@@ -1,6 +1,7 @@
 import { createRoot, render } from '@wordpress/element';
 import App from './App';
-import './style/tailwind.css';
+// import './style/tailwind.css';
+import './style/tailwind-out.css';
 import './style/main.scss';
 
 import BannerShow from "./frontend/BannerShow";
