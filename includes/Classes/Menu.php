@@ -1,5 +1,4 @@
 <?php
-// wisecampaign/includes/Classes/Menu.php
 
 namespace WISECAMPAIGN\Classes;
 
@@ -32,7 +31,8 @@ class Menu
             add_action('wp_head', function () {
                 $this->wise_campaign_pro_banner_show(false, get_option('banner_type') == 'sticky');
             });
-        };
+        }
+        ;
     }
 
     public function register_settings()
@@ -85,23 +85,59 @@ class Menu
         add_submenu_page('wisecampaign_menu', 'wiseBanner', 'wiseBanner', 'manage_options', 'wisecampaign_banner', [$this, 'wisecampaign_banner_page']);
         add_submenu_page('wisecampaign_menu', 'Stock Bar', 'Stock Bar', 'manage_options', 'wisecampaign_stockbar', [$this, 'wisecampaign_stockbar_page']);
         add_submenu_page('wisecampaign_menu', 'Direct Checkout', 'Direct Checkout', 'manage_options', 'wisecampaign_checkout', 'wisecampaign_direct_checkout_settings_page');
-        
-        // **CORRECTED LINE**
+
         add_submenu_page('wisecampaign_menu', 'Sales Notification', 'Sales Notification', 'manage_options', 'wisecampaign_notification', [SalesNotification::getInstance(), 'render_admin_page']);
-        
+
         add_submenu_page('wisecampaign_menu', 'wiseCart', 'wiseCart', 'manage_options', 'wisecampaign_cart', [$this, 'wisecampaign_cart_page']);
     }
 
-    function wisecampaign_banner_page() { echo "<div id='wisecampaign-banner-page-app'></div>"; }
-    function wisecampaign_stockbar_page() { echo "<div id='wisecampaign-stockbar-page-app'></div>"; }
-    function wisecampaign_checkout_page() { echo "<div id='wisecampaign-checkout-page-app'></div>"; }
-    
-    // **This function is no longer needed for the notification page**
-    function wisecampaign_notification_page() { }
+    function wisecampaign_banner_page()
+    {
+        echo "<div id='wisecampaign-banner-page-app'></div>";
+    }
+    function wisecampaign_stockbar_page()
+    {
+        echo "<div id='wisecampaign-stockbar-page-app'></div>";
+    }
+    function wisecampaign_checkout_page()
+    {
+        echo "<div id='wisecampaign-checkout-page-app'></div>";
+    }
 
-    function wisecampaign_cart_page() { echo "<div id='wisecampaign-cart-page-app'></div>"; }
-    function wisecampaign_menu_page() { echo '<h1>WiseCampaign Menu Page</h1>'; }
-    function wise_banner_shortcode() { return '<div id="wise-campaign-banner-show11"></div>'; }
+    function wisecampaign_notification_page()
+    {
+    }
+
+    function wisecampaign_cart_page()
+    {
+        ?>
+        <div class="wrap wisecart-settings-wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            <form id="wisecart-settings-form" method="post">
+                <?php
+                wp_nonce_field('wisecart_save_action', 'wisecart_settings_nonce');
+
+                do_settings_sections('wisecampaign_cart');
+                ?>
+                <div class="wisecart-settings-actions">
+                    <button type="submit" id="wisecart-save-btn" class="button button-primary">
+                        <?php _e('Save Changes', 'wisecampaign'); ?>
+                    </button>
+                    <span class="wisecart-save-feedback"></span>
+                    <span class="spinner"></span>
+                </div>
+            </form>
+        </div>
+        <?php
+    }
+    function wisecampaign_menu_page()
+    {
+        echo '<h1>WiseCampaign Menu Page</h1>';
+    }
+    function wise_banner_shortcode()
+    {
+        return '<div id="wise-campaign-banner-show11"></div>';
+    }
 
     function wise_campaign_pro_banner_show($isFooter, $isSticky)
     {
@@ -113,7 +149,10 @@ class Menu
             echo '<div id="wise-campaign-banner-show"></div>';
     }
 
-    function wisecampaign_getting_started_page() { echo "<div id='wisecampaign-getting-started-page-app'></div>"; }
+    function wisecampaign_getting_started_page()
+    {
+        echo "<div id='wisecampaign-getting-started-page-app'></div>";
+    }
     function wisecampaign_settings_page()
     {
         if (!defined('WISECAMPAIGN_PRO_VERSION_ACTIVE') || !WISECAMPAIGN_PRO_VERSION_ACTIVE) {

@@ -25,6 +25,7 @@ if (!defined('ABSPATH')) {
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
 require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
 
 
 // Import classes from the WISECAMPAIGN namespace
@@ -52,7 +53,6 @@ class Wisecampaign
      */
     public static function get_instance()
     {
-        // Check if instance already exists
         if (!isset(self::$instance)) {
             self::$instance = new self();
             self::$instance->init();
@@ -70,15 +70,16 @@ class Wisecampaign
         $this->register_classes();
         $this->register_hooks();
         $this->appsero_init_tracker_wisecampaign();
-        add_action('plugins_loaded', function() {
-            // Plugin A is fully loaded, now trigger a custom action for Plugin B to hook into
-            do_action('plugin_a_loaded'); 
+        add_action('plugins_loaded', function () {
+            // Trigger a custom action for other plugins to hook into
+            do_action('plugin_a_loaded');
         });
     }
 
-    public function appsero_init_tracker_wisecampaign() {
+    public function appsero_init_tracker_wisecampaign()
+    {
 
-        $client = new Appsero\Client( '78f49ac6-4577-4712-b9b4-2dc7a67a07f2', 'wiseCampaign', __FILE__ );
+        $client = new Appsero\Client('78f49ac6-4577-4712-b9b4-2dc7a67a07f2', 'wiseCampaign', __FILE__);
 
         // Active insights
         $client->insights()->init();
@@ -90,11 +91,9 @@ class Wisecampaign
      */
     private function include_require_files()
     {
-        // Set the plugin directory path and URL
         self::$plugin_dir_path = plugin_dir_path(__FILE__);
         self::$plugin_dir_url = plugin_dir_url(__FILE__);
 
-        // Define constants for easy access throughout the plugin
         define('WISECAMPAIGN_DIR_PATH', self::$plugin_dir_path);
         define('WISECAMPAIGN_DIR_URL', self::$plugin_dir_url);
     }
@@ -104,11 +103,12 @@ class Wisecampaign
      */
     private function register_classes()
     {
-        Menu::getInstance(); // Initialize the Menu class
-        Register::getInstance(); // Initialize the Register class
-        Banner::getInstance(); // Initialize the Banner class
+        Menu::getInstance();
+        Register::getInstance();
+        Banner::getInstance();
         StockBar::getInstance();
         WISECAMPAIGN\Classes\SalesNotification::getInstance();
+        WISECAMPAIGN\Features\WiseCart::getInstance();
     }
 
     /**
@@ -116,31 +116,30 @@ class Wisecampaign
      */
     private function register_hooks()
     {
-        // Register activation hook to create the banner table
         register_activation_hook(__FILE__, [$this, 'wise_campaign_create_banner_table']);
         register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
-        register_uninstall_hook( __FILE__, [$this, 'uninstall' ] );
+        register_uninstall_hook(__FILE__, [$this, 'uninstall']);
     }
 
-    public static function uninstall() {
+    public static function uninstall()
+    {
 
-        require_once plugin_dir_path( __FILE__ ) . 'uninstall.php';
+        require_once plugin_dir_path(__FILE__) . 'uninstall.php';
     }
 
-    function wise_campaign_deactivate() {
+    function wise_campaign_deactivate()
+    {
         global $wpdb;
         $table_name = $wpdb->prefix . 'wc_banners';
 
         $json_file = site_url('wp-content/plugins/wisecampaign/includes/Database/banners.json');
 
         $banners = [];
-        // Read the file contents
         $json_data = wp_remote_get($json_file);
 
         if (is_wp_error($json_data)) {
-            // Handle the error
             $error_message = $json_data->get_error_message();
-            echo "Something went wrong: ".esc_html($error_message);
+            echo "Something went wrong: " . esc_html($error_message);
         } else {
             $body = wp_remote_retrieve_body($json_data);
             $banners = json_decode($body, true);
@@ -160,11 +159,10 @@ class Wisecampaign
      */
     public function wise_campaign_create_banner_table()
     {
-        // Call the create_banner_table method from the Banner class
         Banner::getInstance()->create_banner_table();
         StockBar::getInstance()->initialize_stockbar_defaults();
     }
 }
 
-// Initialize the plugin by creating an instance of the Wisecampaign class
+// Initialize the plugin
 Wisecampaign::get_instance();
