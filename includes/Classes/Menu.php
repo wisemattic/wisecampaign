@@ -80,15 +80,17 @@ class Menu
 
     function wisecampaign_admin_menu()
     {
-        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page'], 'dashicons-megaphone', 30);
+        $icon_path = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
+        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page'], $icon_path, 30);
         add_submenu_page('wisecampaign_menu', 'Dashboard', 'Dashboard', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page']);
         add_submenu_page('wisecampaign_menu', 'wiseBanner', 'wiseBanner', 'manage_options', 'wisecampaign_banner', [$this, 'wisecampaign_banner_page']);
-        add_submenu_page('wisecampaign_menu', 'Stock Bar', 'Stock Bar', 'manage_options', 'wisecampaign_stockbar', [$this, 'wisecampaign_stockbar_page']);
+        add_submenu_page('wisecampaign_menu', 'Stockbar', 'Stockbar', 'manage_options', 'wisecampaign_stockbar', [$this, 'wisecampaign_stockbar_page']);
         add_submenu_page('wisecampaign_menu', 'Direct Checkout', 'Direct Checkout', 'manage_options', 'wisecampaign_checkout', 'wisecampaign_direct_checkout_settings_page');
 
         add_submenu_page('wisecampaign_menu', 'Sales Notification', 'Sales Notification', 'manage_options', 'wisecampaign_notification', [SalesNotification::getInstance(), 'render_admin_page']);
 
         add_submenu_page('wisecampaign_menu', 'wiseCart', 'wiseCart', 'manage_options', 'wisecampaign_cart', [$this, 'wisecampaign_cart_page']);
+        add_submenu_page('wisecampaign_menu', 'Settings', 'Setting', 'manage_options', 'wisecampaign_setting', [$this, 'wisecampaign_setting_page']);
     }
 
     function wisecampaign_banner_page()
@@ -128,6 +130,13 @@ class Menu
                 </div>
             </form>
         </div>
+        <?php
+    }
+
+    function wisecampaign_setting_page()
+    {
+        ?>
+        <div>Setting page</div>
         <?php
     }
     function wisecampaign_menu_page()
