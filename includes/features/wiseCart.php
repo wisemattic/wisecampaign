@@ -35,6 +35,9 @@ class WiseCart
             add_action('wp_ajax_nopriv_wisecart_apply_coupon', [$this, 'ajax_apply_coupon']);
             add_action('wp_ajax_wisecart_update_quantity', [$this, 'ajax_update_quantity']);
             add_action('wp_ajax_nopriv_wisecart_update_quantity', [$this, 'ajax_update_quantity']);
+
+            add_action('wp_ajax_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
+            add_action('wp_ajax_nopriv_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
         }
     }
 
@@ -118,8 +121,6 @@ class WiseCart
 
     public function register_admin_settings()
     {
-        // Settings are saved via our AJAX handler, not the standard WP options flow.
-        // We only register the section and fields here for display purposes.
         add_settings_section('wisecart_section_main', null, null, $this->settings_page_slug);
 
         foreach ($this->get_settings_fields() as $id => $field) {
@@ -242,10 +243,22 @@ class WiseCart
     {
         if (!function_exists('WC') || is_admin())
             return;
-        $version = '3.3.4';
+        $version = '3.3.8';
         wp_enqueue_style('wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart.css', [], $version);
         wp_enqueue_script('wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/js/wisecart.js', ['jquery', 'wc-cart-fragments'], $version, true);
-        $script_data = ['ajax_url' => admin_url('admin-ajax.php'), 'apply_coupon_nonce' => wp_create_nonce('wisecart-apply-coupon'), 'update_cart_nonce' => wp_create_nonce('wisecart-update-cart'), 'autoOpen' => ($this->get_option('wc_auto_open_cart') === 'yes'),];
+        
+        if ($this->get_option('wc_replace_checkout_page') === 'yes') {
+            wp_enqueue_script('wc-checkout');
+        }
+
+        $script_data = [
+            'ajax_url' => admin_url('admin-ajax.php'), 
+            'apply_coupon_nonce' => wp_create_nonce('wisecart-apply-coupon'), 
+            'update_cart_nonce' => wp_create_nonce('wisecart-update-cart'), 
+            'autoOpen' => ($this->get_option('wc_auto_open_cart') === 'yes'),
+            'replaceCheckout' => ($this->get_option('wc_replace_checkout_page') === 'yes'),
+            'loadCheckoutNonce' => wp_create_nonce('wisecart-load-checkout')
+        ];
         wp_localize_script('wisecampaign-wisecart', 'wiseCartData', $script_data);
     }
 
@@ -277,7 +290,6 @@ class WiseCart
     public function get_cart_content_html()
     {
         ob_start();
-        // Ensure this template path is correct for your plugin structure.
         $template_path = WISECAMPAIGN_DIR_PATH . 'includes/features/templates/wise-cart-content.php';
         if (file_exists($template_path)) {
             include($template_path);
@@ -307,6 +319,27 @@ class WiseCart
             wp_safe_redirect(add_query_arg('open-wisecart', 'true', wc_get_page_permalink('shop')));
             exit();
         }
+    }
+    
+    public function ajax_load_checkout_content()
+    {
+        check_ajax_referer('wisecart-load-checkout', 'nonce');
+
+        if (!function_exists('WC') || !WC()->cart) {
+            wp_send_json_error(['html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__('WooCommerce is not available.', 'wisecampaign') . '</div>']);
+        }
+
+        if (WC()->cart->is_empty()) {
+            $error_html = '<div class="wisecart-empty" style="padding:1.5rem;"><svg class="wisecart-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg><h3>' . esc_html__('Your cart is empty', 'wisecampaign') . '</h3><p>' . esc_html__('Please add some products to your cart before checking out.', 'wisecampaign') . '</p></div>';
+            wp_send_json_error(['html' => $error_html]);
+        }
+        
+        $checkout_content = do_shortcode('[woocommerce_checkout]');
+        
+        
+        $wrapped_content = '<div class="wisecart-checkout-wrapper">' . $checkout_content . '</div>';
+
+        wp_send_json_success(['html' => $wrapped_content]);
     }
 
     public function ajax_update_quantity()
