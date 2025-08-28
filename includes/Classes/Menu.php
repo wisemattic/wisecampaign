@@ -91,6 +91,49 @@ class Menu
 
         add_submenu_page('wisecampaign_menu', 'wiseCart', 'wiseCart', 'manage_options', 'wisecampaign_cart', [$this, 'wisecampaign_cart_page']);
         add_submenu_page('wisecampaign_menu', 'Settings', 'Setting', 'manage_options', 'wisecampaign_setting', [$this, 'wisecampaign_setting_page']);
+        add_submenu_page('wisecampaign_menu', 'Help', 'Help', 'manage_options', 'wisecampaign_help', '__return_null');
+
+// Change the submenu link URL
+add_action('admin_menu', function() {
+    global $submenu;
+    if (isset($submenu['wisecampaign_menu'])) {
+        foreach ($submenu['wisecampaign_menu'] as $index => $menu_item) {
+            if ($menu_item[2] === 'wisecampaign_help') {
+                $submenu['wisecampaign_menu'][$index][2] = 'https://wisemattic.com/support/';
+            }
+        }
+    }
+
+    ?>
+    <style>
+        /* Target the submenu item by URL */
+        #toplevel_page_wisecampaign_menu ul.wp-submenu a[href="https://wisemattic.com/support/"] {
+            color: #d6336c !important; /* Change text color */
+            font-weight: bold;         /* Optional */
+        }
+
+        /* If you want hover color */
+        #toplevel_page_wisecampaign_menu ul.wp-submenu a[href="https://wisemattic.com/support/"]:hover {
+            color: #0073aa !important;
+        }
+    </style>
+    <?php
+
+}, 999);
+
+// Add target="_blank" with JS
+add_action('admin_footer', function() {
+    ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const helpLink = document.querySelector('#toplevel_page_wisecampaign_menu ul.wp-submenu a[href="https://wisemattic.com/support/"]');
+        if (helpLink) {
+            helpLink.setAttribute('target', '_blank');
+        }
+    });
+    </script>
+    <?php
+});
     }
 
     function wisecampaign_banner_page()
