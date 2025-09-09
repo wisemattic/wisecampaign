@@ -39,6 +39,35 @@ function wisecampaign_direct_checkout_settings_page()
                 </form>
             </div>
         </div>
+        
+        <!-- Feature Request Section -->
+        <div class="wisecampaign-feature-request-section">
+            <div class="wisecampaign-feature-request-content">
+                <div class="wisecampaign-feature-request-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                </div>
+                <div class="wisecampaign-feature-request-text">
+                    <h3><?php esc_html_e('Have a Feature Request?', 'wisecampaign'); ?></h3>
+                    <p><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?></p>
+                </div>
+                <div class="wisecampaign-feature-request-action">
+                    <a href="https://wisecampaign.canny.io/feature-requests" target="_blank" class="button button-primary button-large">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15,3 21,3 21,9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                        <?php esc_html_e('Submit Feature Request', 'wisecampaign'); ?>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
 }
@@ -248,6 +277,101 @@ function wisecampaign_direct_checkout_admin_head()
         }
         .wisecampaign-feedback-message.error {
             color: #d63638;
+        }
+        
+        /* Feature Request Section Styles */
+        .wisecampaign-feature-request-section {
+            margin: 30px 0;
+            background: #ffffff;
+            border: 1px solid #c3c4c7;
+            border-radius: 4px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .wisecampaign-feature-request-content {
+            display: flex;
+            align-items: center;
+            padding: 24px;
+            gap: 20px;
+        }
+
+        .wisecampaign-feature-request-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            background-color: #f0f6fc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2271b1;
+        }
+
+        .wisecampaign-feature-request-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .wisecampaign-feature-request-text {
+            flex-grow: 1;
+        }
+
+        .wisecampaign-feature-request-text h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d2327;
+        }
+
+        .wisecampaign-feature-request-text p {
+            margin: 0;
+            color: #50575e;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .wisecampaign-feature-request-action {
+            flex-shrink: 0;
+        }
+
+        .wisecampaign-feature-request-action .button {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .wisecampaign-feature-request-action .button:hover {
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .wisecampaign-feature-request-action .button svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Responsive Design for Feature Request Section */
+        @media (max-width: 782px) {
+            .wisecampaign-feature-request-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+                padding: 20px;
+            }
+            
+            .wisecampaign-feature-request-text {
+                order: 2;
+            }
+            
+            .wisecampaign-feature-request-action {
+                order: 3;
+            }
+            
+            .wisecampaign-feature-request-icon {
+                order: 1;
+            }
         }
     </style>
     <script type="text/javascript">

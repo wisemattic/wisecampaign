@@ -47,11 +47,6 @@ jQuery(function ($) {
 
     $body.on('click', '.wisecart-trigger, .wisecart-overlay, .wisecart-close-btn', (e) => {
         e.preventDefault();
-
-        if ($(e.currentTarget).hasClass('wisecart-close-btn') && $('#wisecart-container .woocommerce-checkout').length) {
-            $(document.body).trigger('wc_fragment_refresh');
-        }
-
         $body.toggleClass('wisecart-open');
     });
 
@@ -72,7 +67,7 @@ jQuery(function ($) {
         clearTimeout(quantityUpdateTimeout);
         showLoader();
 
-        const $form = $(this).closest('form');
+        const $form = $(this).closest('.wisecart-form');
 
         quantityUpdateTimeout = setTimeout(() => {
             $.ajax({
@@ -137,75 +132,5 @@ jQuery(function ($) {
                 $couponField.val('');
             }
         });
-    });
-
-    $body.on('click', '.wisecart-checkout-button', function (e) {
-        if (!wiseCartData.replaceCheckout) {
-            return;
-        }
-
-        e.preventDefault();
-
-        const $container = $('#wisecart-container');
-        const $formWrapper = $container.find('.wisecart-form');
-
-        if (!$formWrapper.length) {
-            return;
-        }
-
-        showLoader();
-
-        $.ajax({
-            type: 'POST',
-            url: wiseCartData.ajax_url,
-            data: {
-                action: 'wisecart_load_checkout',
-                nonce: wiseCartData.loadCheckoutNonce
-            },
-            success: function (response) {
-                if (response.success) {
-                    $formWrapper.replaceWith(response.data.html);
-                    $(document.body).trigger('init_checkout');
-                    $container.find('.wisecart-title').text('Checkout');
-                } else {
-                    $formWrapper.html(response.data.html);
-                }
-            },
-            error: function () {
-                $formWrapper.html('<div class="woocommerce-error" style="margin: 20px;">An unexpected error occurred. Please refresh the page and try again.</div>');
-            },
-            complete: function () {
-                hideLoader();
-            }
-        });
-    });
-
-    $(document).ajaxComplete(function (event, xhr, settings) {
-        if (settings.url && settings.url.indexOf('wc-ajax=checkout') > -1) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-
-                if (response.result === 'success' && response.redirect) {
-
-                    const successMessageHTML = `
-                    <div class="wisecart-order-success">
-                        <h1>Checkout</h1>
-                        <p>Your order has been submitted! Please wait while we redirect you to the order receipt.</p>
-                        <div class="wisecart-loader-inline"></div>
-                    </div>
-                `;
-
-                    
-                    $('#wisecart-container .wisecart-inner').html(successMessageHTML);
-
-                   
-                    setTimeout(function () {
-                        window.location = response.redirect;
-                    }, 3000); // 3-second delay
-                }
-            } catch (e) {
-                console.log('Could not parse checkout response.');
-            }
-        }
     });
 });

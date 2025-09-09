@@ -1,3 +1,6 @@
+/* wiseCart - WordPress Native Design */
+
+/* Basic WordPress-style overlay */
 .wisecart-overlay {
     position: fixed;
     top: 0;
@@ -11,21 +14,24 @@
     transition: opacity 0.3s ease;
 }
 
+/* WordPress-style container */
 .wisecart-container {
     position: fixed;
     top: 0;
     right: 0;
     width: 100%;
-    max-width: 420px;
+    max-width: 450px;
     height: 100%;
     background-color: #ffffff;
-    box-shadow: -6px 0 25px rgba(0, 0, 0, 0.15);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     z-index: 99999;
     transform: translateX(100%);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: transform 0.3s ease;
     display: flex;
+    border-left: 1px solid #c3c4c7;
 }
 
+/* Body states */
 body.wisecart-open {
     overflow: hidden;
 }
@@ -39,48 +45,63 @@ body.wisecart-open .wisecart-container {
     transform: translateX(0);
 }
 
+/* WordPress-style inner container */
 .wisecart-inner {
     display: flex;
     flex-direction: column;
     width: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #1d1d1d;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    color: #1d2327;
     position: relative;
+    background-color: #ffffff;
 }
 
+/* WordPress-style header */
 .wisecart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e9e9e9;
+    padding: 16px 20px;
+    background-color: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
     flex-shrink: 0;
 }
 
 .wisecart-title {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 16px;
     font-weight: 600;
+    color: #1d2327;
 }
 
+.wisecart-title svg {
+    margin-right: 8px;
+    vertical-align: middle;
+    color: #2271b1;
+}
+
+/* WordPress-style close button */
 .wisecart-close-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
-    opacity: 0.6;
-    transition: opacity 0.2s;
+    padding: 4px;
+    color: #50575e;
+    transition: color 0.2s;
+    border-radius: 3px;
 }
 
 .wisecart-close-btn:hover {
-    opacity: 1;
+    color: #1d2327;
+    background-color: #f0f0f1;
 }
 
 .wisecart-close-btn svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 }
 
+/* WordPress-style form layout */
 .wisecart-form {
     display: flex;
     flex-direction: column;
@@ -88,90 +109,151 @@ body.wisecart-open .wisecart-container {
     overflow: hidden;
 }
 
+/* WordPress-style body */
 .wisecart-body {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: 20px;
+    background-color: #ffffff;
 }
 
+/* WordPress-style scrollbar */
+.wisecart-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.wisecart-body::-webkit-scrollbar-track {
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.wisecart-body::-webkit-scrollbar-thumb {
+    background: #c3c4c7;
+    border-radius: 4px;
+}
+
+.wisecart-body::-webkit-scrollbar-thumb:hover {
+    background: #8c8f94;
+}
+
+/* WordPress-style cart items */
 .wisecart-item {
     display: flex;
-    gap: 1rem;
-    padding-bottom: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #f0f0f0;
+    gap: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+}
+
+.wisecart-item:hover {
+    border-color: #2271b1;
 }
 
 .wisecart-item:last-child {
-    border-bottom: none;
     margin-bottom: 0;
 }
 
+/* WordPress-style product images */
 .wisecart-item-image img {
     width: 80px;
-    height: auto;
-    border-radius: 8px;
+    height: 80px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid #c3c4c7;
 }
 
+/* WordPress-style item details */
 .wisecart-item-details {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    gap: 8px;
 }
 
 .wisecart-item-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 14px;
     line-height: 1.4;
-    color: #1d1d1d;
+    color: #1d2327;
     text-decoration: none;
-    margin-bottom: 0.25rem;
+    transition: color 0.2s;
 }
 
 .wisecart-item-name:hover {
-    text-decoration: underline;
+    color: #2271b1;
+    text-decoration: none;
 }
 
+/* WordPress-style variation display */
 .wisecart-item-details .variation {
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: auto;
+    font-size: 12px;
+    color: #50575e;
+    background-color: #f6f7f7;
+    padding: 4px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 8px;
 }
 
+/* WordPress-style quantity wrapper */
 .wisecart-item-quantity-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 0.5rem;
+    padding-top: 8px;
+    margin-top: auto;
 }
 
+/* WordPress-style quantity input */
 .wisecart-item .quantity .qty {
-    width: 55px;
+    width: 60px;
     text-align: center;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px;
-    background-color: #f9f9f9;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    font-size: 13px;
+    padding: 6px 8px;
+    background-color: #ffffff;
+    transition: border-color 0.2s;
 }
 
+.wisecart-item .quantity .qty:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* WordPress-style price display */
 .wisecart-item-price {
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
+    color: #2271b1;
 }
 
+/* WordPress-style remove button */
 .wisecart-item-remove a.remove {
-    color: #ccc;
+    color: #8c8f94;
     text-decoration: none;
-    font-size: 26px;
+    font-size: 18px;
     line-height: 1;
     transition: color 0.2s;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    background-color: #f6f7f7;
 }
 
 .wisecart-item-remove a.remove:hover {
-    color: #d9534f;
+    color: #d63638;
+    background-color: #fef2f2;
 }
 
+/* WordPress-style empty state */
 .wisecart-empty {
     text-align: center;
     display: flex;
@@ -179,143 +261,222 @@ body.wisecart-open .wisecart-container {
     justify-content: center;
     align-items: center;
     height: 100%;
+    padding: 40px 20px;
 }
 
 .wisecart-empty-icon {
     width: 80px;
     height: 80px;
-    color: #e0e0e0;
-    margin-bottom: 1.5rem;
+    color: #c3c4c7;
+    margin-bottom: 24px;
 }
 
 .wisecart-empty h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: #1d2327;
+    font-weight: 600;
 }
 
+.wisecart-empty p {
+    color: #50575e;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* WordPress-style shop button */
 .wisecart-shop-button {
-    background-color: #1d1d1d;
+    background-color: #2271b1;
     color: #ffffff;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
+    padding: 12px 24px;
+    border-radius: 3px;
     text-decoration: none;
     font-weight: 600;
-    transition: opacity 0.2s;
+    transition: background-color 0.2s;
+    border: none;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .wisecart-shop-button:hover {
-    opacity: 0.8;
+    background-color: #135e96;
+    color: #ffffff;
 }
 
+.wisecart-shop-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* WordPress-style footer */
 .wisecart-footer {
-    padding: 1.5rem;
-    border-top: 1px solid #e9e9e9;
-    background-color: #f9f9f9;
+    padding: 20px;
+    background-color: #f6f7f7;
+    border-top: 1px solid #c3c4c7;
     flex-shrink: 0;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* WordPress-style coupon container */
+.wisecart-coupon-container {
+    margin-bottom: 20px;
+    padding: 16px;
+    background-color: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
 }
 
 .wisecart-coupon-form {
     display: flex;
-    margin-bottom: 1.5rem;
-    gap: 0.5rem;
+    gap: 8px;
 }
 
 .wisecart-coupon-form .input-text {
     flex-grow: 1;
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-    border-radius: 8px;
+    border: 1px solid #8c8f94;
+    padding: 8px 12px;
+    border-radius: 3px;
+    font-size: 13px;
+    transition: border-color 0.2s;
+    background-color: #ffffff;
+}
+
+.wisecart-coupon-form .input-text:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
 }
 
 .wisecart-coupon-form .button {
-    padding: 0.75rem 1.25rem;
+    padding: 8px 16px;
     border: none;
-    background-color: #333;
-    color: white;
-    border-radius: 8px;
+    background-color: #2271b1;
+    color: #ffffff;
+    border-radius: 3px;
     cursor: pointer;
     white-space: nowrap;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.wisecart-coupon-form .button:hover {
+    background-color: #135e96;
+}
+
+.wisecart-coupon-form .button svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* WordPress-style coupon notices */
 .wisecart-coupon-notices .woocommerce-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    border: 1px solid #f5c6cb;
+    background-color: #fef2f2;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 3px;
+    border: 1px solid #fecaca;
     list-style: none inside;
-    margin: 0;
+    margin: 0 0 16px 0;
+    font-size: 13px;
 }
 
-
+/* WordPress-style totals */
 .wisecart-totals {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-    color: #1d1d1d;
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #1d2327;
+    padding: 16px;
+    background-color: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
 }
 
 .wisecart-totals strong,
 .wisecart-totals .amount {
-    font-weight: 700;
+    font-weight: 600;
+    color: #2271b1;
 }
 
+/* WordPress-style actions */
 .wisecart-actions {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
 }
 
 .wisecart-actions .button {
     display: block;
     width: 100%;
     text-align: center;
-    padding: 1rem;
-    font-size: 1rem;
+    padding: 12px 16px;
+    font-size: 14px;
     font-weight: 600;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 3px;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition: background-color 0.2s ease;
     border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .wisecart-actions .button:hover {
-    opacity: 0.85;
+    text-decoration: none;
 }
 
+/* WordPress-style checkout button */
 #wisecart-container .wisecart-checkout-button {
-    background-color: var(--wc-checkout-bg, #28a745);
-    color: var(--wc-checkout-text, #ffffff);
+    background-color: #00a32a;
+    color: #ffffff;
 }
 
+#wisecart-container .wisecart-checkout-button:hover {
+    background-color: #008a20;
+}
+
+/* WordPress-style continue button */
 #wisecart-container .wisecart-continue-button {
-    background-color: var(--wc-continue-bg, #e9ecef);
-    color: var(--wc-continue-text, #343a40);
+    background-color: #f6f7f7;
+    color: #1d2327;
+    border: 1px solid #c3c4c7;
 }
 
+#wisecart-container .wisecart-continue-button:hover {
+    background-color: #f0f0f1;
+}
+
+/* WordPress-style loader */
 .wisecart-loader {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.9);
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 4px;
 }
 
 .wisecart-loader::after {
     content: '';
-    width: 30px;
-    height: 30px;
-    border: 4px solid #f3f3f3;
-    border-top-color: #3498db;
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f0f0f1;
+    border-top-color: #2271b1;
     border-radius: 50%;
     animation: wisecart-spin 1s linear infinite;
 }
@@ -326,6 +487,7 @@ body.wisecart-open .wisecart-container {
     }
 }
 
+/* WordPress-style cart trigger button */
 .wisecart-trigger {
     position: fixed;
     z-index: 99997;
@@ -334,10 +496,10 @@ body.wisecart-open .wisecart-container {
     height: 60px;
     padding: 0 20px;
     border-radius: var(--wc-button-radius, 50px);
-    background-color: var(--wc-button-bg, #000000);
+    background-color: var(--wc-button-bg, #2271b1);
     color: var(--wc-icon-color, #ffffff);
     border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -346,17 +508,17 @@ body.wisecart-open .wisecart-container {
 }
 
 .wisecart-trigger:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .wisecart-trigger-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
 }
 
 .wisecart-trigger-text {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
 }
 
@@ -368,28 +530,30 @@ body.wisecart-open .wisecart-container {
     display: none;
 }
 
+/* WordPress-style cart count badge */
 .wisecart-trigger-count {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: -6px;
+    right: -6px;
     min-width: 24px;
     height: 24px;
     border-radius: 12px;
-    background-color: var(--wc-count-bg, #d9534f);
+    background-color: var(--wc-count-bg, #d63638);
     color: var(--wc-count-text, #ffffff);
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 12px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 5px;
-    border: 2px solid var(--wc-button-bg, #000000);
+    padding: 0 6px;
+    border: 2px solid var(--wc-button-bg, #2271b1);
 }
 
 .wisecart-count-hidden {
     display: none !important;
 }
 
+/* WordPress-style position classes */
 .wisecart-trigger--bottom-right {
     bottom: 25px;
     right: 25px;
@@ -407,7 +571,7 @@ body.wisecart-open .wisecart-container {
 }
 
 .wisecart-trigger--middle-right:hover {
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%) scale(1.05);
 }
 
 .wisecart-trigger--middle-left {
@@ -417,7 +581,7 @@ body.wisecart-open .wisecart-container {
 }
 
 .wisecart-trigger--middle-left:hover {
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%) scale(1.05);
 }
 
 .wisecart-trigger--top-right {
@@ -430,190 +594,39 @@ body.wisecart-open .wisecart-container {
     left: 25px;
 }
 
-
-.wisecart-loader-inline {
-    margin-top: 1.5rem;
-    width: 30px;
-    height: 30px;
-    border: 4px solid #f3f3f3;
-    border-top-color: #3498db;
-    border-radius: 50%;
-    animation: wisecart-spin 1s linear infinite;
-}
-
-
-.wisecart-header {
-    height: 65px;
-    box-sizing: border-box;
-    position: relative;
-    z-index: 2;
-    background: #fff;
-}
-
-.wisecart-checkout-wrapper {
-    position: absolute;
-    top: 65px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-    background: #fff;
-}
-
-.wisecart-checkout-wrapper .woocommerce-checkout {
-    padding: 1.5rem;
-}
-
-/* 2. Unbreakable Layout Fix: Forces a single-column layout */
-#wisecart-container .woocommerce-checkout .col2-set,
-#wisecart-container .woocommerce-checkout .col2-set .col-1,
-#wisecart-container .woocommerce-checkout .col2-set .col-2,
-#wisecart-container .woocommerce-checkout .form-row-first,
-#wisecart-container .woocommerce-checkout .form-row-last {
-    width: 100% !important;
-    float: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-#wisecart-container.wisecart-container .woocommerce-checkout #order_review {
-    width: 100% !important;
-    float: none !important;
-}
-
-/* 3. Form & Fields Polishing Styles */
-#wisecart-container #customer_details {
-    margin-bottom: 2.5em;
-}
-
-#wisecart-container .woocommerce-checkout .form-row {
-    margin-bottom: 1.2em;
-}
-
-#wisecart-container .woocommerce-checkout .form-row label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-#wisecart-container .woocommerce-checkout .form-row input.input-text,
-#wisecart-container .woocommerce-checkout .form-row textarea,
-#wisecart-container .woocommerce-checkout .form-row select,
-#wisecart-container .select2-container .select2-selection {
-    padding: 12px 15px !important;
-    border: 1px solid #ddd;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    line-height: 1.5 !important;
-    height: auto !important;
-}
-
-/* 4. Order Summary & Payment Section */
-#wisecart-container #order_review {
-    background-color: #f9f9f9;
-    padding: 1.5em;
-    border-radius: 8px;
-    border: 1px solid #e9e9e9;
-}
-
-#wisecart-container .woocommerce-checkout h3#order_review_heading {
-    padding: 0;
-    margin-bottom: 1.5em;
-    border: none;
-}
-
-#wisecart-container table.shop_table {
-    width: 100%;
-    border: none;
-    background-color: transparent;
-    padding: 0;
-    margin: 0;
-    border-collapse: collapse;
-}
-
-#wisecart-container .shop_table th,
-#wisecart-container .shop_table td {
-    padding: 10px 0;
-    border-bottom: 1px solid #e9e9e9;
-    text-align: left;
-}
-
-#wisecart-container .shop_table td {
-    text-align: right;
-    font-weight: 600;
-}
-
-#wisecart-container .shop_table tfoot tr:last-child th,
-#wisecart-container .shop_table tfoot tr:last-child td {
-    border-bottom: none;
-}
-
-#wisecart-container .order-total th,
-#wisecart-container .order-total td {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #1d1d1d;
-}
-
-#wisecart-container #payment {
-    background-color: transparent;
-    border-radius: 0;
-    margin-top: 2em;
-}
-
-#wisecart-container #payment ul.payment_methods {
-    padding: 0;
-    border: none;
-}
-
-#wisecart-container #payment li.payment_method {
-    margin-bottom: 10px;
-    background-color: #f9f9f9;
-    padding: 1em;
-    border-radius: 8px;
-}
-
-#wisecart-container #payment #place_order {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-top: 1em;
-    border-radius: 8px !important;
-}
-
-/* Custom styles for the order success message */
-.wisecart-order-success {
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    text-align: left;
-    height: 100%;
-}
-
-.wisecart-order-success h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 0 0 1rem 0;
-    padding: 0;
-    border: none;
-    width: 100%;
-}
-
-.wisecart-order-success p {
-    font-size: 1rem;
-    color: #333;
-    line-height: 1.6;
-    margin: 0;
-    padding-top: 1rem;
-    border-top: 1px solid #e0e0e0;
-    width: 100%;
-}
-
-.wisecart-order-success .wisecart-loader-inline {
-    margin-top: 2rem;
-    align-self: center;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wisecart-container {
+        max-width: 100%;
+    }
+    
+    .wisecart-header {
+        padding: 12px 16px;
+    }
+    
+    .wisecart-body {
+        padding: 16px;
+    }
+    
+    .wisecart-footer {
+        padding: 16px;
+    }
+    
+    .wisecart-item {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .wisecart-item-image img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .wisecart-coupon-form {
+        flex-direction: column;
+    }
+    
+    .wisecart-actions {
+        gap: 8px;
+    }
 }

@@ -22,11 +22,14 @@ class Register
     {
         echo '<script> document.documentElement.style.setProperty("--wpadminbar-top", "0"); </script>';
 
-
         wp_enqueue_style('wise_campaign_pro-style', WISECAMPAIGN_DIR_URL.'build/index.css');
         wp_enqueue_script('wise_campaign_pro-script', WISECAMPAIGN_DIR_URL.'build/index.js', array('wp-element'),
             '1.0.0', true);
 
+        // Load dashboard CSS for the main dashboard page
+        if (strpos($hook, 'wisecampaign_menu') !== false || strpos($hook, 'wisecampaign_banner') !== false) {
+            wp_enqueue_style('wisecampaign-dashboard-style', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart-admin-settings.css', [], '1.0.0');
+        }
 
         // Localize the script with data
         wp_localize_script('wise_campaign_pro-script', 'wiseCampaignPageData', array(
