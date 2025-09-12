@@ -49,7 +49,6 @@ const ImageUpload = ({ label, onImageUpload, previousBanner }) => {
         className="w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
     />
 
-    preview::{preview ? 'true' : 'false'}
     {preview && (
         <div className="preview relative mt-2">
             <img

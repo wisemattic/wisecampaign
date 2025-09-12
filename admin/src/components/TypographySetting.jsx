@@ -23,12 +23,6 @@ const TypographySetting = ({
   const handleOpen = (value) => setOpen(open === value ? 0 : value);
 
   return (
-    <div>
-      <Accordion open={open === 1} icon={<Icon id={1} open={open} />}>
-        <AccordionHeader className="text-sm" onClick={() => handleOpen(1)}>
-          Typography
-        </AccordionHeader>
-        <AccordionBody>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {!excludeFields.includes("color") && (
               <InputField
@@ -103,9 +97,6 @@ const TypographySetting = ({
                onChange={handleChange(component, "align")}/>
             )}
           </div>
-        </AccordionBody>
-      </Accordion>
-    </div>
   );
 };
 

@@ -6,6 +6,7 @@ import { HeadlineSection } from "./HeadlineSection";
 import { SubHeadlineSection } from "./SubHeadlineSection";
 import { ButtonSection } from "./ButtonSection";
 import { CountdownSection } from "./CountdownSection";
+import BannerSettingsReDesign from "../setting/BannerSettingsReDesign";
 
 export default function NewBannerCustomizer() {
   const [activeSection, setActiveSection] = useState("background");
@@ -67,19 +68,17 @@ export default function NewBannerCustomizer() {
     bogo: <BogoSection formValues={activeBanner} handleChange={handleChange} />,
     text: <div className="grid grid-cols-1">
       <div>
-        <h3>Headline</h3>
-        <hr />
+        <span className="text-sm font-bold pb-2">Headline</span>
       <HeadlineSection formValues={activeBanner} handleChange={handleChange} />
       </div>
       <div>
-        <h3>Sub Headline</h3>
-        <hr />
+        <span className="text-sm font-bold pb-2 pt-2">Sub Headline</span>
       <SubHeadlineSection formValues={activeBanner} handleChange={handleChange} />
       </div>
     </div>,
     button: <ButtonSection formValues={activeBanner} handleChange={handleChange} />,
     countdown: <CountdownSection formValues={activeBanner} handleChange={handleChange} />,
-    advanced: "Configure display rules, targeting, positioning, and advanced options.",
+    advanced: <BannerSettingsReDesign />
   };
 
   const sections = [
@@ -126,7 +125,7 @@ export default function NewBannerCustomizer() {
       {/* Layout */}
       <div className="grid grid-cols-3 gap-4">
         {/* Left Sidebar - Sections */}
-        <div className="bg-white shadow rounded-sm p-4">
+        <div className="bg-white shadow rounded-sm p-4 mb-4">
           <h2 className="text-lg font-semibold mb-4">Banner Sections</h2>
           <div className="space-y-3">
             {sections.map((section) => (
