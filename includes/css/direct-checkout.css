@@ -1,0 +1,69 @@
+/*
+ * =================================================================
+ * Base Button Styles
+ * =================================================================
+*/
+.wisecampaign-buy-now-button {
+    display: inline-block;
+    padding: 0.618em 1.2em;
+    line-height: 1.5;
+    text-align: center;
+    border-style: solid;
+    border-width: 1px;
+    border-color: transparent;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wisecampaign-buy-now-button:hover {
+    opacity: 0.85;
+    transition: opacity 0.2s ease-in-out;
+    text-decoration: underline;
+}
+
+
+/*
+ * =================================================================
+ * Desktop Layout (Screens wider than 768px)
+ * =================================================================
+*/
+@media (min-width: 769px) {
+    body.single-product form.cart {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    body.single-product form.cart .quantity {
+        flex-shrink: 0;
+    }
+
+    .single-product .wisecampaign-buy-now-button {
+        margin-left: 10px;
+    }
+}
+
+/*
+ * =================================================================
+ * Mobile Layout (Screens 768px or narrower)
+ * =================================================================
+*/
+@media (max-width: 768px) {
+    .single-product .wisecampaign-buy-now-button {
+        margin-top: 10px;
+        margin-left: 0;
+        /* Reset desktop margin */
+    }
+}
+
+
+/*
+ * =================================================================
+ * Shop / Archive Page Styles
+ * =================================================================
+*/
+.wisecampaign-buy-now-loop {
+    margin-top: 0.5em;
+    display: block;
+    /* Ensures the button takes up its own line on shop archives */
+}

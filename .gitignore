@@ -1,0 +1,13 @@
+.idea
+build
+vendor
+admin/build
+admin/node_modules
+fontend/node_modules
+pages/node_modules
+../.DS_Store
+../includes/.DS_Store
+composer.lock
+admin/package-lock.json
+stock-bar-dist
+vite-stock-bar/node_modules
