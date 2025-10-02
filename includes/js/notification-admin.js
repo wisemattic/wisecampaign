@@ -269,11 +269,11 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     $feedback.text('Settings Saved!').addClass('show');
                     setTimeout(() => $feedback.removeClass('show'), 3000);
-                    setTimeout(() => location.reload(), 1000);
+                    
                 } else {
                     const errorMessage = response.data.message || 'An unknown error occurred.';
                     $feedback.text(errorMessage).addClass('show error');
-                    setTimeout(() => location.reload(), 1000);
+                    
                 }
             },
             error: function () {
