@@ -99,4 +99,13 @@
     // Initial delay before showing the first notification
     setTimeout(showNextNotification, 3000);
 
+    const productNameElem = notification.find('.product-name');
+    let productName = productNameElem.text();
+    const maxLength = 20; // Adjust as needed
+
+    if (productName.length > maxLength) {
+        productName = productName.substring(0, maxLength - 1) + '…';
+    }
+    productNameElem.text(productName);
+
 })();
