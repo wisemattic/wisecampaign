@@ -44,11 +44,11 @@ class SalesNotification
                     </label>
                     <span id="wisecampaign-status-feedback" class="wisecampaign-feedback-message"></span>
                 </div>
-                <div class="wisecampaign-admin-actions">
+                <!-- <div class="wisecampaign-admin-actions">
                     <button type="button" class="wisecampaign-btn reset" id="wisecampaign-reset-button"><?php _e('Reset', 'wisecampaign'); ?></button>
                     <button type="submit" class="wisecampaign-btn save" id="wisecampaign-set-now-button" form="wisecampaign-settings-form"><?php _e('Save Changes', 'wisecampaign'); ?></button>
                     <span id="wisecampaign-form-feedback" class="wisecampaign-feedback-message"></span>
-                </div>
+                </div> -->
             </div>
             <form action="options.php" method="post" id="wisecampaign-settings-form" autocomplete="off">
                 <?php settings_fields('wisecampaign_sales_notification_settings_group'); ?>
@@ -128,6 +128,11 @@ class SalesNotification
                                 </div>
                             </div>
                         </div>
+                        <div class="wisecampaign-admin-actions">
+                    <button type="button" class="wisecampaign-btn reset" id="wisecampaign-reset-button"><?php _e('Reset', 'wisecampaign'); ?></button>
+                    <button type="submit" class="wisecampaign-btn save" id="wisecampaign-set-now-button" form="wisecampaign-settings-form"><?php _e('Save Changes', 'wisecampaign'); ?></button>
+                    <span id="wisecampaign-form-feedback" class="wisecampaign-feedback-message"></span>
+                </div>
                     </main>
                 </div>
             </form>
@@ -428,7 +433,7 @@ class SalesNotification
         $all_settings = get_option($this->option_name, []);
 
         $settings_manifest = [
-            'enabled' => 'bool',
+            
             'template' => 'key',
             'position' => 'key',
             'background_color' => 'color',
@@ -450,9 +455,7 @@ class SalesNotification
         foreach ($settings_manifest as $key => $type) {
             $value = isset($new_options[$key]) ? $new_options[$key] : null;
             switch ($type) {
-                case 'bool':
-                    $all_settings[$key] = $value ? '1' : '0';
-                    break;
+                
                 case 'int':
                     if ($value !== null) {
                         $all_settings[$key] = intval($value);

@@ -33,17 +33,17 @@ jQuery(document).ready(function ($) {
     const templatePresets = {
         'template_1': {
             'background_color': '#FFFFFF',
-            'border_color': '#ffffffff', 
+            'border_color': '#FFFFFF',
             'border_width': 0,
             'border_radius': 10,
             'image_radius': 10
         },
         'template_2': {
-            'background_color': '#E0E5EC', 
-            'border_color': '#E0E5EC', 
+            'background_color': '#FFFFFF',
+            'border_color': '#FFFFFF',
             'border_width': 0,
-            'border_radius': 50, 
-            'image_radius': 50 
+            'border_radius': 100,
+            'image_radius': 50
         }
     };
 
@@ -84,21 +84,21 @@ jQuery(document).ready(function ($) {
     });
     // Show first tab by default
     $('.wisecampaign-tab.active').trigger('click');
-    
+
     // Settings Card Toggle
-    $('.wisecampaign-settings-card-header').on('click', function() {
+    $('.wisecampaign-settings-card-header').on('click', function () {
         const card = $(this).closest('.wisecampaign-settings-card');
         const toggle = $(this).find('.wisecampaign-settings-card-toggle');
-        
+
         card.toggleClass('collapsed');
-        
+
         if (card.hasClass('collapsed')) {
             toggle.html('&#9650;'); // Up arrow
         } else {
             toggle.html('&#9660;'); // Down arrow
         }
     });
-    
+
     // Initialize all toggle buttons to expanded state
     $('.wisecampaign-settings-card-toggle').html('&#9660;');
 
@@ -187,14 +187,14 @@ jQuery(document).ready(function ($) {
     function toggleAllSalesNotificationContent() {
         const isEnabled = $('#wisecampaign-toggle-enabled').is(':checked');
         const $allContent = $('.wisecampaign-admin-sidebar, .wisecampaign-admin-preview');
-        
+
         if (isEnabled) {
             $allContent.removeClass('hidden');
         } else {
             $allContent.addClass('hidden');
         }
     }
-    
+
     // --- Initial Load ---
     updatePreview();
     toggleAllSalesNotificationContent(); // Run on page load
@@ -211,7 +211,7 @@ jQuery(document).ready(function ($) {
         const $feedback = $('#wisecampaign-status-feedback');
 
         $feedback.removeClass('show error').text('');
-        
+
         // Toggle visibility of all content immediately for better UX
         toggleAllSalesNotificationContent();
 
@@ -226,18 +226,21 @@ jQuery(document).ready(function ($) {
             success: function (response) {
                 if (response.success) {
                     $feedback.text('Saved!').addClass('show');
-                    setTimeout(() => $feedback.removeClass('show'), 2000);
+                    // Reload the page after 1 second
+                    setTimeout(() => location.reload(), 1000);
                 } else {
                     $feedback.text('Error!').addClass('show error');
-                    $toggle.prop('checked', !isChecked); 
+                    $toggle.prop('checked', !isChecked);
                     toggleAllSalesNotificationContent(); // Revert UI if there was an error
-                    setTimeout(() => $feedback.removeClass('show error'), 3000);
+                    // Reload the page after 1 second
+                    setTimeout(() => location.reload(), 1000);
                 }
             },
             error: function () {
                 $feedback.text('Failed!').addClass('show error');
-                $toggle.prop('checked', !isChecked); 
-                setTimeout(() => $feedback.removeClass('show error'), 3000);
+                $toggle.prop('checked', !isChecked);
+                // Reload the page after 1 second
+                setTimeout(() => location.reload(), 1000);
             }
         });
     });
@@ -266,9 +269,11 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     $feedback.text('Settings Saved!').addClass('show');
                     setTimeout(() => $feedback.removeClass('show'), 3000);
+                    setTimeout(() => location.reload(), 1000);
                 } else {
                     const errorMessage = response.data.message || 'An unknown error occurred.';
                     $feedback.text(errorMessage).addClass('show error');
+                    setTimeout(() => location.reload(), 1000);
                 }
             },
             error: function () {
@@ -308,12 +313,15 @@ jQuery(document).ready(function ($) {
                     updatePreview(); // Refresh the live preview
                     $feedback.text('Settings Reset!').addClass('show');
                     setTimeout(() => $feedback.removeClass('show'), 3000);
+                    setTimeout(() => location.reload(), 1000);
                 } else {
                     $feedback.text('Reset failed.').addClass('show error');
+                    setTimeout(() => location.reload(), 1000);
                 }
             },
             error: function () {
                 $feedback.text('Request failed.').addClass('show error');
+                setTimeout(() => location.reload(), 1000);
             },
             complete: function () {
                 $button.text(originalButtonText).prop('disabled', false);
@@ -364,7 +372,7 @@ jQuery(document).ready(function ($) {
         if ($(e.target).is('button')) return;
         var $card = $(this).closest('.wisecampaign-settings-card');
         $card.toggleClass('collapsed');
-        
+
         // Update the toggle button text/icon
         var $toggle = $card.find('.wisecampaign-card-toggle');
         if ($card.hasClass('collapsed')) {
@@ -373,12 +381,12 @@ jQuery(document).ready(function ($) {
             $toggle.html('&#9660;');
         }
     });
-    
+
     $('.wisecampaign-card-toggle').on('click', function (e) {
         e.stopPropagation();
         var $card = $(this).closest('.wisecampaign-settings-card');
         $card.toggleClass('collapsed');
-        
+
         // Update the toggle button text/icon
         if ($card.hasClass('collapsed')) {
             $(this).html('&#9650;');
@@ -386,7 +394,7 @@ jQuery(document).ready(function ($) {
             $(this).html('&#9660;');
         }
     });
-    
+
     // Start with all expanded
     $('.wisecampaign-settings-card').removeClass('collapsed');
     $('.wisecampaign-card-toggle').html('&#9660;');
