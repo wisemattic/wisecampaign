@@ -18,20 +18,30 @@ jQuery(document).ready(function ($) {
         // Update template style attribute
         const selectedTemplate = form.find('input[name*="[template]"]:checked').val();
         preview.attr('data-template', selectedTemplate);
+
+        // Truncate product name if necessary
+        const productNameElem = preview.find('.product-name');
+        let productName = productNameElem.text();
+        const maxLength = 20; // Adjust as needed for your design
+
+        if (productName.length > maxLength) {
+            productName = productName.substring(0, maxLength - 1) + '…';
+        }
+        productNameElem.text(productName);
     }
 
     const templatePresets = {
         'template_1': {
             'background_color': '#FFFFFF',
-            'border_color': '#10B981', 
-            'border_width': 1,
-            'border_radius': 8,
+            'border_color': '#ffffffff', 
+            'border_width': 0,
+            'border_radius': 10,
             'image_radius': 10
         },
         'template_2': {
             'background_color': '#E0E5EC', 
             'border_color': '#E0E5EC', 
-            'border_width': 1,
+            'border_width': 0,
             'border_radius': 50, 
             'image_radius': 50 
         }
@@ -63,6 +73,34 @@ jQuery(document).ready(function ($) {
     if (window.location.hash) {
         $('.wisecampaign-tabs-nav a[href="' + window.location.hash + '"]').click();
     }
+
+    // Modern tab switching for new layout
+    $('.wisecampaign-tab').on('click', function () {
+        var tab = $(this).data('tab');
+        $('.wisecampaign-tab').removeClass('active').attr('aria-selected', 'false');
+        $(this).addClass('active').attr('aria-selected', 'true');
+        $('.wisecampaign-tab-content').hide();
+        $('#wisecampaign-tab-' + tab).show();
+    });
+    // Show first tab by default
+    $('.wisecampaign-tab.active').trigger('click');
+    
+    // Settings Card Toggle
+    $('.wisecampaign-settings-card-header').on('click', function() {
+        const card = $(this).closest('.wisecampaign-settings-card');
+        const toggle = $(this).find('.wisecampaign-settings-card-toggle');
+        
+        card.toggleClass('collapsed');
+        
+        if (card.hasClass('collapsed')) {
+            toggle.html('&#9650;'); // Up arrow
+        } else {
+            toggle.html('&#9660;'); // Down arrow
+        }
+    });
+    
+    // Initialize all toggle buttons to expanded state
+    $('.wisecampaign-settings-card-toggle').html('&#9660;');
 
     // Template Selection
     $('.template-card').on('click', function () {
@@ -97,12 +135,12 @@ jQuery(document).ready(function ($) {
     // Conditional field for Order Source
     function toggleOrderSourceFields() {
         const source = $('#wisecampaign_order_source_select').val();
-        const $selectOrdersRow = $('#wisecampaign-selected-orders-select').closest('tr');
+        const $selectOrdersField = $('.wisecampaign-field-group').has('#wisecampaign-selected-orders-select');
 
         if (source === 'selected_orders') {
-            $selectOrdersRow.show();
+            $selectOrdersField.show();
         } else {
-            $selectOrdersRow.hide();
+            $selectOrdersField.hide();
         }
     }
     toggleOrderSourceFields(); // Run on page load
@@ -111,15 +149,15 @@ jQuery(document).ready(function ($) {
     // Conditional field for Visibility
     function toggleVisibilityFields() {
         const visibility = $('#wisecampaign_visibility_select').val();
-        const $selectPagesRow = $('#wisecampaign-specific-pages-select').closest('tr');
+        const $selectPagesField = $('.wisecampaign-field-group').has('#wisecampaign-specific-pages-select');
 
         if (visibility === 'specific_pages') {
-            $selectPagesRow.show();
+            $selectPagesField.show();
         } else {
-            $selectPagesRow.hide();
+            $selectPagesField.hide();
         }
     }
-    toggleVisibilityFields(); 
+    toggleVisibilityFields(); // Run on page load
     $('#wisecampaign_visibility_select').on('change', toggleVisibilityFields);
 
     // Live preview updates for sliders
@@ -145,8 +183,21 @@ jQuery(document).ready(function ($) {
         }
     });
 
+    // Function to toggle visibility of all sales notification content
+    function toggleAllSalesNotificationContent() {
+        const isEnabled = $('#wisecampaign-toggle-enabled').is(':checked');
+        const $allContent = $('.wisecampaign-admin-sidebar, .wisecampaign-admin-preview');
+        
+        if (isEnabled) {
+            $allContent.removeClass('hidden');
+        } else {
+            $allContent.addClass('hidden');
+        }
+    }
+    
     // --- Initial Load ---
     updatePreview();
+    toggleAllSalesNotificationContent(); // Run on page load
 
     // --- AJAX Handlers ---
 
@@ -160,6 +211,9 @@ jQuery(document).ready(function ($) {
         const $feedback = $('#wisecampaign-status-feedback');
 
         $feedback.removeClass('show error').text('');
+        
+        // Toggle visibility of all content immediately for better UX
+        toggleAllSalesNotificationContent();
 
         $.ajax({
             url: wiseCampaignAdmin.ajax_url,
@@ -176,6 +230,7 @@ jQuery(document).ready(function ($) {
                 } else {
                     $feedback.text('Error!').addClass('show error');
                     $toggle.prop('checked', !isChecked); 
+                    toggleAllSalesNotificationContent(); // Revert UI if there was an error
                     setTimeout(() => $feedback.removeClass('show error'), 3000);
                 }
             },
@@ -274,7 +329,7 @@ jQuery(document).ready(function ($) {
         // Toggles
         $('#wisecampaign-toggle-enabled').prop('checked', settings.enabled === '1');
         $('#wisecampaign-toggle-random_show').prop('checked', settings.random_show === '1');
-        $('#wisecampaign-toggle-loop').prop('checked', settings.loop === '1');
+        $('#wisecampaign-toggle-loop').prop('checked', (typeof settings.loop === 'undefined' || settings.loop === '1'));
 
         // Selects
         form.find('[name*="[template]"][value="' + settings.template + '"]').prop('checked', true);
@@ -302,5 +357,38 @@ jQuery(document).ready(function ($) {
         $('.template-card').removeClass('selected');
         $('.template-card[data-template="' + settings.template + '"]').addClass('selected');
     }
+
+    // --- Collapsible Settings Cards ---
+    $('.wisecampaign-settings-card-header').on('click', function (e) {
+        // Only toggle if not clicking on a button (like the toggle)
+        if ($(e.target).is('button')) return;
+        var $card = $(this).closest('.wisecampaign-settings-card');
+        $card.toggleClass('collapsed');
+        
+        // Update the toggle button text/icon
+        var $toggle = $card.find('.wisecampaign-card-toggle');
+        if ($card.hasClass('collapsed')) {
+            $toggle.html('&#9650;');
+        } else {
+            $toggle.html('&#9660;');
+        }
+    });
+    
+    $('.wisecampaign-card-toggle').on('click', function (e) {
+        e.stopPropagation();
+        var $card = $(this).closest('.wisecampaign-settings-card');
+        $card.toggleClass('collapsed');
+        
+        // Update the toggle button text/icon
+        if ($card.hasClass('collapsed')) {
+            $(this).html('&#9650;');
+        } else {
+            $(this).html('&#9660;');
+        }
+    });
+    
+    // Start with all expanded
+    $('.wisecampaign-settings-card').removeClass('collapsed');
+    $('.wisecampaign-card-toggle').html('&#9660;');
 
 });

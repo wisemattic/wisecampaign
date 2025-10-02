@@ -10,7 +10,6 @@ class Menu
 {
     use SingletonTrait;
     private $option_name = 'wisecampaign_plugin_enabled';
-    private $is_pro_version = false;
 
     public function __construct()
     {
@@ -18,12 +17,7 @@ class Menu
         add_action('rest_api_init', [$this, 'register_settings']);
         add_shortcode('wise_banner', [$this, 'wise_banner_shortcode']);
 
-        $pro_installed = has_action('wise_campaign_check_pro');
-        if ($pro_installed) {
-            $this->is_pro_version = true;
-        }
-
-        if (strtolower(get_option('banner_position')) == 'bottom' && $this->is_pro_version == true) {
+        if (strtolower(get_option('banner_position')) == 'bottom') {
             add_action('wp_footer', function () {
                 $this->wise_campaign_pro_banner_show(true, get_option('banner_type') == 'sticky');
             });
@@ -72,7 +66,7 @@ class Menu
         register_rest_route('wise-campaign-plugin/v1', '/plugin-version', [
             'methods' => 'GET',
             'callback' => function () {
-                return new WP_REST_Response(['is_pro_version' => $this->is_pro_version], 200);
+                return new WP_REST_Response(['is_pro_version' => Register::getInstance()->get_pro_status()], 200);
             },
             'permission_callback' => '__return_true'
         ]);
@@ -90,12 +84,13 @@ class Menu
         add_submenu_page('wisecampaign_menu', 'Sales Notification', 'Sales Notification', 'manage_options', 'wisecampaign_notification', [SalesNotification::getInstance(), 'render_admin_page']);
 
         add_submenu_page('wisecampaign_menu', 'wiseCart', 'wiseCart', 'manage_options', 'wisecampaign_cart', [$this, 'wisecampaign_cart_page']);
-        add_submenu_page('wisecampaign_menu', 'Settings', 'Setting', 'manage_options', 'wisecampaign_setting', [$this, 'wisecampaign_setting_page']);
     }
 
     function wisecampaign_banner_page()
     {
-        echo "<div id='wisecampaign-banner-page-app'></div>";
+        ?>
+                        <div id="wisecampaign-banner-page-app"></div>
+        <?php
     }
     function wisecampaign_stockbar_page()
     {
@@ -114,7 +109,6 @@ class Menu
     {
         ?>
         <div class="wrap wisecart-settings-wrap">
-            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             <form id="wisecart-settings-form" method="post">
                 <?php
                 wp_nonce_field('wisecart_save_action', 'wisecart_settings_nonce');
@@ -132,20 +126,13 @@ class Menu
         </div>
         <?php
     }
-
-    function wisecampaign_setting_page()
-    {
-        ?>
-        <div>Setting page</div>
-        <?php
-    }
     function wisecampaign_menu_page()
     {
         echo '<h1>WiseCampaign Menu Page</h1>';
     }
     function wise_banner_shortcode()
     {
-        return '<div id="wise-campaign-banner-show11"></div>';
+        return '<div id="wise-campaign-banner-show"></div>';
     }
 
     function wise_campaign_pro_banner_show($isFooter, $isSticky)
@@ -160,7 +147,42 @@ class Menu
 
     function wisecampaign_getting_started_page()
     {
-        echo "<div id='wisecampaign-getting-started-page-app'></div>";
+        ?>
+        <div class="wrap wisecampaign-dashboard-wrap">
+            
+            <!-- Main Dashboard App -->
+            <div id="wisecampaign-getting-started-page-app"></div>
+            
+            <!-- Feature Request Section -->
+            <div class="wisecampaign-feature-request-section">
+                <div class="wisecampaign-feature-request-content">
+                    <div class="wisecampaign-feature-request-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                    </div>
+                    <div class="wisecampaign-feature-request-text">
+                        <h3><?php esc_html_e('Have a Feature Request?', 'wisecampaign'); ?></h3>
+                        <p><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?></p>
+                    </div>
+                    <div class="wisecampaign-feature-request-action">
+                        <a href="https://wisecampaign.canny.io/feature-requests" target="_blank" class="button button-primary button-large">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15,3 21,3 21,9"/>
+                                <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            <?php esc_html_e('Submit Feature Request', 'wisecampaign'); ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
     }
     function wisecampaign_settings_page()
     {

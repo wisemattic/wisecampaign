@@ -31,84 +31,104 @@ class SalesNotification
     public function render_admin_page()
     {
         $sample_notification = $this->get_sample_notification_data();
+        $settings = get_option($this->option_name, []);
+        $enabled = isset($settings['enabled']) ? $settings['enabled'] : '1';
         ?>
-        <div class="wrap wisecampaign-sales-notification-wrap">
-            <form action="options.php" method="post" id="wisecampaign-settings-form">
-                <?php settings_fields('wisecampaign_sales_notification_settings_group'); ?>
-
-                <div class="wisecampaign-header-bar">
-                    <div class="wisecampaign-header-left">
-                        <h1><?php echo esc_html__('Sales Notification', 'wisecampaign'); ?></h1>
-                        <?php $this->field_cb_toggle(['id' => 'enabled']); ?>
-                        <span id="wisecampaign-status-feedback" class="wisecampaign-feedback-message"></span>
-                    </div>
-                    <div class="wisecampaign-header-right-actions">
-                        <span id="wisecampaign-form-feedback" class="wisecampaign-feedback-message"></span>
-                        <button type="button" class="button button-secondary"
-                            id="wisecampaign-reset-button"><?php _e('Reset', 'wisecampaign'); ?></button>
-                        <?php submit_button(__('Save Settings', 'wisecampaign'), 'primary', 'submit', false, ['id' => 'wisecampaign-set-now-button']); ?>
-                    </div>
+        <div class="wisecampaign-sales-notification-admin">
+            <div class="wisecampaign-admin-header">
+                <div class="wisecampaign-admin-header-title-group">
+                    <h1><?php esc_html_e('Sales Notification', 'wisecampaign'); ?></h1>
+                    <label class="wisecampaign-toggle-label" title="<?php esc_attr_e('Enable/Disable Sales Notification', 'wisecampaign'); ?>">
+                        <input type="checkbox" id="wisecampaign-toggle-enabled" <?php checked('1', $enabled); ?> />
+                        <span class="wisecampaign-toggle-slider"></span>
+                    </label>
+                    <span id="wisecampaign-status-feedback" class="wisecampaign-feedback-message"></span>
                 </div>
-
-                <div class="wisecampaign-editor-layout">
-                    <div class="wisecampaign-settings-panel">
-                        <div class="wisecampaign-tabs-nav">
-                            <ul>
-                                <li><a href="#templates"
-                                        class="nav-tab nav-tab-active"><?php _e('Templates', 'wisecampaign'); ?></a></li>
-                                <li><a href="#settings" class="nav-tab"><?php _e('Settings', 'wisecampaign'); ?></a></li>
-                            </ul>
-                        </div>
-                        <div class="wisecampaign-tabs-content">
-                            <div id="templates" class="tab-content active">
-                                <div class="template-header">
-                                    <h3><?php _e('Choose a Template', 'wisecampaign'); ?></h3>
-                                    <p><?php _e('Select a pre-designed template to start with. You can customize it further in the Settings tab.', 'wisecampaign'); ?>
-                                    </p>
+                <div class="wisecampaign-admin-actions">
+                    <button type="button" class="wisecampaign-btn reset" id="wisecampaign-reset-button"><?php _e('Reset', 'wisecampaign'); ?></button>
+                    <button type="submit" class="wisecampaign-btn save" id="wisecampaign-set-now-button" form="wisecampaign-settings-form"><?php _e('Save Changes', 'wisecampaign'); ?></button>
+                    <span id="wisecampaign-form-feedback" class="wisecampaign-feedback-message"></span>
+                </div>
+            </div>
+            <form action="options.php" method="post" id="wisecampaign-settings-form" autocomplete="off">
+                <?php settings_fields('wisecampaign_sales_notification_settings_group'); ?>
+                <div class="wisecampaign-admin-main">
+                    <aside class="wisecampaign-admin-sidebar">
+                        <nav class="wisecampaign-tabs" role="tablist">
+                            <button type="button" class="wisecampaign-tab active" data-tab="templates" aria-selected="true" aria-controls="wisecampaign-tab-templates" id="tab-templates"><?php _e('Templates', 'wisecampaign'); ?></button>
+                            <button type="button" class="wisecampaign-tab" data-tab="settings" aria-selected="false" aria-controls="wisecampaign-tab-settings" id="tab-settings"><?php _e('Settings', 'wisecampaign'); ?></button>
+                        </nav>
+                        <section class="wisecampaign-tab-content" id="wisecampaign-tab-templates" role="tabpanel" aria-labelledby="tab-templates">
+                            <h3><?php _e('Choose a Template', 'wisecampaign'); ?></h3>
+                            <div class="wisecampaign-template-list">
+                                <?php $this->field_cb_template(); ?>
+                            </div>
+                        </section>
+                        <section class="wisecampaign-tab-content" id="wisecampaign-tab-settings" role="tabpanel" aria-labelledby="tab-settings" style="display:none;">
+                            <div class="wisecampaign-settings-sections">
+                                <div class="wisecampaign-settings-card">
+                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
+                                        <span><?php _e('Appearance', 'wisecampaign'); ?></span>
+                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Appearance Section">&#9660;</button>
+                                    </div>
+                                    <div class="wisecampaign-settings-card-body">
+                                        <?php
+                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section');
+                                        ?>
+                                    </div>
                                 </div>
-                                <div class="template-selector">
-                                    <?php $this->field_cb_template(); ?>
+                                <div class="wisecampaign-settings-card">
+                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
+                                        <span><?php _e('Content & Source', 'wisecampaign'); ?></span>
+                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Content Section">&#9660;</button>
+                                    </div>
+                                    <div class="wisecampaign-settings-card-body">
+                                        <?php
+                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section');
+                                        ?>
+                                    </div>
+                                </div>
+                                <div class="wisecampaign-settings-card">
+                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
+                                        <span><?php _e('Visibility & Timing', 'wisecampaign'); ?></span>
+                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Visibility Section">&#9660;</button>
+                                    </div>
+                                    <div class="wisecampaign-settings-card-body">
+                                        <?php
+                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section');
+                                        ?>
+                                    </div>
                                 </div>
                             </div>
-                            <div id="settings" class="tab-content">
-                                <table class="form-table">
-                                    <?php do_settings_sections('wisecampaign_sales_notification_page'); ?>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="wisecampaign-preview-panel">
-                        <div class="wisecampaign-preview-header">
-                            <h3><?php _e('Live Preview', 'wisecampaign'); ?></h3>
-                        </div>
-                        <div id="wisecampaign-notification-preview" class="wisecampaign-notification-popup"
-                            data-template="template_1">
+                        </section>
+                    </aside>
+                    <main class="wisecampaign-admin-preview">
+                        <div class="wisecampaign-live-preview-title"><?php _e('Live Preview', 'wisecampaign'); ?></div>
+                        <div id="wisecampaign-notification-preview" class="wisecampaign-notification-popup" data-template="template_1">
                             <img src="<?php echo esc_url($sample_notification['product_image']); ?>" alt="Product">
                             <div class="notification-content">
                                 <div class="notification-body">
-                                    <p class="buyer-info">
+                                    <span class="buyer-info">
                                         <span class="buyer-name"><?php echo esc_html($sample_notification['buyer']); ?></span>
-                                        just purchased
-                                    </p>
-                                    <p class="product-name"><?php echo esc_html($sample_notification['product_name']); ?></p>
-                                    <p class="location-info">
-                                        From: <span
-                                            class="location"><?php echo esc_html($sample_notification['location']); ?></span>
-                                    </p>
+                                        <?php _e('just purchased', 'wisecampaign'); ?>
+                                    </span>
+                                    <div class="product-name"><?php echo esc_html($sample_notification['product_name']); ?></div>
+                                    <div class="location-info">
+                                        <?php _e('From:', 'wisecampaign'); ?>
+                                        <span class="location"><?php echo esc_html($sample_notification['location']); ?></span>
+                                    </div>
                                 </div>
                                 <div class="notification-footer">
-                                    <p class="timestamp"><?php echo esc_html($sample_notification['time']); ?></p>
-                                    <p class="brand-credit">
-                                        <a href="https://wisemattic.com/wisecampaign/" target="_blank" rel="noopener noreferrer"
-                                            style="text-decoration: none; color: inherit;">
-                                            by <b>wiseCampaign</b>
+                                    <span class="timestamp"><?php echo esc_html($sample_notification['time']); ?></span>
+                                    <span class="brand-credit">
+                                        <a href="https://wisemattic.com/wisecampaign/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+                                            <?php _e('by', 'wisecampaign'); ?> <b>wiseCampaign</b>
                                         </a>
-                                    </p>
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </main>
                 </div>
             </form>
         </div>
@@ -120,25 +140,25 @@ class SalesNotification
         register_setting('wisecampaign_sales_notification_settings_group', $this->option_name);
 
         add_settings_section('wisecampaign_sn_appearance_section', __('Appearance', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
-        add_settings_field('sn_position', __('Sales Pop Up Position', 'wisecampaign'), [$this, 'field_cb_position'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section');
-        add_settings_field('sn_bg_color', __('Background Color', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'background_color', 'default' => '#FFFFFF']);
-        add_settings_field('sn_border_color', __('Border Color', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_color', 'default' => '#E85653']);
-        add_settings_field('sn_border_width', __('Border Width', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_width', 'default' => 2, 'min' => 0, 'max' => 20]);
-        add_settings_field('sn_border_radius', __('Border Radius', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_radius', 'default' => 10, 'min' => 0, 'max' => 100]);
-        add_settings_field('sn_image_radius', __('Image Radius', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'image_radius', 'default' => 8, 'min' => 0, 'max' => 50]);
-        add_settings_field('sn_font_family', __('Font Family', 'wisecampaign'), [$this, 'field_cb_font'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section');
+        add_settings_field('sn_position', __('', 'wisecampaign'), [$this, 'field_cb_position'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['label_for' => __('Sales Pop Up Position', 'wisecampaign')]);
+        add_settings_field('sn_bg_color', __('', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'background_color', 'default' => '#FFFFFF', 'label_for' => __('Background Color', 'wisecampaign')]);
+        add_settings_field('sn_border_color', __('', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_color', 'default' => '#E85653', 'label_for' => __('Border Color', 'wisecampaign')]);
+        add_settings_field('sn_border_width', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_width', 'default' => 2, 'min' => 0, 'max' => 20, 'label_for' => __('Border Width', 'wisecampaign')]);
+        add_settings_field('sn_border_radius', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_radius', 'default' => 10, 'min' => 0, 'max' => 100, 'label_for' => __('Border Radius', 'wisecampaign')]);
+        add_settings_field('sn_image_radius', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'image_radius', 'default' => 8, 'min' => 0, 'max' => 50, 'label_for' => __('Image Radius', 'wisecampaign')]);
+        add_settings_field('sn_font_family', __('', 'wisecampaign'), [$this, 'field_cb_font'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['label_for' => __('Font Family', 'wisecampaign')]);
 
         add_settings_section('wisecampaign_sn_content_section', __('Content & Source', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
-        add_settings_field('sn_random', __('Order Show Random', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['id' => 'random_show']);
-        add_settings_field('sn_source', __('Order Source', 'wisecampaign'), [$this, 'field_cb_source'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section');
-        add_settings_field('sn_selected_orders', __('Select Orders', 'wisecampaign'), [$this, 'field_cb_selected_orders'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section');
+        add_settings_field('sn_random', __('', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['id' => 'random_show', 'label_for' => __('Order Show Random', 'wisecampaign')]);
+        add_settings_field('sn_source', __('', 'wisecampaign'), [$this, 'field_cb_source'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Order Source', 'wisecampaign')]);
+        add_settings_field('sn_selected_orders', __('', 'wisecampaign'), [$this, 'field_cb_selected_orders'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Select Orders', 'wisecampaign')]);
 
         add_settings_section('wisecampaign_sn_visibility_section', __('Visibility & Timing', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
-        add_settings_field('sn_visibility', __('Visibility', 'wisecampaign'), [$this, 'field_cb_visibility'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section');
-        add_settings_field('sn_specific_pages', __('Select Pages', 'wisecampaign'), [$this, 'field_cb_specific_pages'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section');
-        add_settings_field('sn_loop', __('Loop', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'loop']);
-        add_settings_field('sn_display_time', __('Display Time', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'display_time', 'default' => 5, 'label' => 'Sec']);
-        add_settings_field('sn_delay_time', __('Next pop up delay', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'delay_time', 'default' => 5, 'label' => 'Sec']);
+        add_settings_field('sn_visibility', __('', 'wisecampaign'), [$this, 'field_cb_visibility'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['label_for' => __('Visibility', 'wisecampaign')]);
+        add_settings_field('sn_specific_pages', __('', 'wisecampaign'), [$this, 'field_cb_specific_pages'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['label_for' => __('Select Pages', 'wisecampaign')]);
+        add_settings_field('sn_loop', __('', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'loop', 'label_for' => __('Loop', 'wisecampaign')]);
+        add_settings_field('sn_display_time', __('', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'display_time', 'default' => 5, 'label' => 'Sec', 'label_for' => __('Display Time', 'wisecampaign')]);
+        add_settings_field('sn_delay_time', __('', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'delay_time', 'default' => 5, 'label' => 'Sec', 'label_for' => __('Next pop up delay', 'wisecampaign')]);
     }
 
     private function get_option($key, $default = '')
@@ -149,9 +169,21 @@ class SalesNotification
 
     public function field_cb_toggle($args)
     {
-        $value = $this->get_option($args['id'], false);
+        $value = $this->get_option($args['id'], '0');
         $id_attr = 'wisecampaign-toggle-' . esc_attr($args['id']);
-        echo '<label class="switch"><input type="checkbox" id="' . $id_attr . '" name="' . esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']" value="1" ' . checked(1, $value, false) . '/><span class="slider round"></span></label>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-toggle">
+            <div class="wisecampaign-field-label">
+                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <label class="wisecampaign-toggle-label">
+                    <input type="checkbox" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="1" <?php checked('1', $value); ?>/>
+                    <span class="wisecampaign-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        <?php
     }
 
     public function field_cb_template()
@@ -174,108 +206,192 @@ class SalesNotification
     public function field_cb_slider($args)
     {
         $value = $this->get_option($args['id'], $args['default']);
+        $id_attr = 'wisecampaign-slider-' . esc_attr($args['id']);
         ?>
-        <div class="slider-wrapper">
-            <input type="range" min="<?php echo esc_attr($args['min']); ?>" max="<?php echo esc_attr($args['max']); ?>"
-                value="<?php echo esc_attr($value); ?>" class="slider-input">
-            <input type="number" name="<?php echo esc_attr($this->option_name); ?>[<?php echo esc_attr($args['id']); ?>]"
-                value="<?php echo esc_attr($value); ?>" class="slider-value small-text"> px
+        <div class="wisecampaign-field-group wisecampaign-field-slider">
+            <div class="wisecampaign-field-label">
+                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <div class="slider-wrapper">
+                    <input type="range" class="slider-input" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" min="<?php echo esc_attr($args['min']); ?>" max="<?php echo esc_attr($args['max']); ?>">
+                    <input type="number" class="slider-value" value="<?php echo esc_attr($value); ?>" min="<?php echo esc_attr($args['min']); ?>" max="<?php echo esc_attr($args['max']); ?>">
+                    <span class="unit">px</span>
+                </div>
+            </div>
         </div>
         <?php
     }
 
-    public function field_cb_font()
+    public function field_cb_font($args)
     {
         $value = $this->get_option('font_family', 'Poppins');
-        $fonts = ['Poppins' => 'Poppins', 'Roboto' => 'Roboto', 'Open Sans' => 'Open Sans', 'Lato' => 'Lato'];
-        echo '<select name="' . esc_attr($this->option_name) . '[font_family]">';
-        foreach ($fonts as $key => $label) {
-            echo '<option value="' . esc_attr($key) . '" ' . selected($key, $value, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
+        $fonts = ['Poppins' => 'Poppins', 'Roboto' => 'Roboto'];
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-font">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-font-family"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <select id="wisecampaign-font-family" name="<?php echo esc_attr($this->option_name); ?>[font_family]">
+                    <?php foreach ($fonts as $key => $label) : ?>
+                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <?php
     }
 
-    public function field_cb_visibility()
+    public function field_cb_visibility($args)
     {
         $value = $this->get_option('visibility', 'all_pages');
         $options = ['all_pages' => 'Show on every page', 'specific_pages' => 'Specific pages'];
-        echo '<select id="wisecampaign_visibility_select" name="' . esc_attr($this->option_name) . '[visibility]">';
-        foreach ($options as $key => $label) {
-            echo '<option value="' . esc_attr($key) . '" ' . selected($key, $value, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-visibility">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign_visibility_select"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <select id="wisecampaign_visibility_select" name="<?php echo esc_attr($this->option_name); ?>[visibility]">
+                    <?php foreach ($options as $key => $label) : ?>
+                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <?php
     }
 
-    public function field_cb_specific_pages()
+    public function field_cb_specific_pages($args)
     {
         $selected_pages = $this->get_option('specific_pages', []);
         $pages = get_pages(['post_status' => 'publish']);
-        if (empty($pages)) {
-            echo '<p>No pages found.</p>';
-            return;
-        }
-        echo '<select id="wisecampaign-specific-pages-select" name="' . esc_attr($this->option_name) . '[specific_pages][]" multiple="multiple" style="height: 200px; width: 50%;">';
-        foreach ($pages as $page) {
-            $is_selected = in_array($page->ID, $selected_pages);
-            echo '<option value="' . esc_attr($page->ID) . '" ' . selected($is_selected, true, false) . '>' . esc_html($page->post_title) . '</option>';
-        }
-        echo '</select>';
-        echo '<p class="description">Hold CTRL (or Command on Mac) to select multiple pages.</p>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-specific-pages">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-specific-pages-select"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <?php if (empty($pages)) : ?>
+                    <p>No pages found.</p>
+                <?php else : ?>
+                    <select id="wisecampaign-specific-pages-select" name="<?php echo esc_attr($this->option_name); ?>[specific_pages][]" multiple="multiple" style="height: 200px; width: 50%;">
+                        <?php foreach ($pages as $page) :
+                            $is_selected = in_array($page->ID, $selected_pages);
+                            ?>
+                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($is_selected, true); ?>><?php echo esc_html($page->post_title); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description">Hold CTRL (or Command on Mac) to select multiple pages.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php
     }
 
     public function field_cb_timing($args)
     {
         $value = $this->get_option($args['id'], $args['default']);
-        echo '<input type="number" name="' . esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']" value="' . esc_attr($value) . '" class="small-text"> ' . esc_html($args['label']);
+        $id_attr = 'wisecampaign-timing-' . esc_attr($args['id']);
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-timing">
+            <div class="wisecampaign-field-label">
+                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <input type="number" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" class="small-text">
+                <span class="unit"><?php echo esc_html($args['label']); ?></span>
+            </div>
+        </div>
+        <?php
     }
 
-    public function field_cb_position()
+    public function field_cb_position($args)
     {
         $value = $this->get_option('position', 'bottom-left');
         $positions = ['bottom-left' => 'Bottom Left', 'bottom-right' => 'Bottom Right', 'top-left' => 'Top Left', 'top-right' => 'Top Right'];
-        echo '<select name="' . esc_attr($this->option_name) . '[position]">';
-        foreach ($positions as $key => $label) {
-            echo '<option value="' . esc_attr($key) . '" ' . selected($key, $value, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-position">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-position"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <select id="wisecampaign-position" name="<?php echo esc_attr($this->option_name); ?>[position]">
+                    <?php foreach ($positions as $key => $label) : ?>
+                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+        <?php
     }
 
     public function field_cb_color($args)
     {
         $value = $this->get_option($args['id'], $args['default']);
-        echo '<input type="text" name="' . esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']" value="' . esc_attr($value) . '" class="wp-color-picker-field" />';
+        $id_attr = 'wisecampaign-color-' . esc_attr($args['id']);
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-color">
+            <div class="wisecampaign-field-label">
+                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <input type="text" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" class="wp-color-picker-field" />
+            </div>
+        </div>
+        <?php
     }
 
-    public function field_cb_source()
+    public function field_cb_source($args)
     {
         $value = $this->get_option('source', 'recent_orders');
         $sources = ['recent_orders' => 'Recent Orders', 'selected_orders' => 'Selected Orders'];
-        echo '<select id="wisecampaign_order_source_select" name="' . esc_attr($this->option_name) . '[source]">';
-        foreach ($sources as $key => $label) {
-            echo '<option value="' . esc_attr($key) . '" ' . selected($key, $value, false) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
-        echo '<p class="description">Choose to show notifications from all recent orders or only from specific ones.</p>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-source">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign_order_source_select"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <select id="wisecampaign_order_source_select" name="<?php echo esc_attr($this->option_name); ?>[source]">
+                    <?php foreach ($sources as $key => $label) : ?>
+                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description">Choose to show notifications from all recent orders or only from specific ones.</p>
+            </div>
+        </div>
+        <?php
     }
 
-    public function field_cb_selected_orders()
+    public function field_cb_selected_orders($args)
     {
         $selected_orders = $this->get_option('selected_orders', []);
         $query = new \WC_Order_Query(['limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
         $orders = $query->get_orders();
-        if (empty($orders)) {
-            echo '<p>No orders found.</p>';
-            return;
-        }
-        echo '<select id="wisecampaign-selected-orders-select" name="' . esc_attr($this->option_name) . '[selected_orders][]" multiple="multiple" style="height: 200px; width: 50%;">';
-        foreach ($orders as $order) {
-            $order_id = $order->get_id();
-            $order_label = '#' . $order_id . ' &ndash; ' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
-            $is_selected = in_array($order_id, $selected_orders);
-            echo '<option value="' . esc_attr($order_id) . '" ' . selected($is_selected, true, false) . '>' . esc_html($order_label) . '</option>';
-        }
-        echo '</select>';
-        echo '<p class="description">Hold CTRL (or Command on Mac) to select multiple orders.</p>';
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-selected-orders">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-selected-orders-select"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <?php if (empty($orders)) : ?>
+                    <p>No orders found.</p>
+                <?php else : ?>
+                    <select id="wisecampaign-selected-orders-select" name="<?php echo esc_attr($this->option_name); ?>[selected_orders][]" multiple="multiple" style="height: 200px; width: 50%;">
+                        <?php foreach ($orders as $order) :
+                            $order_id = $order->get_id();
+                            $order_label = '#' . $order_id . ' &ndash; ' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
+                            $is_selected = in_array($order_id, $selected_orders);
+                            ?>
+                            <option value="<?php echo esc_attr($order_id); ?>" <?php selected($is_selected, true); ?>><?php echo esc_html($order_label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description">Hold CTRL (or Command on Mac) to select multiple orders.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php
     }
 
     public function admin_enqueue($hook)
@@ -508,9 +624,9 @@ class SalesNotification
             'template' => 'template_1',
             'position' => 'bottom-left',
             'background_color' => '#FFFFFF',
-            'border_color' => '#10B981',
-            'border_width' => 1,
-            'border_radius' => 8,
+            'border_color' => '#FFFFFF',
+            'border_width' => 0,
+            'border_radius' => 10,
             'image_radius' => 10,
             'font_family' => 'Poppins',
             'random_show' => '0',

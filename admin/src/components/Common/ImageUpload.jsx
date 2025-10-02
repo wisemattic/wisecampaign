@@ -5,16 +5,31 @@ const ImageUpload = ({ label, onImageUpload, previousBanner }) => {
     const [preview, setPreview] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
-    useEffect(()=>{
-        setPreview(previousBanner)
-    }, [previousBanner])
+    useEffect(() => {
+        if (previousBanner && previousBanner !== 'null') {
+            setPreview(previousBanner);
+        } else {
+            setPreview(null);
+        }
+    }, [previousBanner]);
 
     const handleImageChange = (e) => {
         const file = e.target.files?.[0] || null;
-        if (file && file.type.startsWith('image/')) {
+        if (file) {
             setImageFile(file);
-            setPreview(URL.createObjectURL(file));
+            const objectUrl = URL.createObjectURL(file);
+            console.log("objectUrl:", objectUrl);
+            setPreview(objectUrl);
             onImageUpload(file);
+
+            // Use FileReader for base64 preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPreview(event.target.result); // base64 string
+    };
+    reader.readAsDataURL(file);
+
+
         } else {
             setImageFile(null);
             setPreview(null);

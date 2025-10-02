@@ -77,6 +77,10 @@
     font-weight: 700;
     color: #1e1e1e;
     margin: 4px 0 !important;
+    white-space: nowrap;         /* Prevents line break */
+    overflow: hidden;            /* Hides overflowed text */
+    text-overflow: ellipsis;     /* Adds ... at the end */
+    max-width: 220px; /* Add or adjust this value as needed */
 }
 
 #wisecampaign-notification-container .wisecampaign-notification-popup .location-info {

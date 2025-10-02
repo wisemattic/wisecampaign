@@ -1,7 +1,184 @@
+/* wiseCart Admin Settings - WordPress Native Design */
+
+/* WordPress-style page header */
 .wrap.wisecart-settings-wrap h1 {
     padding-bottom: 15px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #1d2327;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #c3c4c7;
 }
 
+/* Dashboard Feature Request Section */
+.wisecampaign-dashboard-wrap h1 {
+    padding-bottom: 15px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #1d2327;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.wisecampaign-feature-request-section {
+    margin: 20px 0 30px 0;
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.wisecampaign-feature-request-content {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    gap: 16px;
+}
+
+.wisecampaign-feature-request-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background-color: #f0f6fc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2271b1;
+}
+
+.wisecampaign-feature-request-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.wisecampaign-feature-request-text {
+    flex-grow: 1;
+}
+
+.wisecampaign-feature-request-text h3 {
+    margin: 0 0 6px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wisecampaign-feature-request-text p {
+    margin: 0;
+    color: #50575e;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.wisecampaign-feature-request-action {
+    flex-shrink: 0;
+}
+
+.wisecampaign-feature-request-action .button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    padding: 6px 16px;
+}
+
+.wisecampaign-feature-request-action .button:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.wisecampaign-feature-request-action .button svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Dashboard FAQ Section */
+.wisecampaign-faq-section {
+    margin: 30px 0;
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.wisecampaign-faq-section h2 {
+    margin: 0;
+    padding: 20px 24px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    background-color: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.wisecampaign-faq-content {
+    padding: 0;
+}
+
+.wisecampaign-faq-item {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f1;
+    transition: background-color 0.2s ease;
+}
+
+.wisecampaign-faq-item:last-child {
+    border-bottom: none;
+}
+
+.wisecampaign-faq-item:hover {
+    background-color: #f8f9fa;
+}
+
+.wisecampaign-faq-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.4;
+}
+
+.wisecampaign-faq-item p {
+    margin: 0;
+    color: #50575e;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Responsive Design for Feature Request Section */
+@media (max-width: 782px) {
+    .wisecampaign-feature-request-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .wisecampaign-feature-request-text {
+        order: 2;
+    }
+    
+    .wisecampaign-feature-request-action {
+        order: 3;
+    }
+    
+    .wisecampaign-feature-request-icon {
+        order: 1;
+    }
+    
+    .wisecampaign-faq-section h2 {
+        padding: 16px 20px;
+        font-size: 16px;
+    }
+    
+    .wisecampaign-faq-item {
+        padding: 16px 20px;
+    }
+}
+
+/* WordPress-style section titles */
 .wisecart-field-type-title {
     padding: 0 !important;
     background: transparent !important;
@@ -9,25 +186,30 @@
 }
 
 .wisecart-field-type-title h2 {
-    font-size: 1.3em;
+    font-size: 13px;
     font-weight: 600;
     text-align: left;
-    padding: 16px 24px;
-    margin: 20px 0 0 0;
+    padding: 12px 16px;
+    margin: 15px 0 0 0;
     background-color: #f6f7f7;
-    border: 1px solid #dcdcde;
+    border: 1px solid #c3c4c7;
     border-bottom: none;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    color: #1d2327;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* WordPress-style form table */
 .form-table {
     margin-top: 0 !important;
-    border-radius: 8px;
-    border: 1px solid #dcdcde;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+    border-radius: 4px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
     background: #fff;
     border-collapse: separate;
+    overflow: hidden;
 }
 
 .form-table tr:first-child.wisecart-field-type-title+tr th,
@@ -36,7 +218,12 @@
 }
 
 .form-table tr {
-    border-bottom: 1px solid #dcdcde;
+    border-bottom: 1px solid #c3c4c7;
+    transition: background-color 0.2s ease;
+}
+
+.form-table tr:hover {
+    background-color: #f6f7f7;
 }
 
 .form-table tr:last-child {
@@ -45,21 +232,24 @@
 
 .form-table th,
 .form-table td {
-    padding: 20px 24px;
-    vertical-align: middle;
+    padding: 12px 16px;
+    vertical-align: top;
 }
 
 .form-table th {
     font-weight: 600;
-    color: #2c3338;
-    width: 300px;
+    color: #1d2327;
+    width: 280px;
+    font-size: 12px;
+    line-height: 1.3;
 }
 
+/* WordPress-style toggle switches */
 .wisecart-switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 28px;
+    width: 44px;
+    height: 24px;
     vertical-align: middle;
 }
 
@@ -76,22 +266,22 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 28px;
+    background-color: #c3c4c7;
+    transition: background-color 0.3s ease;
+    border-radius: 24px;
 }
 
 .wisecart-slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff;
+    transition: transform 0.3s ease;
     border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 input:checked+.wisecart-slider {
@@ -103,89 +293,652 @@ input:focus+.wisecart-slider {
 }
 
 input:checked+.wisecart-slider:before {
-    transform: translateX(22px);
+    transform: translateX(20px);
 }
 
 .wisecart-switch-description {
     display: inline-block;
     vertical-align: middle;
     margin-left: 10px;
-    color: #555;
-    max-width: calc(100% - 70px);
+    color: #50575e;
+    max-width: calc(100% - 60px);
+    font-size: 12px;
+    line-height: 1.3;
 }
 
+/* WordPress-style form inputs */
 .form-table .regular-text,
 .form-table .small-text,
 .form-table select {
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 6px 10px;
+    border-radius: 3px;
     border: 1px solid #8c8f94;
     transition: border-color 0.2s ease;
-    min-width: 250px;
+    min-width: 220px;
+    font-size: 12px;
+    background-color: #ffffff;
+    line-height: 1.3;
 }
 
 .form-table .small-text {
-    min-width: 80px;
+    min-width: 70px;
 }
 
 .form-table .regular-text:focus,
 .form-table .small-text:focus,
 .form-table select:focus {
+    outline: none;
     border-color: #2271b1;
     box-shadow: 0 0 0 1px #2271b1;
 }
 
-.wisecart-settings-actions {
-    margin-top: -1px;
-    padding: 15px 24px;
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-top: 1px solid #f0f0f1;
-    border-radius: 0 0 8px 8px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
-    justify-content: flex-end;
+/* WordPress-style color picker */
+.wisecart-color-picker {
+    border-radius: 3px !important;
+    border: 1px solid #8c8f94 !important;
+    padding: 5px 8px !important;
+    transition: border-color 0.2s ease !important;
 }
 
+.wisecart-color-picker:focus {
+    border-color: #2271b1 !important;
+    box-shadow: 0 0 0 1px #2271b1 !important;
+}
+
+/* WordPress-style radio and select fields */
+.form-table fieldset {
+    border: none;
+    padding: 0;
+}
+
+.form-table fieldset label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    padding: 6px 10px;
+    background-color: #f6f7f7;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.form-table fieldset label:hover {
+    background-color: #f0f0f1;
+    border-color: #c3c4c7;
+}
+
+.form-table fieldset input[type="radio"] {
+    margin-right: 6px;
+    transform: scale(1.0);
+}
+
+.form-table select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 28px;
+    appearance: none;
+}
+
+/* WordPress-style settings actions */
+.wisecart-settings-actions {
+    margin-top: -1px;
+    padding: 12px 16px;
+    background-color: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-top: 1px solid #c3c4c7;
+    border-radius: 0 0 4px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* WordPress-style save button */
 #wisecart-save-btn {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
-    padding: 8px 25px;
+    padding: 6px 16px;
     height: auto;
     transition: all 0.2s ease-in-out;
     order: 3;
+    background-color: #2271b1;
+    border: 1px solid #2271b1;
+    border-radius: 3px;
+    color: #ffffff;
+    cursor: pointer;
+    line-height: 1.3;
 }
 
 #wisecart-save-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+    background-color: #135e96;
+    border-color: #135e96;
 }
 
+#wisecart-save-btn:active {
+    background-color: #0a4b78;
+    border-color: #0a4b78;
+}
+
+/* WordPress-style save feedback */
 .wisecart-save-feedback {
-    margin-right: 15px;
+    margin-right: 10px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     vertical-align: middle;
     order: 1;
+    padding: 5px 10px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
+.wisecart-save-feedback.success {
+    color: #00a32a;
+    background-color: #edfaef;
+    border: 1px solid #00a32a;
+}
+
+.wisecart-save-feedback.error {
+    color: #d63638;
+    background-color: #fcf0f1;
+    border: 1px solid #d63638;
+}
+
+.wisecart-save-feedback::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.wisecart-save-feedback.success::before {
+    background-color: #00a32a;
+}
+
+.wisecart-save-feedback.error::before {
+    background-color: #d63638;
+}
+
+/* WordPress-style spinner */
 .wisecart-settings-actions .spinner {
     float: none;
-    margin-right: 10px;
+    margin-right: 6px;
     vertical-align: middle;
     visibility: hidden;
     order: 2;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f0f0f1;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: wisecart-spin 1s linear infinite;
 }
 
 .wisecart-settings-actions .spinner.is-active {
     visibility: visible;
 }
 
-.wisecart-save-feedback.success {
-    color: #008a20;
+@keyframes wisecart-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.wisecart-save-feedback.error {
+/* WordPress-style description text */
+.form-table .description {
+    color: #50575e;
+    font-size: 11px;
+    line-height: 1.3;
+    margin-top: 4px;
+    font-style: normal;
+    padding: 4px 8px;
+    background-color: #f6f7f7;
+    border-radius: 3px;
+    border-left: 3px solid #c3c4c7;
+}
+
+/* WordPress-style number inputs */
+.form-table input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-table input[type="number"]::-webkit-outer-spin-button,
+.form-table input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* WordPress-style checkbox fields */
+.form-table input[type="checkbox"] {
+    margin-right: 6px;
+    transform: scale(1.0);
+}
+
+/* WordPress-style textarea fields */
+.form-table textarea {
+    padding: 6px 10px;
+    border-radius: 3px;
+    border: 1px solid #8c8f94;
+    transition: border-color 0.2s ease;
+    min-width: 220px;
+    font-size: 12px;
+    background-color: #ffffff;
+    line-height: 1.3;
+    min-height: 60px;
+    resize: vertical;
+}
+
+.form-table textarea:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* WordPress-style field groups */
+.wisecart-field-group {
+    margin-bottom: 15px;
+    padding: 12px;
+    background-color: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.wisecart-field-group h3 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* WordPress-style help text */
+.wisecart-help-text {
+    color: #50575e;
+    font-size: 11px;
+    line-height: 1.3;
+    margin-top: 3px;
+    font-style: italic;
+}
+
+/* WordPress-style notice boxes */
+.wisecart-notice {
+    padding: 10px 14px;
+    margin: 12px 0;
+    border-radius: 3px;
+    border-left: 4px solid;
+    background-color: #f6f7f7;
+}
+
+.wisecart-notice.info {
+    border-left-color: #2271b1;
+    background-color: #f0f6fc;
+}
+
+.wisecart-notice.warning {
+    border-left-color: #dba617;
+    background-color: #fcf9e8;
+}
+
+.wisecart-notice.success {
+    border-left-color: #00a32a;
+    background-color: #edfaef;
+}
+
+.wisecart-notice.error {
+    border-left-color: #d63638;
+    background-color: #fcf0f1;
+}
+
+/* Responsive Design */
+@media (max-width: 782px) {
+    .form-table th,
+    .form-table td {
+        padding: 12px;
+    }
+    
+    .form-table th {
+        width: auto;
+        display: block;
+        padding-bottom: 6px;
+    }
+    
+    .form-table td {
+        display: block;
+        padding-top: 6px;
+    }
+    
+    .wisecart-settings-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    #wisecart-save-btn {
+        order: 1;
+        width: 100%;
+    }
+    
+    .wisecart-save-feedback {
+        order: 2;
+        justify-content: center;
+    }
+    
+    .wisecart-settings-actions .spinner {
+        order: 3;
+        align-self: center;
+    }
+    
+    .form-table .regular-text,
+    .form-table .small-text,
+    .form-table select,
+    .form-table textarea {
+        min-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+/* WordPress-style focus states */
+.form-table input:focus,
+.form-table select:focus,
+.form-table textarea:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* WordPress-style disabled states */
+.form-table input:disabled,
+.form-table select:disabled,
+.form-table textarea:disabled {
+    background-color: #f6f7f7;
+    color: #50575e;
+    cursor: not-allowed;
+}
+
+/* WordPress-style required fields */
+.form-table .required {
     color: #d63638;
+}
+
+/* WordPress-style field validation */
+.form-table .field-error {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 1px #d63638 !important;
+}
+
+.form-table .field-success {
+    border-color: #00a32a !important;
+    box-shadow: 0 0 0 1px #00a32a !important;
+}
+
+/* wiseBanner Page Styles */
+.wisecampaign-banner-wrap {
+    margin-right: 20px;
+}
+
+.wisecampaign-banner-header {
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wisecampaign-banner-header h1 {
+    margin: 0 0 12px 0;
+    font-size: 23px;
+    font-weight: 400;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+.wisecampaign-banner-description {
+    margin: 0;
+    color: #50575e;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 800px;
+}
+
+.wisecampaign-banner-preview {
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.preview-header {
+    margin-bottom: 20px;
+}
+
+.preview-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.preview-header p {
+    margin: 0;
+    color: #50575e;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.preview-actions .button {
+    margin: 0;
+}
+
+.preview-actions .button-secondary {
+    background: #f6f7f7;
+    border-color: #c3c4c7;
+    color: #1d2327;
+}
+
+.preview-actions .button-secondary:hover {
+    background: #f0f0f1;
+    border-color: #8c8f94;
+}
+
+.preview-actions .button-link-delete {
+    color: #d63638;
+    border: none;
+    background: transparent;
+    text-decoration: underline;
+    padding: 0;
+    height: auto;
+    line-height: 1.4;
+}
+
+.preview-actions .button-link-delete:hover {
+    color: #a00;
+    background: transparent;
+    text-decoration: none;
+}
+
+.wisecampaign-banner-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.wisecampaign-banner-sections {
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wisecampaign-banner-sections h2 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.wisecampaign-section-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wisecampaign-section-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wisecampaign-section-item:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wisecampaign-section-item.active {
+    background: #f0f6fc;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.section-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.section-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+.section-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.wisecampaign-banner-options {
+    background: #ffffff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.wisecampaign-options-header {
+    background: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+    padding: 20px;
+}
+
+.wisecampaign-options-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.wisecampaign-options-description {
+    margin: 0;
+    color: #50575e;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.wisecampaign-options-content {
+    padding: 20px;
+}
+
+.wisecampaign-options-content #wisecampaign-banner-page-app {
+    min-height: 500px;
+}
+
+/* Responsive Design for Banner Page */
+@media (max-width: 1200px) {
+    .wisecampaign-banner-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .wisecampaign-banner-sections {
+        order: 2;
+    }
+    
+    .wisecampaign-banner-options {
+        order: 1;
+    }
+}
+
+@media (max-width: 782px) {
+    .wisecampaign-banner-header {
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+    
+    .wisecampaign-banner-header h1 {
+        font-size: 20px;
+    }
+    
+    .wisecampaign-banner-description {
+        font-size: 13px;
+    }
+    
+    .wisecampaign-banner-sections {
+        padding: 16px;
+    }
+    
+    .wisecampaign-section-item {
+        padding: 14px;
+    }
+    
+    .section-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+    
+    .wisecampaign-options-header {
+        padding: 16px;
+    }
+    
+    .wisecampaign-options-content {
+        padding: 16px;
+    }
 }

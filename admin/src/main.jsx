@@ -16,6 +16,8 @@ import { ToastProvider } from './provider/ToastProvider';
 import MainComponent from './components/MainComponent';
 import { AppSettingProvider } from './context/common/AppSettingContext';
 import WiseWrapper from './components/WiseWrapper';
+import Banner from './components/Banner';
+import Preview from './components/Preview';
 
 // Get DOM elements
 const elements = {
