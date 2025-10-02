@@ -7,6 +7,8 @@ import { SubHeadlineSection } from "./SubHeadlineSection";
 import { ButtonSection } from "./ButtonSection";
 import { CountdownSection } from "./CountdownSection";
 import BannerSettingsReDesign from "../setting/BannerSettingsReDesign";
+import UpdateBannerButton from "../../../../components/UpdateBannerButton";
+import UpdateBannerSettingButton from "../../../../components/UpdateBannerSettingButton";
 
 export default function NewBannerCustomizer() {
   const [activeSection, setActiveSection] = useState("background");
@@ -149,7 +151,7 @@ export default function NewBannerCustomizer() {
         </div>
 
         {/* Right Panel - Options */}
-        <div className="md:col-span-2 bg-white shadow rounded-sm p-4">
+        <div className="md:col-span-2 bg-white shadow rounded-sm p-4 mb-4">
           <div className="mb-4">
             <h2 className="text-lg font-semibold">
               {sectionTitles[activeSection] || "Customization Options"}
@@ -161,12 +163,19 @@ export default function NewBannerCustomizer() {
           </div>
 
           <div className="border rounded-sm p-4">
-            
-              { activeBanner && sectionUI && sectionUI[activeSection] }
-  
+            {activeBanner && sectionUI && sectionUI[activeSection]}
           </div>
         </div>
       </div>
+
+      <div className="bg-red-400 mt-1 mb-1">
+        {activeSection === "advanced" ? (
+          <></>
+        ) : (
+          <UpdateBannerButton />
+        )}
+      </div>
+
     </div>
   );
 }

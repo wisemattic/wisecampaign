@@ -10,7 +10,6 @@ class Menu
 {
     use SingletonTrait;
     private $option_name = 'wisecampaign_plugin_enabled';
-    private $is_pro_version = false;
 
     public function __construct()
     {
@@ -18,12 +17,7 @@ class Menu
         add_action('rest_api_init', [$this, 'register_settings']);
         add_shortcode('wise_banner', [$this, 'wise_banner_shortcode']);
 
-        $pro_installed = has_action('wise_campaign_check_pro');
-        if ($pro_installed) {
-            $this->is_pro_version = true;
-        }
-
-        if (strtolower(get_option('banner_position')) == 'bottom' && $this->is_pro_version == true) {
+        if (strtolower(get_option('banner_position')) == 'bottom') {
             add_action('wp_footer', function () {
                 $this->wise_campaign_pro_banner_show(true, get_option('banner_type') == 'sticky');
             });
@@ -72,7 +66,7 @@ class Menu
         register_rest_route('wise-campaign-plugin/v1', '/plugin-version', [
             'methods' => 'GET',
             'callback' => function () {
-                return new WP_REST_Response(['is_pro_version' => $this->is_pro_version], 200);
+                return new WP_REST_Response(['is_pro_version' => Register::getInstance()->get_pro_status()], 200);
             },
             'permission_callback' => '__return_true'
         ]);
@@ -138,7 +132,7 @@ class Menu
     }
     function wise_banner_shortcode()
     {
-        return '<div id="wise-campaign-banner-show11"></div>';
+        return '<div id="wise-campaign-banner-show"></div>';
     }
 
     function wise_campaign_pro_banner_show($isFooter, $isSticky)

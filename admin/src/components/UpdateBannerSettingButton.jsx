@@ -3,31 +3,24 @@ import { useBannerContext } from "../context/BannerContext";
 import useFormToDbMapper from "../hooks/useFormToDbMapper";
 import { ToastType, useToast } from "../provider/ToastProvider";
 import { FaSave, FaUndo } from "react-icons/fa";
+import useDisplayRule from "../hooks/useDisplayRule";
+import { toSnakeCase } from "../utils/utils";
 
-const UpdateBannerButton = () => {
-  const { activeBanner, updateBanner } = useBannerContext();
-  const { showToast } = useToast();
-  const mapFormToDb = useFormToDbMapper();
+const UpdateBannerSettingButton = ({settingState}) => {
+
+
+  const {save, fetchTargetOptions, users, pages, displayRules, fetchDisplayRule} = useDisplayRule()
+  const {showToast} = useToast()
   
-  const handleSave = async () => {
-    try {
-      const banner = mapFormToDb(activeBanner);
-      if (!banner.id) {
-        showToast("Banner ID is required", ToastType.ERROR);
-        return;
+  const handleSubmit = async () => {
+      try {
+        const updatedDisplayRules = toSnakeCase(settingState);
+        await save(updatedDisplayRules); // Save the updated display rules
+        showToast("Your wise banner setting saved successfully!", ToastType.SUCCESS);
+      } catch (error) {
+        showToast("Banner setting not saved", ToastType.ERROR);
       }
-
-      const formData = new FormData();
-      Object.entries(banner).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-
-      await updateBanner(banner.id, formData);
-      showToast("Banner updated successfully!", ToastType.SUCCESS);
-    } catch (error) {
-      showToast("Failed to save changes", ToastType.ERROR);
-    }
-  };
+    };
 
   const handleReset = () => {
     if (window.confirm("Are you sure you want to reset all changes?")) {
@@ -35,10 +28,8 @@ const UpdateBannerButton = () => {
     }
   };
 
-  if (!activeBanner) return null;
-
   return (
-    <div className="left-0 right-0 bg-white border-t shadow-lg p-4">
+    <div className="bottom-0 left-0 right-0 bg-white border-t mt-6 p-4">
       <div className="max-w-screen-xl mx-auto flex items-center justify-between">
         <div className="text-sm text-gray-600">
           Any unsaved changes will be lost
@@ -55,7 +46,7 @@ const UpdateBannerButton = () => {
             Reset Changes
           </Button>
           <Button
-            onClick={handleSave}
+            onClick={handleSubmit}
             className="flex items-center gap-2"
             size="sm"
             variant="gradient"
@@ -70,4 +61,4 @@ const UpdateBannerButton = () => {
   );
 };
 
-export default UpdateBannerButton;
+export default UpdateBannerSettingButton;

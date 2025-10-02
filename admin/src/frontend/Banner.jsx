@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import "./Banner.scss";
 import Button from "../components/Common/Button";
@@ -17,6 +17,7 @@ import CircleCountdown from "../components/CountdownTimer/CircleCountdown";
 import BoxedCountdown from "../components/CountdownTimer/BoxedCountdown";
 
 const Banner = () => {
+  const bannerRef = useRef(null);
   const [showBanner, setShowBanner] = useState(false);
   const [showOnMobile, setShowOnMobile] = useState(true);
   const [showOnDesktop, setShowOnDesktop] = useState(true);
@@ -108,16 +109,6 @@ const getBackgroundStyle = () => {
   }
   }, [displayRules]);
 
-  const getBannerClass = () => {
-    if (displayRules?.bannerType === "sticky") {
-      if (displayRules?.bannerPosition === "bottom") return "sticky bottom-0 z-50";
-      else {
-        return "sticky top-0 z-50";
-      }
-    }
-    return "";
-  };
-
   const getVisibilityClasses = () => {
     if (!displayRules?.showBannerOn) return ""; // Show by default if no rules
     const showOn = displayRules.showBannerOn;
@@ -156,6 +147,22 @@ const getBackgroundStyle = () => {
             backgroundRepeat: "no-repeat",
           }}
         >
+          <button
+            onClick={() => setShowBanner(false)}
+            style={{
+              position: 'absolute',
+              top: '5px',
+              right: '10px',
+              background: 'transparent',
+              border: 'none',
+              color: selectedBanner.headline.color,
+              fontSize: '20px',
+              cursor: 'pointer',
+              zIndex: 100
+            }}
+          >
+            &times;
+          </button>
           <div className="hidden md:block md:basis-1/12"></div>
           <div className="md:basis-5/12 flex flex-col justify-center">
             <div

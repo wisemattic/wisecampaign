@@ -12,9 +12,18 @@ import { openInNewTab, toSnakeCase } from "../../../../utils/utils";
 import { ToastType, useToast } from "../../../../provider/ToastProvider";
 import { useSettingContext } from "../../../../context/SettingContext";
 import SettingElementLayoutReDesign from "./SettingElementLayoutReDesign";
+import { useAppSettingContext } from "../../../../context/common/AppSettingContext";
+import { Button } from "@material-tailwind/react";
+import { FaUndo } from "react-icons/fa";
+import UpdateBannerSettingButton from "../../../../components/UpdateBannerSettingButton";
 
 
 const BannerSettingsReDesign = () => {
+
+  
+  const {settingConfig} = useAppSettingContext()
+  const {isProActive} = settingConfig
+
   const {isPro} = useSettingContext();
   const {save, fetchTargetOptions, users, pages, displayRules, fetchDisplayRule} = useDisplayRule()
   const {showToast} = useToast()
@@ -37,11 +46,11 @@ const BannerSettingsReDesign = () => {
 
   // Fetch the display rules on component mount
   useEffect(() => {
-    if(isPro) {
+    if(isProActive) {
       fetchDisplayRule();
       fetchTargetOptions();
     }
-  }, [isPro]);
+  }, [isProActive]);
 
   // Sync the displayRules with the component state
   useEffect(() => {
@@ -64,8 +73,7 @@ const BannerSettingsReDesign = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
       const updatedDisplayRules = toSnakeCase(settingState);
       await save(updatedDisplayRules); // Save the updated display rules
@@ -76,8 +84,9 @@ const BannerSettingsReDesign = () => {
   };
 
   return (
+    <>
    <div className="relative block bg-slate-100 w-full group">
-      <form onSubmit={handleSubmit}>
+      <div>
         {/* Main Content */}
       <div className="grid grid-cols-1 gap-3"> 
         <SettingElementLayoutReDesign
@@ -108,7 +117,7 @@ const BannerSettingsReDesign = () => {
       </div>
 
       {/* Fade Overlay */}
-      {!isPro ? <>
+      {!isProActive ? <>
       <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-50 transition-opacity duration-300 rounded-md"></div>
 
       {/* Button on Hover */}
@@ -119,15 +128,14 @@ const BannerSettingsReDesign = () => {
       </div>
       </>
       : <></>}
-
-        {/* <button
-          type="submit"
-          className="px-7 py-2 mt-3 bg-[#24C790] text-white rounded-lg shadow hover:bg-green-700 hover:text-gray-100 transition"
-        >
-          Save
-        </button> */}
-      </form>
+      </div>
     </div>
+
+    <div>
+      <UpdateBannerSettingButton settingState={settingState} />
+    </div>
+
+    </>
   );
 };
 

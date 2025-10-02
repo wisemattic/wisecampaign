@@ -1,6 +1,6 @@
 import { createRoot, render } from '@wordpress/element';
 import App from './App';
-//import './style/tailwind.css';
+// import './style/tailwind.css';
 import './style/tailwind-out.css';
 import './style/main.scss';
 
@@ -25,7 +25,6 @@ const elements = {
     bannerShow: document.getElementById('wise-campaign-banner-show'),
     dashboard: document.getElementById('wisecampaign-getting-started-page-app'),
     banner: document.getElementById('wisecampaign-banner-page-app'),
-    bannerPreview: document.getElementById('wisecampaign-banner-preview-app'),
     stockbar: document.getElementById('wisecampaign-stockbar-page-app'),
     checkout: document.getElementById('wisecampaign-checkout-page-app'),
     notification: document.getElementById('wisecampaign-notification-page-app'),
@@ -55,22 +54,6 @@ if (elements.banner) {
                             <WiseWrapper>
                                 <WiseBannerTabs />
                             </WiseWrapper>
-                        </AppSettingProvider>
-                    </DisplayRuleProvider>
-                </BannerProvider>
-            </ToastProvider>
-        </SettingProvider>
-    );
-}
-
-if (elements.bannerPreview) {
-    createRoot(elements.bannerPreview).render(
-        <SettingProvider>
-            <ToastProvider>
-                <BannerProvider>
-                    <DisplayRuleProvider>
-                        <AppSettingProvider>
-                            <Preview />
                         </AppSettingProvider>
                     </DisplayRuleProvider>
                 </BannerProvider>

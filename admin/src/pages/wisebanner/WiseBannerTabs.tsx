@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./WiseBannerTabs.scss";
 import Preview from "../../components/Preview";
-import Navbar from "../../components/Navbar";
-import DashboardWelcome from "./tabs/dashboard/DashboardWelcome";
-import UpgradePlan from "./tabs/dashboard/UpgradePlan";
-import BannerCustomizer from "./tabs/customizer/BannerCustomizer";
-import BannerSettings from "./tabs/setting/BannerSettings";
-import BannerSettingsReDesign from "./tabs/setting/BannerSettingsReDesign";
 import UpdateBannerButton from "../../components/UpdateBannerButton";
 import { PopoverCustomAnimation } from "./tabs/templates/PopoverCustomAnimation";
 import BannerDesign from "./tabs/templates/BannerDesign";
@@ -113,9 +107,9 @@ const WiseBannerTabs = () => {
         </section> */}
   
         {/* Action Section */}
-        <section className="p-6 bg-gray-50">
+        {/* <section className="p-6 bg-gray-50">
           <UpdateBannerButton />
-        </section>
+        </section> */}
       </div>
     </div>
   );

@@ -34,9 +34,37 @@ class Register
         // Localize the script with data
         wp_localize_script('wise_campaign_pro-script', 'wiseCampaignPageData', array(
                 'wiseCampaignUrl' => WISECAMPAIGN_DIR_URL,
-                'isWooCommerceExists' => class_exists( 'WooCommerce' )
+                'isWooCommerceExists' => class_exists( 'WooCommerce' ),
+                'isProActive' => $this->get_pro_status()
             ));
 
+    }
+
+    public function get_pro_status()
+    {
+        // For demonstration, we'll assume the pro version is always active.
+        // In a real scenario, you would check the actual license status.
+        $is_pro_active = false;
+        $has_pro_installed = is_plugin_active('wisecampaign-pro/wisecampaign-pro.php'); // Replace with actual check
+
+        if ($has_pro_installed) {
+            $url = home_url('/wp-json/wise-campaign-plugin/v1/license-status');
+
+            $response = wp_remote_get($url, ['timeout' => 20]);
+
+            if (is_wp_error($response)) {
+                $is_pro_active = false;
+            }
+
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+
+            if (isset($data['status']) && $data['status'] === 'active') {
+                $is_pro_active = true;
+            }
+        }
+
+
+        return $is_pro_active;
     }
 
     function wisecampaign_enqueue_scripts()
