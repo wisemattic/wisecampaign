@@ -1,0 +1,20 @@
+{
+  "name": "wisecampaign/plugin",
+  "description": "A Campaign platform made by WordPress",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "autoload": {
+    "psr-4": {
+      "WISECAMPAIGN\\": "includes/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Al Amin",
+      "email": "ialamin.pro@gmail.com"
+    }
+  ],
+  "require": {
+    "appsero/client": "^2.0"
+  }
+}
