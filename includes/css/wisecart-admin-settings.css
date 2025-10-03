@@ -189,3 +189,12 @@ input:checked+.wisecart-slider:before {
 .wisecart-save-feedback.error {
     color: #d63638;
 }
+
+.wisecart-field-type-textarea textarea {
+    width: 100%;
+    max-width: 500px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+}
