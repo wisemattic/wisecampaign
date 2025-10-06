@@ -1,52 +1,60 @@
 === wiseCampaign - WooCommerce Conversions Made Easy ===
-Contributors: wisemattic, ialaminpro, mehadi13
-Tags: notice bar, countdown, announcements, banner, sales notifications
+Contributors: wisemattic, mehadi13
+Tags: woocommerce discounts, countdown, announcements, banner, sales notifications
 Requires at least: 5.4
-Tested up to: 6.8.2
+Tested up to: 6.8.3
 Requires PHP: 7.4
-Stable tag: 1.1.7
+Stable tag: 1.1.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Turn visitors into buyers 3X faster! wiseCampaign adds banners, stock urgency, direct checkout, sales popups & mini-cart.
+Turn visitors into buyers faster with banners, urgency timers, direct checkout, discounts, popups & mini-cart.
 
 == Description ==
 
-Enhance your WooCommerce store with **wiseCampaign**, the ultimate plugin designed to supercharge your marketing campaigns and maximize conversions. Whether you want to create urgency, reduce cart abandonment, or build trust with real-time notifications, wiseCampaign gives you all the tools you need in one powerful package.
+Enhance your WooCommerce store with **wiseCampaign**, the ultimate plugin designed to supercharge your marketing strategy and maximize conversions. Whether you want to create urgency, discounts, cart abandonment, or build trust with real-time notifications, wiseCampaign gives you all the tools you need in one powerful package.
 
-With **wiseCampaign**, you can:
+= Useful Links =  
+[Docs](https://wisemattic.com/docs) | [Videos](https://www.youtube.com/@wisemattic/videos) | [Support](https://wisemattic.com/support) | [Idea Sharing](https://wisecampaign.canny.io/feature-requests) | [Facebook Group](https://www.facebook.com/groups/wisemattic) | [Get Pro](https://wisemattic.com/wisecampaign/pricing)
+
+**Here is how you can build your engaging top-bar marketing campaigns with wiseCampaign:**
+[youtube https://www.youtube.com/watch?v=crqwrNPTtbA]
+
+
+With **wiseCampaign**, you can supercharge your WooCommerce store with a complete set of conversion-focused marketing tools:
 
 - 🚀 **Create High-Converting Banners (wiseBanner)**  
-  Add eye-catching top-bar banners with countdown timers, animated text, and call-to-action buttons. Perfect for flash sales, seasonal promotions, or special announcements.
+  Design eye-catching top-bar banners with countdown timers, animated text, and call-to-action buttons. Perfect for flash sales, seasonal promotions, or special announcements.
 
 - ⏳ **Boost Urgency with StockBar**  
-  Show remaining product stock in a progress bar format to encourage faster purchasing decisions. This simple psychological trigger can help drive impulse sales and reduce hesitation.
+  Display remaining product stock in a dynamic progress bar format. This psychological trigger motivates faster purchases and reduces hesitation.
 
 - 💳 **Enable Direct Checkout**  
-  Skip unnecessary steps and send customers straight to checkout. This streamlines the buying process, reduces cart abandonment, and increases completed orders.
+  Shorten the purchase journey by sending shoppers directly to checkout. Fewer steps mean reduced cart abandonment and more completed orders.
 
-- 📣 **Display Sales Notifications**  
-  Build social proof and trust with live sales popups. Show your visitors that others are buying, motivating them to take action and improving overall conversion rates.
+- 📣 **Show Live Sales Notifications**  
+  Build social proof and trust with real-time sales popups. Highlight recent purchases to inspire confidence and encourage new buyers to take action.
 
-- 🛒 **Upgrade the Shopping Experience with wiseCart**  
-  Add a modern, customizable mini-cart that keeps customers engaged and allows quick product review or checkout without leaving the page.
+- 🛒 **Enhance Shopping with wiseCart**  
+  Add a modern, customizable mini-cart that keeps customers engaged. Let shoppers review or checkout instantly without leaving the page.
+
+- 🎯 **WooCommerce Discount Manager (Pro Feature)**  
+  Go beyond simple coupons with advanced discount rules. Create powerful, automated offers that drive larger orders and reward loyal customers.  
+  Supported discount types:  ✅ Simple Discounts  💰 Spend-Based Discounts  🎁 Free Product Discounts  📦 Bundle Pricing Discounts  🔖 Buy X, Get Y Discounts  📊 Bulk Pricing Discounts
+
+---
 
 = Why Choose wiseCampaign? =  
-- 🎯 **Conversion-Focused Tools** – Every feature is built with one goal in mind: turning visitors into customers.  
-- ✨ **Fully Customizable** – Easily adjust colors, fonts, backgrounds, and button styles to match your store’s branding.  
-- 🔧 **Seamless WooCommerce Integration** – Works effortlessly with your existing store setup and popular WordPress themes.  
-- ⚡ **Performance Optimized** – Lightweight and secure, ensuring no impact on your site’s speed.  
-- 📊 **Targeted Display Rules** – Control where and when your campaigns appear: show banners on specific pages, devices, or to selected user groups.  
 
-Whether you’re running limited-time promotions, seasonal campaigns, or want to create an urgency-driven shopping experience, **wiseCampaign gives you the flexibility to boost sales, improve engagement, and maximize the potential of your WooCommerce store.**
+- 🎯 **Conversion-Focused Tools** – Every module is purpose-built to turn visitors into customers.  
+- ✨ **Fully Customizable** – Effortlessly match your campaigns with your store’s branding using flexible styling options.  
+- 🔧 **Seamless WooCommerce Integration** – Works flawlessly with your existing store setup and popular WordPress themes.  
+- ⚡ **Performance Optimized** – Lightweight, secure, and built to maintain your site speed.  
+- 📊 **Targeted Display Rules** – Control when, where, and to whom your campaigns appear for maximum relevance.  
 
+Whether you’re launching limited-time promotions, seasonal campaigns, or aiming to create urgency-driven shopping experiences, **wiseCampaign gives you the flexibility to boost sales, engage customers, and maximize your WooCommerce store’s potential.**
 
-👉 Official Free Demo Link: [Official Demo](https://wisemattic.com/wisecampaign)
-👉 Details documentation of installation and usage instructions can be found on the Link: [Documentation](https://wisemattic.com/docs/)
-
-Here is how you can build your engaging top-bar marketing campaigns with wiseCampaign:
-
-[youtube https://www.youtube.com/watch?v=lviQX6vm_ZU]
+👉 Full documentation with installation and usage instructions: [Documentation](https://wisemattic.com/docs/wisecampaign/getting-started/requirements/)
 
 
 == Installation ==
@@ -93,12 +101,20 @@ From WordPress.org
 * **Templates & Components**: Access free pre-made templates and customize components like buttons and countdowns.
 * **Customization Options**: Tailor banner components, including background images, fonts, colors, and sizes.
 
-[youtube https://www.youtube.com/watch?v=_izkuOj0faE]
+= WooCommerce Discount Manager (Pro Feature) =  
+Take your promotions to the next level with advanced discount rules that go beyond simple coupons. With the **WooCommerce Discount Manager** module, you can create flexible, automated discounts that encourage bigger purchases and reward your customers.
 
-Enhance your site's engagement and conversions with wiseCampaign. Upgrade now to unlock the power of effective marketing banners!
+![wiseCampaign Pro Discount Demo](https://wisemattic.com/wp-content/uploads/2025/09/woo-discount-manager-wiseCampaign.gif)
+
+**Here’s what you can do:**  
+✅ **Simple Discounts**  💰 **Spend-Based Discounts**  🎁 **Free Product Discounts**  
+📦 **Bundle Pricing Discounts**  🔖 **Buy X, Get Y Discounts**  📊 **Bulk Pricing Discounts**  
+
+👉 [Read More](https://wisemattic.com/wisecampaign) | [Buy Pro Now](https://wisemattic.com/wisecampaign/pricing)
+
 
 ## ☎️ 24/7 SUPPORT:
-All wiseCampaign user's/customer's get access to expert support and an extensive [knowledge base docs](https://wisemattic.com/docs) for help with general and technical site speed issues. Our support is available round the clock.
+All wiseCampaign user's/customer's get access to expert support and an extensive [knowledge base docs](https://wisemattic.com/docs/wisecampaign/getting-started/requirements/) for help with general and technical site speed issues. Our [technical support](https://wisemattic.com/support) is available round the clock. 
 
 ## 🔌 COMPATIBILITIES:
 wiseCampaign integrates seamlessly with the most popular WordPress plugins and themes to provide a smooth user experience:
@@ -135,6 +151,17 @@ A. Not at all. wiseCampaign is designed for beginners and advanced users alike. 
 = Q. Where can I get help if I face issues? =
 A. You can access our 24/7 support team directly from the plugin’s [Support](https://wisemattic.com/support) tab, or check our documentation and tutorials for step-by-step guidance.
 
+== Screenshots ==
+1. screenshot-1.png
+2. screenshot-2.png
+3. screenshot-3.png
+4. screenshot-4.gif
+5. screenshot-5.png
+6. screenshot-6.png
+7. screenshot-7.png
+8. screenshot-8.png
+9. screenshot-9.gif
+
 
 ## Privacy Policy
 wiseCampaign uses [Appsero](https://appsero.com) SDK to collect some telemetry data upon user's confirmation. This helps us to troubleshoot problems faster & make product improvements.
@@ -152,6 +179,17 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+
+= v1.1.9 =
+- Fixed: Sales nification reload issue.
+- Update: Sales notification dashbaord design.
+- Update: Security enhancements and latest compatibility.
+
+= v1.1.8 =
+- Fixed: wiseBanner dashboard design.
+- Fixed: wiseBanner background image field issue.
+- Fixed: Advance feature license activation issue.
+- Added: Security enhancements and latest compatibility.
 
 = v1.1.7 =
 - Added Direct Checkout module.
@@ -198,4 +236,3 @@ Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) �
 
 = v1.0.0 =
 - Initial release
-

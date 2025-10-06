@@ -35,6 +35,17 @@ class WiseCart
             add_action('wp_ajax_nopriv_wisecart_apply_coupon', [$this, 'ajax_apply_coupon']);
             add_action('wp_ajax_wisecart_update_quantity', [$this, 'ajax_update_quantity']);
             add_action('wp_ajax_nopriv_wisecart_update_quantity', [$this, 'ajax_update_quantity']);
+
+            add_action('wp_ajax_get_wisecart_content', [$this, 'ajax_get_cart_content']);
+            add_action('wp_ajax_nopriv_get_wisecart_content', [$this, 'ajax_get_cart_content']);
+            
+            add_action('wp_ajax_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
+            add_action('wp_ajax_nopriv_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
+            
+            // Order success tracking.
+            add_action('woocommerce_thankyou', [$this, 'track_wisecart_order_success']);
+            add_action('wp_ajax_wisecart_mark_success_viewed', [$this, 'ajax_mark_success_viewed']);
+            add_action('wp_ajax_nopriv_wisecart_mark_success_viewed', [$this, 'ajax_mark_success_viewed']);
         }
     }
 
@@ -82,6 +93,11 @@ class WiseCart
             'wc_checkout_text_color' => ['id' => 'wc_checkout_text_color', 'title' => __('Checkout Button Text Color', 'wisecampaign'), 'type' => 'color', 'default' => '#ffffff'],
             'wc_continue_btn_background' => ['id' => 'wc_continue_btn_background', 'title' => __('Continue Shopping BG', 'wisecampaign'), 'type' => 'color', 'default' => '#e9ecef'],
             'wc_continue_btn_text_color' => ['id' => 'wc_continue_btn_text_color', 'title' => __('Continue Shopping Text', 'wisecampaign'), 'type' => 'color', 'default' => '#343a40'],
+            'wisecart_success_title' => ['id' => 'wisecart_success_title', 'title' => __('Order Success Message', 'wisecampaign'), 'type' => 'title'],
+            'wc_success_message_enable' => ['id' => 'wc_success_message_enable', 'title' => __('Show Success Message', 'wisecampaign'), 'desc' => __('Display success message in cart after order placement', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
+            'wc_success_message_title' => ['id' => 'wc_success_message_title', 'title' => __('Success Title', 'wisecampaign'), 'desc' => __('Title displayed on successful order', 'wisecampaign'), 'type' => 'text', 'default' => 'Order Placed Successfully!'],
+            'wc_success_message_text' => ['id' => 'wc_success_message_text', 'title' => __('Success Message', 'wisecampaign'), 'desc' => __('Message displayed on successful order', 'wisecampaign'), 'type' => 'textarea', 'default' => 'Thank you for your order! We\'ve received your payment and will process your order shortly.'],
+            'wc_success_redirect_delay' => ['id' => 'wc_success_redirect_delay', 'title' => __('Redirect Delay (seconds)', 'wisecampaign'), 'desc' => __('Time to wait before redirecting to order confirmation page', 'wisecampaign'), 'type' => 'number', 'default' => '5'],
         ];
     }
 
@@ -103,6 +119,9 @@ class WiseCart
                 case 'number':
                     $output[$id] = absint($input[$id]);
                     break;
+                case 'textarea':
+                    $output[$id] = sanitize_textarea_field($input[$id]);
+                    break;
                 default:
                     $output[$id] = sanitize_text_field($input[$id]);
                     break;
@@ -118,8 +137,6 @@ class WiseCart
 
     public function register_admin_settings()
     {
-        // Settings are saved via our AJAX handler, not the standard WP options flow.
-        // We only register the section and fields here for display purposes.
         add_settings_section('wisecart_section_main', null, null, $this->settings_page_slug);
 
         foreach ($this->get_settings_fields() as $id => $field) {
@@ -186,6 +203,12 @@ class WiseCart
                     echo '<p class="description">' . esc_html($desc) . '</p>';
                 }
                 break;
+            case 'textarea':
+                echo '<textarea id="' . $id . '" name="' . $options_name . '" rows="3" cols="50" class="large-text">' . esc_textarea($value) . '</textarea>';
+                if (!empty($desc)) {
+                    echo '<p class="description">' . esc_html($desc) . '</p>';
+                }
+                break;
             case 'color':
                 echo '<input type="text" id="' . $id . '" name="' . $options_name . '" value="' . esc_attr($value) . '" class="wisecart-color-picker" data-default-color="' . esc_attr($args['default']) . '" />';
                 if (!empty($desc)) {
@@ -240,13 +263,36 @@ class WiseCart
 
     public function enqueue_frontend_assets()
     {
-        if (!function_exists('WC') || is_admin())
+        if ( ! function_exists( 'WC' ) || is_admin() ) {
             return;
-        $version = '3.3.4';
-        wp_enqueue_style('wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart.css', [], $version);
-        wp_enqueue_script('wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/js/wisecart.js', ['jquery', 'wc-cart-fragments'], $version, true);
-        $script_data = ['ajax_url' => admin_url('admin-ajax.php'), 'apply_coupon_nonce' => wp_create_nonce('wisecart-apply-coupon'), 'update_cart_nonce' => wp_create_nonce('wisecart-update-cart'), 'autoOpen' => ($this->get_option('wc_auto_open_cart') === 'yes'),];
-        wp_localize_script('wisecampaign-wisecart', 'wiseCartData', $script_data);
+        }
+
+        $version = '3.4.0';
+        wp_enqueue_style( 'wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart.css', [], $version );
+        wp_enqueue_script( 'wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/js/wisecart.js', [ 'jquery', 'wc-cart-fragments' ], $version, true );
+        
+        if ( 'yes' === $this->get_option( 'wc_replace_checkout_page' ) ) {
+            wp_enqueue_script( 'wc-checkout' );
+        }
+
+        $script_data = [
+            'ajax_url'           => admin_url( 'admin-ajax.php' ),
+            'nonce'              => wp_create_nonce( 'wisecart_nonce' ),
+            'apply_coupon_nonce' => wp_create_nonce( 'wisecart-apply-coupon' ),
+            'update_cart_nonce'  => wp_create_nonce( 'wisecart-update-cart' ),
+            'autoOpen'           => ( 'yes' === $this->get_option( 'wc_auto_open_cart' ) ),
+            'replaceCheckout'    => ( 'yes' === $this->get_option( 'wc_replace_checkout_page' ) ),
+            'loadCheckoutNonce'  => wp_create_nonce( 'wisecart-load-checkout' ),
+            'successViewedNonce' => wp_create_nonce( 'wisecart-success-viewed' ),
+            'checkoutUrl'        => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : '/checkout',
+            'successSettings'    => [
+                'enabled'       => ( 'yes' === $this->get_option( 'wc_success_message_enable' ) ),
+                'title'         => $this->get_option( 'wc_success_message_title' ),
+                'message'       => $this->get_option( 'wc_success_message_text' ),
+                'redirectDelay' => max( 1, (int) $this->get_option( 'wc_success_redirect_delay' ) ),
+            ],
+        ];
+        wp_localize_script( 'wisecampaign-wisecart', 'wiseCartData', $script_data );
     }
 
     public function render_cart_components()
@@ -277,7 +323,6 @@ class WiseCart
     public function get_cart_content_html()
     {
         ob_start();
-        // Ensure this template path is correct for your plugin structure.
         $template_path = WISECAMPAIGN_DIR_PATH . 'includes/features/templates/wise-cart-content.php';
         if (file_exists($template_path)) {
             include($template_path);
@@ -307,6 +352,118 @@ class WiseCart
             wp_safe_redirect(add_query_arg('open-wisecart', 'true', wc_get_page_permalink('shop')));
             exit();
         }
+    }
+    
+    public function ajax_load_checkout_content()
+    {
+        check_ajax_referer( 'wisecart-load-checkout', 'nonce' );
+
+        if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+            wp_send_json_error( [ 'html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__( 'WooCommerce is not available.', 'wisecampaign' ) . '</div>' ] );
+        }
+
+        if ( WC()->cart->is_empty() ) {
+            $error_html  = '<div class="wisecart-empty" style="padding:1.5rem;">';
+            $error_html .= '<svg class="wisecart-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">';
+            $error_html .= '<circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />';
+            $error_html .= '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />';
+            $error_html .= '</svg>';
+            $error_html .= '<h3>' . esc_html__( 'Your cart is empty', 'wisecampaign' ) . '</h3>';
+            $error_html .= '<p>' . esc_html__( 'Please add some products to your cart before checking out.', 'wisecampaign' ) . '</p>';
+            $error_html .= '</div>';
+            wp_send_json_error( [ 'html' => $error_html ] );
+        }
+
+        try {
+            // Ensure WooCommerce checkout is properly initialized.
+            if ( ! did_action( 'wp_loaded' ) ) {
+                wp_send_json_error( [ 'html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__( 'WordPress not fully loaded. Please refresh and try again.', 'wisecampaign' ) . '</div>' ] );
+            }
+
+            // Set up proper WooCommerce context.
+            if ( ! WC()->session ) {
+                WC()->session = new WC_Session_Handler();
+                WC()->session->init();
+            }
+
+            // Calculate totals to ensure cart is ready.
+            WC()->cart->calculate_totals();
+
+            // Buffer output to catch any errors.
+            ob_start();
+            
+            // Load checkout content.
+            $checkout_content = do_shortcode( '[woocommerce_checkout]' );
+            
+            // Check if shortcode produced content.
+            if ( empty( $checkout_content ) || strlen( trim( $checkout_content ) ) < 50 ) {
+                ob_end_clean();
+                
+                // Fallback: Try to load checkout directly.
+                if ( function_exists( 'woocommerce_checkout' ) ) {
+                    ob_start();
+                    woocommerce_checkout();
+                    $checkout_content = ob_get_clean();
+                } else {
+                    // Last resort: Simple checkout form.
+                    $checkout_content = $this->get_simple_checkout_form();
+                }
+            } else {
+                ob_end_clean();
+            }
+
+            $wrapped_content = '<div class="wisecart-checkout-wrapper">' . $checkout_content . '</div>';
+
+            wp_send_json_success( [ 'html' => $wrapped_content ] );
+
+        } catch ( Exception $e ) {
+            wp_send_json_error(
+                [
+                    'html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__( 'Checkout temporarily unavailable.', 'wisecampaign' ) . ' <a href="' . esc_url( wc_get_checkout_url() ) . '">' . esc_html__( 'Click here to checkout normally', 'wisecampaign' ) . '</a></div>',
+                ]
+            );
+        }
+    }
+
+    /**
+     * Simple fallback checkout form.
+     *
+     * @return string Fallback checkout HTML.
+     */
+    private function get_simple_checkout_form()
+    {
+        $html  = '<div class="wisecart-simple-checkout" style="padding:1.5rem;">';
+        $html .= '<h3>' . esc_html__( 'Checkout Issue', 'wisecampaign' ) . '</h3>';
+        $html .= '<p>' . esc_html__( 'There seems to be an issue loading the checkout form. Please use the link below to complete your order:', 'wisecampaign' ) . '</p>';
+        $html .= '<a href="' . esc_url( wc_get_checkout_url() ) . '" class="button wc-forward" style="display:inline-block; padding:10px 20px; background:#0073aa; color:white; text-decoration:none; margin:10px 0;">';
+        $html .= esc_html__( 'Continue to Checkout', 'wisecampaign' );
+        $html .= '</a></div>';
+        return $html;
+    }
+
+    public function ajax_get_cart_content()
+    {
+        // Check nonce for security.
+        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'wisecart_nonce' ) && ! wp_verify_nonce( $nonce, 'wisecart-update-cart' ) ) {
+            wp_send_json_error( [ 'message' => esc_html__( 'Security check failed.', 'wisecampaign' ) ] );
+        }
+        
+        // Make sure WooCommerce is available.
+        if ( ! class_exists( 'WooCommerce' ) || ! WC()->cart ) {
+            wp_send_json_error( [ 'message' => esc_html__( 'WooCommerce not available.', 'wisecampaign' ) ] );
+        }
+        
+        // Get cart content HTML.
+        $cart_html  = $this->get_cart_content_html();
+        $item_count = WC()->cart->get_cart_contents_count();
+        
+        wp_send_json_success(
+            [
+                'data'       => $cart_html,
+                'item_count' => $item_count,
+            ]
+        );
     }
 
     public function ajax_update_quantity()
@@ -366,5 +523,49 @@ class WiseCart
         update_option($this->options_key, $sanitized_options);
 
         wp_send_json_success(['message' => 'Settings Saved!']);
+    }
+
+    /**
+     * Track when an order is successfully placed through wiseCart.
+     *
+     * @param int $order_id Order ID.
+     */
+    public function track_wisecart_order_success( $order_id )
+    {
+        if ( ! $order_id ) {
+            return;
+        }
+
+        // Check if the order was placed through wiseCart.
+        if ( isset( $_COOKIE['wisecart_checkout'] ) || ( isset( $_SESSION['wisecart_checkout'] ) && true === $_SESSION['wisecart_checkout'] ) ) {
+            
+            // Mark this order as placed through wiseCart.
+            update_post_meta( $order_id, '_wisecart_order', 'yes' );
+            
+            // Clear the tracking cookie/session.
+            if ( isset( $_COOKIE['wisecart_checkout'] ) ) {
+                setcookie( 'wisecart_checkout', '', time() - 3600, '/' );
+            }
+            if ( isset( $_SESSION['wisecart_checkout'] ) ) {
+                unset( $_SESSION['wisecart_checkout'] );
+            }
+        }
+    }
+
+    /**
+     * AJAX handler to mark success message as viewed.
+     */
+    public function ajax_mark_success_viewed()
+    {
+        check_ajax_referer( 'wisecart-success-viewed', 'nonce' );
+        
+        $order_id = isset( $_POST['order_id'] ) ? absint( $_POST['order_id'] ) : 0;
+        
+        if ( $order_id ) {
+            update_post_meta( $order_id, '_wisecart_success_viewed', current_time( 'timestamp' ) );
+            wp_send_json_success( [ 'message' => esc_html__( 'Success message viewed', 'wisecampaign' ) ] );
+        }
+        
+        wp_send_json_error( [ 'message' => esc_html__( 'Invalid order ID', 'wisecampaign' ) ] );
     }
 }
