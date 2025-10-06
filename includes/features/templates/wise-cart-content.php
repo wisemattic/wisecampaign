@@ -103,7 +103,7 @@ $cart = WC()->cart;
                         class="button wisecart-checkout-button"><?php esc_html_e('Checkout', 'woocommerce'); ?></a>
                     <?php if ($wiseCart->get_option('wc_show_keep_shopping') === 'yes'): ?>
                         <button type="button"
-                            class="button wisecart-continue-button wisecart-close-btn"><?php esc_html_e('Continue Shopping', 'wisecampaign'); ?></button>
+                            class="wisecart-continue-button"><?php esc_html_e('Continue Shopping', 'wisecampaign'); ?></button>
                     <?php endif; ?>
                 </div>
             </div>

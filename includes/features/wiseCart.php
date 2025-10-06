@@ -42,7 +42,6 @@ class WiseCart
             add_action('wp_ajax_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
             add_action('wp_ajax_nopriv_wisecart_load_checkout', [$this, 'ajax_load_checkout_content']);
             
-            // Order success tracking.
             add_action('woocommerce_thankyou', [$this, 'track_wisecart_order_success']);
             add_action('wp_ajax_wisecart_mark_success_viewed', [$this, 'ajax_mark_success_viewed']);
             add_action('wp_ajax_nopriv_wisecart_mark_success_viewed', [$this, 'ajax_mark_success_viewed']);
@@ -348,6 +347,10 @@ class WiseCart
 
     public function replace_default_pages()
     {
+        if (function_exists('is_wc_endpoint_url') && is_wc_endpoint_url('order-received')) {
+            return;
+        }
+
         if (($this->get_option('wc_replace_cart_page') === 'yes' && is_cart()) || ($this->get_option('wc_replace_checkout_page') === 'yes' && is_checkout())) {
             wp_safe_redirect(add_query_arg('open-wisecart', 'true', wc_get_page_permalink('shop')));
             exit();
@@ -375,37 +378,25 @@ class WiseCart
         }
 
         try {
-            // Ensure WooCommerce checkout is properly initialized.
             if ( ! did_action( 'wp_loaded' ) ) {
                 wp_send_json_error( [ 'html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__( 'WordPress not fully loaded. Please refresh and try again.', 'wisecampaign' ) . '</div>' ] );
             }
 
-            // Set up proper WooCommerce context.
             if ( ! WC()->session ) {
-                WC()->session = new WC_Session_Handler();
+                WC()->session = new \WC_Session_Handler();
                 WC()->session->init();
             }
 
-            // Calculate totals to ensure cart is ready.
             WC()->cart->calculate_totals();
-
-            // Buffer output to catch any errors.
             ob_start();
-            
-            // Load checkout content.
             $checkout_content = do_shortcode( '[woocommerce_checkout]' );
-            
-            // Check if shortcode produced content.
             if ( empty( $checkout_content ) || strlen( trim( $checkout_content ) ) < 50 ) {
                 ob_end_clean();
-                
-                // Fallback: Try to load checkout directly.
                 if ( function_exists( 'woocommerce_checkout' ) ) {
                     ob_start();
                     woocommerce_checkout();
                     $checkout_content = ob_get_clean();
                 } else {
-                    // Last resort: Simple checkout form.
                     $checkout_content = $this->get_simple_checkout_form();
                 }
             } else {
@@ -413,10 +404,9 @@ class WiseCart
             }
 
             $wrapped_content = '<div class="wisecart-checkout-wrapper">' . $checkout_content . '</div>';
-
             wp_send_json_success( [ 'html' => $wrapped_content ] );
 
-        } catch ( Exception $e ) {
+        } catch ( \Exception $e ) {
             wp_send_json_error(
                 [
                     'html' => '<div class="woocommerce-error" style="margin:1.5rem;">' . esc_html__( 'Checkout temporarily unavailable.', 'wisecampaign' ) . ' <a href="' . esc_url( wc_get_checkout_url() ) . '">' . esc_html__( 'Click here to checkout normally', 'wisecampaign' ) . '</a></div>',
@@ -425,11 +415,6 @@ class WiseCart
         }
     }
 
-    /**
-     * Simple fallback checkout form.
-     *
-     * @return string Fallback checkout HTML.
-     */
     private function get_simple_checkout_form()
     {
         $html  = '<div class="wisecart-simple-checkout" style="padding:1.5rem;">';
@@ -443,18 +428,15 @@ class WiseCart
 
     public function ajax_get_cart_content()
     {
-        // Check nonce for security.
         $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
         if ( ! wp_verify_nonce( $nonce, 'wisecart_nonce' ) && ! wp_verify_nonce( $nonce, 'wisecart-update-cart' ) ) {
             wp_send_json_error( [ 'message' => esc_html__( 'Security check failed.', 'wisecampaign' ) ] );
         }
         
-        // Make sure WooCommerce is available.
         if ( ! class_exists( 'WooCommerce' ) || ! WC()->cart ) {
             wp_send_json_error( [ 'message' => esc_html__( 'WooCommerce not available.', 'wisecampaign' ) ] );
         }
         
-        // Get cart content HTML.
         $cart_html  = $this->get_cart_content_html();
         $item_count = WC()->cart->get_cart_contents_count();
         
@@ -469,16 +451,28 @@ class WiseCart
     public function ajax_update_quantity()
     {
         check_ajax_referer('wisecart-update-cart', 'nonce');
-        parse_str(wp_unslash($_POST['cart_data'] ?? ''), $cart_data);
-        if (empty($cart_data['cart'])) {
-            wp_send_json_error(['message' => 'No cart data received.']);
+
+        if ( ! isset( $_POST['cart_key'] ) || ! isset( $_POST['quantity'] ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid data provided.' ] );
         }
-        foreach ($cart_data['cart'] as $cart_item_key => $cart_item) {
-            if (isset($cart_item['qty'])) {
-                WC()->cart->set_quantity($cart_item_key, absint($cart_item['qty']));
-            }
+    
+        $cart_item_key = sanitize_text_field( $_POST['cart_key'] );
+        $quantity      = absint( $_POST['quantity'] );
+    
+        // Use WooCommerce to update the quantity
+        if ( WC()->cart->set_quantity( $cart_item_key, $quantity ) ) {
+            // Recalculate totals to ensure session is updated
+            WC()->cart->calculate_totals();
+            
+            // Send back a success response with the new cart HTML
+            wp_send_json_success( [
+                'html'       => $this->get_cart_content_html(),
+                'item_count' => WC()->cart->get_cart_contents_count(),
+            ] );
+        } else {
+            // Send an error if updating failed
+            wp_send_json_error( [ 'message' => 'Could not update cart item.' ] );
         }
-        wp_send_json_success(['html' => $this->get_cart_content_html(), 'item_count' => WC()->cart->get_cart_contents_count()]);
     }
 
     public function ajax_apply_coupon()
@@ -525,24 +519,16 @@ class WiseCart
         wp_send_json_success(['message' => 'Settings Saved!']);
     }
 
-    /**
-     * Track when an order is successfully placed through wiseCart.
-     *
-     * @param int $order_id Order ID.
-     */
     public function track_wisecart_order_success( $order_id )
     {
         if ( ! $order_id ) {
             return;
         }
 
-        // Check if the order was placed through wiseCart.
         if ( isset( $_COOKIE['wisecart_checkout'] ) || ( isset( $_SESSION['wisecart_checkout'] ) && true === $_SESSION['wisecart_checkout'] ) ) {
             
-            // Mark this order as placed through wiseCart.
             update_post_meta( $order_id, '_wisecart_order', 'yes' );
             
-            // Clear the tracking cookie/session.
             if ( isset( $_COOKIE['wisecart_checkout'] ) ) {
                 setcookie( 'wisecart_checkout', '', time() - 3600, '/' );
             }
@@ -552,9 +538,6 @@ class WiseCart
         }
     }
 
-    /**
-     * AJAX handler to mark success message as viewed.
-     */
     public function ajax_mark_success_viewed()
     {
         check_ajax_referer( 'wisecart-success-viewed', 'nonce' );
