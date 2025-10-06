@@ -1,5 +1,5 @@
 === wiseCampaign - WooCommerce Conversions Made Easy ===
-Contributors: wisemattic, mehadi13
+Contributors: wisemattic, mehadi13, devrkb21
 Tags: woocommerce discounts, countdown, announcements, banner, sales notifications
 Requires at least: 5.4
 Tested up to: 6.8.3
