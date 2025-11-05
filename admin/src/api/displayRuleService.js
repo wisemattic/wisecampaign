@@ -1,6 +1,7 @@
 import apiClient from './apiClient';
 
 export const getDisplayRule = async () => {
+    console.log('fetching.....display rule')
     try {
         const response = await apiClient.get('/banner-settings');
         return response.data;

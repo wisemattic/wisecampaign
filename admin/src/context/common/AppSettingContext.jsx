@@ -5,8 +5,8 @@ const AppSettingContext = createContext();
 
 export const AppSettingProvider = ({ children }) => {
     const [settingConfig, setsettingConfig] = useState({
-        isWooCommerceExists: wiseCampaignPageData.isWooCommerceExists === "1",
-        // isWiseCampaignProActive: wiseCampaignProData.isWiseCampaignProActive === "1"
+        isWooCommerceExists: wiseCampaignPageData ? wiseCampaignPageData.isWooCommerceExists === "1" : false,
+        isProActive: wiseCampaignPageData ? wiseCampaignPageData.isProActive === "1" : false,
      });
     
     return (
