@@ -1,13 +1,17 @@
 <?php
 
 use WISECAMPAIGN\Classes\SalesNotification;
+
 /*
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           1.1.10
+ * Version:           1.1.11
  * Requires at least: 5.4
  * Requires PHP:      7.4
+ * Tested up to:      6.8.3
+ * WC requires at least: 4.0
+ * WC tested up to: 10.3.5
  * Author:            Wisemattic
  * Author URI:        https://wisemattic.com/
  * License:           GPL v2 or later
@@ -16,10 +20,46 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Domain Path:       /languages
  */
 
-// Prevent direct access to the script
+ // Prevent direct access
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly.
+    exit;
 }
+
+ /**
+  * ------------------------------------------------------------------
+  *  WooCommerce Compatibility Declarations for WC 10.3.5+
+  * ------------------------------------------------------------------
+  *  Declares compatibility with:
+  *  - HPOS (custom_order_tables)
+  *  - Cart & Checkout Blocks
+  *  - Product Block Editor
+  */
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+
+        // HPOS compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            __FILE__,
+            true
+        );
+
+        // Cart & Checkout Blocks compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'cart_checkout_blocks',
+            __FILE__,
+            true
+        );
+
+        // Product Blocks compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'product_block_editor',
+            __FILE__,
+            true
+        );
+    }
+});
+
 
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
@@ -27,8 +67,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php'
 require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
 require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
 
-
-// Import classes from the WISECAMPAIGN namespace
+// Import classes
 use WISECAMPAIGN\Classes\Banner;
 use WISECAMPAIGN\Classes\Menu;
 use WISECAMPAIGN\Classes\Register;
@@ -37,60 +76,39 @@ use WISECAMPAIGN\Classes\StockBar;
 /**
  * Main class for the WiseCampaign plugin
  */
-class Wisecampaign
-{
-    // Singleton instance
-    private static $instance;
+class Wisecampaign {
 
-    // Plugin directory path and URL
+    private static $instance;
     private static $plugin_dir_path;
     private static $plugin_dir_url;
 
-    /**
-     * Get the singleton instance of the Wisecampaign class
-     *
-     * @return Wisecampaign
-     */
-    public static function get_instance()
-    {
+    public static function get_instance() {
         if (!isset(self::$instance)) {
             self::$instance = new self();
             self::$instance->init();
-
         }
         return self::$instance;
     }
 
-    /**
-     * Initialize the plugin
-     */
-    private function init()
-    {
+    private function init() {
         $this->include_require_files();
         $this->register_classes();
         $this->register_hooks();
         $this->appsero_init_tracker_wisecampaign();
+
         add_action('plugins_loaded', function () {
-            // Trigger a custom action for other plugins to hook into
             do_action('plugin_a_loaded');
         });
     }
 
-    public function appsero_init_tracker_wisecampaign()
-    {
-
+    public function appsero_init_tracker_wisecampaign() {
         $client = new Appsero\Client('78f49ac6-4577-4712-b9b4-2dc7a67a07f2', 'wiseCampaign', __FILE__);
 
         // Active insights
         $client->insights()->init();
-
     }
 
-    /**
-     * Include required files and set directory paths
-     */
-    private function include_require_files()
-    {
+    private function include_require_files() {
         self::$plugin_dir_path = plugin_dir_path(__FILE__);
         self::$plugin_dir_url = plugin_dir_url(__FILE__);
 
@@ -98,11 +116,7 @@ class Wisecampaign
         define('WISECAMPAIGN_DIR_URL', self::$plugin_dir_url);
     }
 
-    /**
-     * Register necessary classes for the plugin
-     */
-    private function register_classes()
-    {
+    private function register_classes() {
         Menu::getInstance();
         Register::getInstance();
         Banner::getInstance();
@@ -111,24 +125,17 @@ class Wisecampaign
         WISECAMPAIGN\Features\WiseCart::getInstance();
     }
 
-    /**
-     * Register hooks for plugin activation and other actions
-     */
-    private function register_hooks()
-    {
+    private function register_hooks() {
         register_activation_hook(__FILE__, [$this, 'wise_campaign_create_banner_table']);
         register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
         register_uninstall_hook(__FILE__, [$this, 'uninstall']);
     }
 
-    public static function uninstall()
-    {
-
+    public static function uninstall() {
         require_once plugin_dir_path(__FILE__) . 'uninstall.php';
     }
 
-    function wise_campaign_deactivate()
-    {
+    function wise_campaign_deactivate() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'wc_banners';
 
@@ -154,15 +161,12 @@ class Wisecampaign
         }
     }
 
-    /**
-     * Create the banner table in the database on plugin activation
-     */
-    public function wise_campaign_create_banner_table()
-    {
+    public function wise_campaign_create_banner_table() {
         Banner::getInstance()->create_banner_table();
         StockBar::getInstance()->initialize_stockbar_defaults();
     }
 }
 
-// Initialize the plugin
+// Initialize plugin
 Wisecampaign::get_instance();
+

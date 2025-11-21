@@ -81,7 +81,7 @@ class WiseCart
             'wc_button_text' => ['id' => 'wc_button_text', 'title' => __('Button text', 'wisecampaign'), 'desc' => '(Used for "Text Only" and "Icon and Text" styles)', 'type' => 'text', 'default' => 'Cart'],
             'wisecart_replace_pages_title' => ['id' => 'wisecart_replace_pages_title', 'title' => __('Replace Pages', 'wisecampaign'), 'type' => 'title'],
             'wc_replace_cart_page' => ['id' => 'wc_replace_cart_page', 'title' => __('Replace cart page', 'wisecampaign'), 'desc' => __('Open wiseCart when customers try to access the default cart page', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_replace_checkout_page' => ['id' => 'wc_replace_checkout_page', 'title' => __('Replace checkout page', 'wisecampaign'), 'desc' => __('Open wiseCart when customers try to access the default checkout page', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'no'],
+            'wc_replace_checkout_page' => ['id' => 'wc_replace_checkout_page', 'title' => __('Replace checkout page', 'wisecampaign'), 'desc' => __('Open wiseCart when customers try to access the default checkout page', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
             'wisecart_design_title' => ['id' => 'wisecart_design_title', 'title' => __('Design Customization', 'wisecampaign'), 'type' => 'title'],
             'wc_button_background' => ['id' => 'wc_button_background', 'title' => __('Cart Button Background', 'wisecampaign'), 'type' => 'color', 'default' => '#1d1d1d'],
             'wc_icon_color' => ['id' => 'wc_icon_color', 'title' => __('Cart Icon Color', 'wisecampaign'), 'type' => 'color', 'default' => '#ffffff'],
@@ -96,7 +96,7 @@ class WiseCart
             'wc_success_message_enable' => ['id' => 'wc_success_message_enable', 'title' => __('Show Success Message', 'wisecampaign'), 'desc' => __('Display success message in cart after order placement', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
             'wc_success_message_title' => ['id' => 'wc_success_message_title', 'title' => __('Success Title', 'wisecampaign'), 'desc' => __('Title displayed on successful order', 'wisecampaign'), 'type' => 'text', 'default' => 'Order Placed Successfully!'],
             'wc_success_message_text' => ['id' => 'wc_success_message_text', 'title' => __('Success Message', 'wisecampaign'), 'desc' => __('Message displayed on successful order', 'wisecampaign'), 'type' => 'textarea', 'default' => 'Thank you for your order! We\'ve received your payment and will process your order shortly.'],
-            'wc_success_redirect_delay' => ['id' => 'wc_success_redirect_delay', 'title' => __('Redirect Delay (seconds)', 'wisecampaign'), 'desc' => __('Time to wait before redirecting to order confirmation page', 'wisecampaign'), 'type' => 'number', 'default' => '5'],
+            'wc_success_redirect_delay' => ['id' => 'wc_success_redirect_delay', 'title' => __('Redirect Delay (seconds)', 'wisecampaign'), 'desc' => __('Time to wait before redirecting to order confirmation page', 'wisecampaign'), 'type' => 'number', 'default' => '10'],
         ];
     }
 

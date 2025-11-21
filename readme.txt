@@ -4,7 +4,7 @@ Tags: woocommerce discounts, countdown, announcements, banner, sales notificatio
 Requires at least: 5.4
 Tested up to: 6.8.3
 Requires PHP: 7.4
-Stable tag: 1.1.10
+Stable tag: 1.1.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -179,6 +179,10 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+= v1.1.11 =
+- Fixed: WooCommerce Compatibility Declarations issue
+- Update: Security enhancements and latest compatibility.
+
 = v1.1.10 =
 - Fixed: Wisecart related issue
 - Update: Hide advanced setting save button on free version.
