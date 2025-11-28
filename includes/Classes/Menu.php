@@ -14,6 +14,9 @@ class Menu
     public function __construct()
     {
         add_action('admin_menu', [$this, 'wisecampaign_admin_menu']);
+        add_action('admin_menu', [$this, 'add_help_and_upgrade_menus'], 999); // Run after Pro plugin menus
+        add_action('admin_head', [$this, 'add_menu_link_styles']);
+        add_filter('plugin_action_links_wisecampaign/wisecampaign.php', [$this, 'add_plugin_action_links']);
         add_action('rest_api_init', [$this, 'register_settings']);
         add_shortcode('wise_banner', [$this, 'wise_banner_shortcode']);
 
@@ -78,12 +81,179 @@ class Menu
         add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page'], $icon_path, 30);
         add_submenu_page('wisecampaign_menu', 'Dashboard', 'Dashboard', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page']);
         add_submenu_page('wisecampaign_menu', 'wiseBanner', 'wiseBanner', 'manage_options', 'wisecampaign_banner', [$this, 'wisecampaign_banner_page']);
-        add_submenu_page('wisecampaign_menu', 'Stockbar', 'Stockbar', 'manage_options', 'wisecampaign_stockbar', [$this, 'wisecampaign_stockbar_page']);
-        add_submenu_page('wisecampaign_menu', 'Direct Checkout', 'Direct Checkout', 'manage_options', 'wisecampaign_checkout', 'wisecampaign_direct_checkout_settings_page');
+        $this->add_wc_dependent_submenu(
+            'wisecampaign_menu',
+            __('Stockbar', 'wisecampaign'),
+            __('Stockbar', 'wisecampaign'),
+            'wisecampaign_stockbar',
+            [$this, 'wisecampaign_stockbar_page']
+        );
+        $this->add_wc_dependent_submenu(
+            'wisecampaign_menu',
+            __('Direct Checkout', 'wisecampaign'),
+            __('Direct Checkout', 'wisecampaign'),
+            'wisecampaign_checkout',
+            'wisecampaign_direct_checkout_settings_page'
+        );
 
-        add_submenu_page('wisecampaign_menu', 'Sales Notification', 'Sales Notification', 'manage_options', 'wisecampaign_notification', [SalesNotification::getInstance(), 'render_admin_page']);
+        $sales_callback = (defined('WISECAMPAIGN_HAS_WC') && WISECAMPAIGN_HAS_WC)
+            ? [SalesNotification::getInstance(), 'render_admin_page']
+            : '__return_null';
+        $this->add_wc_dependent_submenu(
+            'wisecampaign_menu',
+            __('Sales Notification', 'wisecampaign'),
+            __('Sales Notification', 'wisecampaign'),
+            'wisecampaign_notification',
+            $sales_callback
+        );
 
-        add_submenu_page('wisecampaign_menu', 'wiseCart', 'wiseCart', 'manage_options', 'wisecampaign_cart', [$this, 'wisecampaign_cart_page']);
+        $this->add_wc_dependent_submenu(
+            'wisecampaign_menu',
+            __('wiseCart', 'wisecampaign'),
+            __('wiseCart', 'wisecampaign'),
+            'wisecampaign_cart',
+            [$this, 'wisecampaign_cart_page']
+        );
+    }
+
+    /**
+     * Add Help and Upgrade to Pro menus at the end (after Pro plugin menus)
+     */
+    function add_help_and_upgrade_menus()
+    {
+        // Add Help submenu that redirects to support page
+        add_submenu_page(
+            'wisecampaign_menu',
+            __('Help', 'wisecampaign'),
+            __('Help', 'wisecampaign'),
+            'manage_options',
+            'wisecampaign_help',
+            [$this, 'wisecampaign_help_redirect']
+        );
+
+        // Add Upgrade to Pro submenu linking to pricing page only if Pro is not active
+        if (!$this->is_pro_active()) {
+            add_submenu_page(
+                'wisecampaign_menu',
+                __('Upgrade to Pro', 'wisecampaign'),
+                __('Upgrade to Pro', 'wisecampaign'),
+                'manage_options',
+                'wisecampaign_upgrade',
+                [$this, 'wisecampaign_upgrade_redirect']
+            );
+        }
+    }
+
+    /**
+     * Check if wiseCampaign Pro plugin is active
+     *
+     * @return bool True if Pro plugin is active
+     */
+    private function is_pro_active()
+    {
+        // Check if Pro constant is defined and active
+        if (defined('WISECAMPAIGN_PRO_VERSION_ACTIVE') && WISECAMPAIGN_PRO_VERSION_ACTIVE) {
+            return true;
+        }
+
+        // Check if Pro plugin is installed and active
+        if (!function_exists('is_plugin_active')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+
+        return is_plugin_active('wisecampaign-pro/wisecampaign-pro.php');
+    }
+
+    /**
+     * Add action links (Docs, Help, Upgrade to Pro) on plugins.php page
+     *
+     * @param array $links Existing plugin action links
+     * @return array Modified plugin action links
+     */
+    function add_plugin_action_links($links)
+    {
+        // Add Docs link
+        $docs_link = '<a href="https://wisemattic.com/docs/wisecampaign/getting-started/" target="_blank">' . __('Docs', 'wisecampaign') . '</a>';
+        array_push($links, $docs_link);
+
+        // Add Help link
+        $help_link = '<a href="https://wisemattic.com/support/" target="_blank" style="color: #dc3232; font-weight: bold;">' . __('Help', 'wisecampaign') . '</a>';
+        array_push($links, $help_link);
+
+        // Add Upgrade to Pro link only if Pro is not active
+        if (!$this->is_pro_active()) {
+            $upgrade_link = '<a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" style="color: #0a8d48; font-weight: bold;">' . __('Upgrade to Pro', 'wisecampaign') . '</a>';
+            array_push($links, $upgrade_link);
+        }
+
+        return $links;
+    }
+
+    /**
+     * Add a submenu that requires WooCommerce.
+     *
+     * @param string       $parent_slug
+     * @param string       $page_title
+     * @param string       $menu_title
+     * @param string       $menu_slug
+     * @param callable|string $callback
+     */
+    private function add_wc_dependent_submenu($parent_slug, $page_title, $menu_title, $menu_slug, $callback)
+    {
+        $feature_label = $menu_title;
+
+        if (defined('WISECAMPAIGN_HAS_WC') && WISECAMPAIGN_HAS_WC) {
+            add_submenu_page($parent_slug, $page_title, $menu_title, 'manage_options', $menu_slug, $callback);
+            return;
+        }
+
+        add_submenu_page(
+            $parent_slug,
+            $page_title,
+            $menu_title,
+            'manage_options',
+            $menu_slug,
+            function () use ($feature_label) {
+                $this->render_wc_missing_feature_notice($feature_label);
+            }
+        );
+    }
+
+    /**
+     * Output a helpful message for WooCommerce-dependent screens.
+     *
+     * @param string $feature_label
+     */
+    private function render_wc_missing_feature_notice($feature_label = '')
+    {
+        $feature_label = $feature_label ?: __('This feature', 'wisecampaign');
+        ?>
+        <div class="wrap wisecampaign-requires-woocommerce">
+            <h1><?php esc_html_e('WooCommerce Required', 'wisecampaign'); ?></h1>
+            <div class="notice notice-error">
+                <p>
+                    <?php
+                    printf(
+                        /* translators: %s: Feature label */
+                        esc_html__('%s can only be used when WooCommerce is installed and active.', 'wisecampaign'),
+                        esc_html($feature_label)
+                    );
+                    ?>
+                </p>
+            </div>
+            <p>
+                <a
+                    href="<?php echo esc_url(admin_url('plugin-install.php?s=woocommerce&tab=search&type=term')); ?>"
+                    class="button button-primary"
+                >
+                    <?php esc_html_e('Install WooCommerce', 'wisecampaign'); ?>
+                </a>
+                <a href="<?php echo esc_url(admin_url('plugins.php')); ?>" class="button">
+                    <?php esc_html_e('Activate WooCommerce', 'wisecampaign'); ?>
+                </a>
+            </p>
+        </div>
+        <?php
     }
 
     function wisecampaign_banner_page()
@@ -191,5 +361,104 @@ class Menu
         } else {
             echo "<div id='wisecampaign-page-app'>Pro</div>";
         }
+    }
+
+    /**
+     * Redirect Help menu to support page in a new window
+     */
+    function wisecampaign_help_redirect()
+    {
+        // Immediately redirect to support page in new window
+        ?>
+        <script>
+            (function() {
+                var supportUrl = 'https://wisemattic.com/support/';
+                window.open(supportUrl, '_blank');
+                // Redirect current page back to dashboard
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_menu')); ?>';
+                }
+            })();
+        </script>
+        <div class="wrap">
+            <h1><?php esc_html_e('Opening Support Page...', 'wisecampaign'); ?></h1>
+            <p><?php esc_html_e('The support page should open in a new window. If it doesn\'t,', 'wisecampaign'); ?> <a href="https://wisemattic.com/support/" target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.</p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Redirect Upgrade menu to pricing page
+     */
+    function wisecampaign_upgrade_redirect()
+    {
+        // Immediately open pricing page in new window
+        ?>
+        <script>
+            (function() {
+                var pricingUrl = 'https://wisemattic.com/wisecampaign/pricing';
+                window.open(pricingUrl, '_blank');
+                // Redirect current page back to dashboard
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_menu')); ?>';
+                }
+            })();
+        </script>
+        <div class="wrap">
+            <h1><?php esc_html_e('Opening Upgrade Page...', 'wisecampaign'); ?></h1>
+            <p>
+                <?php esc_html_e('The pricing page should open in a new window. If it doesn\'t,', 'wisecampaign'); ?>
+                <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.
+            </p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Add CSS/JS tweaks for special submenu links.
+     */
+    function add_menu_link_styles()
+    {
+        ?>
+        <style>
+            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"],
+            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]:hover {
+                color: #dc3232 !important;
+                font-weight: bold !important;
+            }
+            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"],
+            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
+                color: #0a8d48 !important;
+                font-weight: bold !important;
+            }
+        </style>
+        <script>
+            (function() {
+                document.addEventListener('DOMContentLoaded', function() {
+                    var helpLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]');
+                    helpLinks.forEach(function(link) {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            window.open('https://wisemattic.com/support/', '_blank');
+                            return false;
+                        });
+                    });
+
+                    var upgradeLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]');
+                    upgradeLinks.forEach(function(link) {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            window.open('https://wisemattic.com/wisecampaign/pricing', '_blank');
+                            return false;
+                        });
+                    });
+                });
+            })();
+        </script>
+        <?php
     }
 }

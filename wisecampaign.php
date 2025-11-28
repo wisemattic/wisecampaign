@@ -6,7 +6,7 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           1.1.11
+ * Version:           1.1.12
  * Requires at least: 5.4
  * Requires PHP:      7.4
  * Tested up to:      6.8.3
@@ -20,20 +20,86 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Domain Path:       /languages
  */
 
- // Prevent direct access
+// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
 
- /**
-  * ------------------------------------------------------------------
-  *  WooCommerce Compatibility Declarations for WC 10.3.5+
-  * ------------------------------------------------------------------
-  *  Declares compatibility with:
-  *  - HPOS (custom_order_tables)
-  *  - Cart & Checkout Blocks
-  *  - Product Block Editor
-  */
+// Ensure plugin helper functions are available.
+if (!function_exists('is_plugin_active')) {
+    include_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
+if (!function_exists('wisecampaign_is_wc_active')) {
+    /**
+     * Determine whether WooCommerce is active.
+     *
+     * @return bool
+     */
+    function wisecampaign_is_wc_active()
+    {
+        if (class_exists('WooCommerce')) {
+            return true;
+        }
+
+        if (function_exists('is_plugin_active') && is_plugin_active('woocommerce/woocommerce.php')) {
+            return true;
+        }
+
+        if (is_multisite()) {
+            $network_plugins = get_site_option('active_sitewide_plugins', []);
+            if (isset($network_plugins['woocommerce/woocommerce.php'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!defined('WISECAMPAIGN_HAS_WC')) {
+    define('WISECAMPAIGN_HAS_WC', wisecampaign_is_wc_active());
+}
+
+if (!function_exists('wisecampaign_render_wc_missing_notice')) {
+    /**
+     * Render an admin notice when WooCommerce is missing.
+     *
+     * @return void
+     */
+    function wisecampaign_render_wc_missing_notice()
+    {
+        if (!current_user_can('activate_plugins') || WISECAMPAIGN_HAS_WC) {
+            return;
+        }
+        ?>
+        <div class="notice notice-error">
+            <p>
+                <?php
+                echo esc_html__(
+                    'wiseCampaign requires WooCommerce to be installed and active. Please install or activate WooCommerce to use WooCommerce-based features.',
+                    'wisecampaign'
+                );
+                ?>
+            </p>
+        </div>
+        <?php
+    }
+}
+
+if (!WISECAMPAIGN_HAS_WC) {
+    add_action('admin_notices', 'wisecampaign_render_wc_missing_notice');
+}
+
+/**
+ * ------------------------------------------------------------------
+ *  WooCommerce Compatibility Declarations for WC 10.3.5+
+ * ------------------------------------------------------------------
+ *  Declares compatibility with:
+ *  - HPOS (custom_order_tables)
+ *  - Cart & Checkout Blocks
+ *  - Product Block Editor
+ */
 add_action('before_woocommerce_init', function () {
     if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
 
@@ -63,9 +129,12 @@ add_action('before_woocommerce_init', function () {
 
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+
+if (WISECAMPAIGN_HAS_WC) {
+    require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+}
 
 // Import classes
 use WISECAMPAIGN\Classes\Banner;
@@ -120,15 +189,36 @@ class Wisecampaign {
         Menu::getInstance();
         Register::getInstance();
         Banner::getInstance();
-        StockBar::getInstance();
-        WISECAMPAIGN\Classes\SalesNotification::getInstance();
-        WISECAMPAIGN\Features\WiseCart::getInstance();
+
+        if (WISECAMPAIGN_HAS_WC) {
+            StockBar::getInstance();
+            WISECAMPAIGN\Classes\SalesNotification::getInstance();
+            WISECAMPAIGN\Features\WiseCart::getInstance();
+        }
     }
 
     private function register_hooks() {
-        register_activation_hook(__FILE__, [$this, 'wise_campaign_create_banner_table']);
+        register_activation_hook(__FILE__, [$this, 'on_activation']);
         register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
         register_uninstall_hook(__FILE__, [$this, 'uninstall']);
+    }
+
+    /**
+     * Runs during plugin activation.
+     *
+     * @return void
+     */
+    public function on_activation() {
+        if (!WISECAMPAIGN_HAS_WC) {
+            deactivate_plugins(plugin_basename(__FILE__));
+            wp_die(
+                esc_html__('wiseCampaign requires WooCommerce to be installed and active before it can be enabled.', 'wisecampaign'),
+                esc_html__('Missing dependency', 'wisecampaign'),
+                ['back_link' => true]
+            );
+        }
+
+        $this->wise_campaign_create_banner_table();
     }
 
     public static function uninstall() {
@@ -163,7 +253,9 @@ class Wisecampaign {
 
     public function wise_campaign_create_banner_table() {
         Banner::getInstance()->create_banner_table();
-        StockBar::getInstance()->initialize_stockbar_defaults();
+        if (WISECAMPAIGN_HAS_WC) {
+            StockBar::getInstance()->initialize_stockbar_defaults();
+        }
     }
 }
 
