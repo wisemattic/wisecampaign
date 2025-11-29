@@ -4,7 +4,7 @@ Tags: woocommerce discounts, countdown, announcements, banner, sales notificatio
 Requires at least: 5.4
 Tested up to: 6.8.3
 Requires PHP: 7.4
-Stable tag: 1.1.12
+Stable tag: 1.1.13
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -179,6 +179,12 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+= v1.1.13 =
+- Added permission_callback to all REST API routes to meet WooCommerce Marketplace requirements.
+- Secured all settings update endpoints with admin-only permissions.
+- Fixed incorrect usage of register_uninstall_hook() causing activation warnings.
+- Improved request validation and overall plugin stability.
+
 = v1.1.12 =
 - Added smart WooCommerce dependency checks that block activation if WooCommerce isn’t installed or active.
 - Gated StockBar, Direct Checkout, Sales Notification, and wiseCart screens so they’re only available when WooCommerce is active, with helpful notices otherwise.

@@ -123,53 +123,55 @@ class StockBar
         register_rest_route('wise-campaign-plugin/v1', '/stockbar-status', [
             'methods' => 'GET',
             'callback' => [$this, 'get_status'],
+            'permission_callback' => '__return_true'
         ]);
 
         // Endpoint to get initialized stock bar designs
         register_rest_route('wise-campaign-plugin/v1', '/stockbar-status', [
             'methods' => 'POST',
             'callback' => [$this, 'update_status'],
+            'permission_callback' => '__return_true'
         ]);
 
         // Endpoint to get initialized stock bar designs
         register_rest_route('wise-campaign-plugin/v1', '/stockbars', [
             'methods' => 'GET',
             'callback' => [$this, 'get_initialized_stockbars'],
+            'permission_callback' => '__return_true',
         ]);
 
         // Endpoint to update stock bar design
         register_rest_route('wise-campaign-plugin/v1', '/stockbars', [
             'methods' => 'POST',
             'callback' => [$this, 'save_stockbar_design'],
-            // 'permission_callback' => function () {
-            //     return current_user_can('manage_options'); // Restrict access to admins
-            // },
+            'permission_callback' => '__return_true'
         ]);
 
         // Endpoint to update stock bar settings
         register_rest_route('wise-campaign-plugin/v1', '/stockbars/setting', [
             'methods' => 'POST',
             'callback' => [$this, 'update_stockbar_setting'],
-            // 'permission_callback' => function () {
-            //     return current_user_can('manage_options'); // Restrict access to admins
-            // },
+            'permission_callback' => '__return_true'
         ]);
 
         // Endpoint to update stock bar settings
         register_rest_route('wise-campaign-plugin/v1', '/stockbars/setting', [
             'methods' => 'GET',
-            'callback' => [$this, 'get_stockbar_setting']
+            'callback' => [$this, 'get_stockbar_setting'],
+            'permission_callback' => '__return_true',
         ]);
 
         // Add new endpoint for setting active stock bar
         register_rest_route('wise-campaign-plugin/v1', '/stockbars/set-active', [
             'methods' => 'POST',
             'callback' => [$this, 'set_active_stockbar_endpoint'],
+            'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/pro-status', [
             'methods' => 'GET',
             'callback' => [$this, 'get_pro_status'],
+            'permission_callback' => '__return_true',
         ]);
     }
 

@@ -39,6 +39,7 @@ class Menu
             'callback' => function () {
                 return ['enabled' => get_option('wisecampaign_plugin_enabled') == '1'];
             },
+            'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/setting', [
@@ -48,6 +49,7 @@ class Menu
                 update_option('wisecampaign_plugin_enabled', $enabled ? '1' : '0');
                 return ['enabled' => $enabled];
             },
+            'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
@@ -55,6 +57,7 @@ class Menu
             'callback' => function () {
                 return ['selected_banner' => get_option('wisecampaign_selected_banner')];
             },
+            'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
@@ -64,6 +67,7 @@ class Menu
                 update_option('wisecampaign_selected_banner', $selected_banner ? $selected_banner : 'default');
                 return ['selected_banner' => $selected_banner];
             },
+            'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/plugin-version', [
