@@ -65,7 +65,7 @@ const BannerTemplate = ({ banner, maxHeadlineWith, overFlowHidden }) => {
             {banner.subHeadline.text}
           </div>
         </div>
-        <div className="flex-shrink-0 w-12 md:w-16 lg:w-auto flex justify-center items-center scale-90 md:scale-100">
+        <div className={`flex-shrink-0 w-12 md:w-16 lg:w-auto flex justify-center items-center scale-90 md:scale-100 ${banner.bogo.show ? 'block' : 'hidden'}`}>
           {banner.bogo?.imgSrc
             ? renderImage(
                 banner.bogo.imgSrc,
@@ -75,7 +75,7 @@ const BannerTemplate = ({ banner, maxHeadlineWith, overFlowHidden }) => {
               )
             : renderImage(logo, "Bogo Image", "auto", "auto")}
         </div>
-        <div className="flex flex-col justify-center scale-85 md:scale-100">
+        <div className={`flex flex-col justify-center scale-85 md:scale-100 ${banner.countdown.show ? 'block' : 'hidden'}`}>
           {banner.countdown.component === "DefaultCountdown" ? (
             <DefaultCountdown
               text={banner.countdown.text}
@@ -118,13 +118,14 @@ const BannerTemplate = ({ banner, maxHeadlineWith, overFlowHidden }) => {
             />
           )}
         </div>
-        <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:justify-end scale-85 md:scale-100">
+        <div className={`flex-shrink-0 w-full md:w-auto flex justify-center md:justify-end scale-85 md:scale-100 ${banner.button.show ? 'block' : 'hidden'}`}>
           <Button 
             label={banner.button.text} 
             buttonStyle={{
               ...banner.button,
-              fontSize: `clamp(${banner.button.fontSize * 0.5}px, 2.5vw, ${banner.button.fontSize}px)`,
-              padding: window.innerWidth < 768 ? '0.5em 1em' : banner.button.padding
+              fontSize: `${banner.button.fontSize}`,
+              padding: window.innerWidth < 768 ? '0.5em 1em' : banner.button.padding,
+              display: banner.button.show ? 'block' : 'none' 
             }} 
           />
         </div>

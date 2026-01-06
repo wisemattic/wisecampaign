@@ -61,6 +61,7 @@ const initialValues: FormValues = {
             fontFamily: 'Abhaya Libre ExtraBold',
             fontWeight: 'bold',
             fontStyle: 'normal',
+            show: true
         },
     },
     isActive: false

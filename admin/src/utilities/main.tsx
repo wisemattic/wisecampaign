@@ -41,6 +41,7 @@ export const mapDbColumnsToFormValues = (dbValues: DbColumns): FormValues => {
                 fontFamily: dbValues.headline_font_family,
                 fontWeight: dbValues.headline_font_weight,
                 fontStyle: dbValues.headline_font_style,
+                show: dbValues.show_headline_section == "1" ? true : false
             },
             subHeadline: {
                 text: dbValues.sub_headline_text,
@@ -50,12 +51,14 @@ export const mapDbColumnsToFormValues = (dbValues: DbColumns): FormValues => {
                 fontFamily: dbValues.sub_headline_font_family,
                 fontWeight: dbValues.sub_headline_font_weight,
                 fontStyle: dbValues.sub_headline_font_style,
+                show: dbValues.show_sub_headline_section == "1" ? true : false
             },
             bogo: {
                 imgSrc: dbValues.bogo_img_src,
                 alt: dbValues.bogo_alt,
                 width: dbValues.bogo_width,
                 height: dbValues.bogo_height,
+                show: dbValues.show_bogo_section == "1" ? true : false
             },
             countdown: {
                 component: dbValues.countdown_component,
@@ -66,6 +69,7 @@ export const mapDbColumnsToFormValues = (dbValues: DbColumns): FormValues => {
                 fontFamily: dbValues.countdown_font_family,
                 fontWeight: dbValues.countdown_font_weight,
                 fontStyle: dbValues.countdown_font_style,
+                show: dbValues.show_countdown_section == "1" ? true : false
             },
             button: {
                 width: dbValues.button_width,
@@ -84,6 +88,7 @@ export const mapDbColumnsToFormValues = (dbValues: DbColumns): FormValues => {
                 fontFamily: dbValues.button_font_family,
                 fontWeight: dbValues.button_font_weight,
                 fontStyle: dbValues.button_font_style,
+                show: dbValues.show_button_section == "1" ? true : false
             },
         },
     isActive: dbValues.is_selected
@@ -93,6 +98,7 @@ export const mapDbColumnsToFormValues = (dbValues: DbColumns): FormValues => {
 export const mapFormValuesToDbColumns = (formValues: FormValues): DbColumns => {
     return {
         id: formValues.id,
+        is_selected: formValues.isActive,
         width: formValues.banner.general.width,
         height: formValues.banner.general.height,
         bg_image: formValues.banner.general.bgImage,
@@ -104,6 +110,7 @@ export const mapFormValuesToDbColumns = (formValues: FormValues): DbColumns => {
         headline_font_family: formValues.banner.headline.fontFamily,
         headline_font_weight: formValues.banner.headline.fontWeight,
         headline_font_style: formValues.banner.headline.fontStyle,
+        show_headline_section: formValues.banner.headline.show,
         sub_headline_text: formValues.banner.subHeadline.text,
         sub_headline_text_color: formValues.banner.subHeadline.color,
         sub_headline_text_align: formValues.banner.subHeadline.align,
@@ -111,10 +118,12 @@ export const mapFormValuesToDbColumns = (formValues: FormValues): DbColumns => {
         sub_headline_font_family: formValues.banner.subHeadline.fontFamily,
         sub_headline_font_weight: formValues.banner.subHeadline.fontWeight,
         sub_headline_font_style: formValues.banner.subHeadline.fontStyle,
+        show_sub_headline_section: formValues.banner.subHeadline.show,
         bogo_img_src: formValues.banner.bogo.imgSrc,
         bogo_alt: formValues.banner.bogo.alt,
         bogo_width: formValues.banner.bogo.width,
         bogo_height: formValues.banner.bogo.height,
+        show_bogo_section: formValues.banner.bogo.show,
         countdown_component: formValues.banner.countdown.component,
         countdown_text: formValues.banner.countdown.text,
         countdown_timer: formValues.banner.countdown.timer,
@@ -123,6 +132,7 @@ export const mapFormValuesToDbColumns = (formValues: FormValues): DbColumns => {
         countdown_font_family: formValues.banner.countdown.fontFamily,
         countdown_font_weight: formValues.banner.countdown.fontWeight,
         countdown_font_style: formValues.banner.countdown.fontStyle,
+        show_countdown_section: formValues.banner.countdown.show,
         button_width: formValues.banner.button.width,
         button_height: formValues.banner.button.height,
         button_text: formValues.banner.button.text,
@@ -139,6 +149,7 @@ export const mapFormValuesToDbColumns = (formValues: FormValues): DbColumns => {
         button_font_family: formValues.banner.button.fontFamily,
         button_font_weight: formValues.banner.button.fontWeight,
         button_font_style: formValues.banner.button.fontStyle,
+        show_button_section: formValues.banner.button.show
     } as DbColumns
 };
 

@@ -21,7 +21,7 @@ export const BogoSection: React.FC<Props> = ({formValues, handleChange}) => {
         handleChange('bogo', 'imgSrc')(event);
     };
 
-    return (<section className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-5 mr-5">
+    return (<section className={`grid grid-cols-1 md:grid-cols-2 gap-4 ml-5 mr-5 ${!formValues.banner.bogo?.show ? 'opacity-50 pointer-events-none' : ''}`}>
 
                 <ImageUpload label="Bogo Image (110x70px recommended)" onImageUpload={handleImageUpload} />
 

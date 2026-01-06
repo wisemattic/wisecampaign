@@ -13,12 +13,19 @@ const Button: React.FC<ButtonProps> = ({ label, buttonStyle = {},  className = '
 
     const [isHovered, setIsHovered] = useState(false);
 
+    
+    const formatFontSize = (size?: string | number) => {
+        if (!size) return undefined;
+        return isNaN(Number(size)) ? size : `${size}px`;
+    };
+
     const style = {
-        width: buttonStyle.width,
-        height: buttonStyle.height,
+        minWidth: buttonStyle.width,
+        minHeight: buttonStyle.height,
+        padding: buttonStyle.padding || '0.75rem 1.5rem',
         backgroundColor: isHovered ? buttonStyle.hoverBgColor : buttonStyle.bgColor,
         color: isHovered ? buttonStyle.hoverTextColor : buttonStyle.color,
-        fontSize: buttonStyle.fontSize+'px',
+        fontSize: formatFontSize(buttonStyle.fontSize),
         fontFamily: buttonStyle.fontFamily,
         fontWeight: buttonStyle.fontWeight,
         fontStyle: buttonStyle.fontStyle,

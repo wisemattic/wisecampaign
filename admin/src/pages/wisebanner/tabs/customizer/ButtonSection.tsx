@@ -18,7 +18,7 @@ export const ButtonSection: React.FC<Props> = ({
 }) => {
 
   return (
-    <section className="grid grid-cols-1 gap-4 ml-5 mr-5">
+    <section className={`grid grid-cols-1 gap-4 ml-5 mr-5 ${!formValues.banner.button?.show ? 'opacity-50 pointer-events-none' : ''}`}>
       <ButtonStyleSelector/>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InputField

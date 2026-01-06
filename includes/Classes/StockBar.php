@@ -387,6 +387,8 @@ class StockBar
                 $stock_quantity
             );
 
+            echo '<style>.stock { display: none !important; }</style>';
+
             // Output React container
             echo '<div id="wise-stockbar-container">Hi this is from php</div>';
         }

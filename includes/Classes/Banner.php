@@ -140,7 +140,9 @@ class Banner
             'countdown_font_weight', 'countdown_font_style', 'button_width', 'button_height', 'button_text',
             'button_text_color', 'button_padding', 'button_bg_color', 'button_border_color', 'button_border_radius',
             'button_hover_bg_color', 'button_hover_border_color', 'button_hover_text_color', 'button_link',
-            'button_font_size', 'button_font_family', 'button_font_weight', 'button_font_style', 'is_selected'
+            'button_font_size', 'button_font_family', 'button_font_weight', 'button_font_style', 'is_selected',
+            'show_button_section', 'show_headline_section', 'show_sub_headline_section', 'show_bogo_section',
+            'show_countdown_section'
         ];
         $sanitized_data = [];
 
@@ -148,7 +150,9 @@ class Banner
         foreach ($fields as $field) {
             $value = $request->get_param($field);
 
-            if ($field === 'is_selected') {
+            if ($field === 'is_selected' || $field === 'is_active' ||
+                $field === 'show_headline_section' || $field === 'show_sub_headline_section' || $field === 'show_bogo_section' ||
+                $field === 'show_countdown_section' || $field === 'show_button_section') {
                 if ($value) {
                     $sanitized_data[$field] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                 }
@@ -283,7 +287,7 @@ class Banner
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
 
-        $sql = "CREATE TABLE IF NOT EXISTS $this->table_name (
+        $sql = "CREATE TABLE $this->table_name (
             id BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             cat_id BIGINT(20) UNSIGNED NULL,
             width VARCHAR(255) NULL,
@@ -335,20 +339,31 @@ class Banner
             button_font_weight VARCHAR(100) NULL,
             button_font_style VARCHAR(100) NULL,
             is_active TINYINT(1) DEFAULT 0,
+            show_headline_section TINYINT(1) DEFAULT 1,
+            show_sub_headline_section TINYINT(1) DEFAULT 1,
+            show_bogo_section TINYINT(1) DEFAULT 1,
+            show_countdown_section TINYINT(1) DEFAULT 1,
+            show_button_section TINYINT(1) DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) $charset_collate;";
 
         require_once(ABSPATH.'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+        error_log('dbDelta executed for banner table creation or update.');
 
         // Check if the table contains any rows
         $row_count = $wpdb->get_var("SELECT COUNT(*) FROM $this->table_name");
 
         // If the table is not empty, truncate it
-        if ($row_count > 0) {
-            $wpdb->query("TRUNCATE TABLE $this->table_name");
+        if ($row_count == 0) {
+            // $wpdb->query("TRUNCATE TABLE $this->table_name");
+            $this->insert_default_banners();
         }
+    }
+
+    public function insert_default_banners() {
+        global $wpdb;
 
         $json_file = site_url('wp-content/plugins/wisecampaign/includes/Database/banners.json');
 

@@ -6,12 +6,11 @@ import CountdownStyleSelector from '../../../../components/CountdownStyleSelecto
 interface Props {
     formValues: FormValues;
     handleChange: (section: keyof FormValues['banner'], key: string) => (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onCheckedBannerChange: (banner: any) => void;
 }
 
 export const CountdownSection: React.FC<Props> = ({formValues, handleChange}) => {
     return (
-            <section className="grid grid-cols-1 gap-4 ml-4 mr-4">
+            <section className={`grid grid-cols-1 gap-4 ml-4 mr-4 ${!formValues.banner.countdown?.show ? 'opacity-50 pointer-events-none' : ''}`}>
                 <CountdownStyleSelector/>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <InputField

@@ -2,9 +2,9 @@
 Contributors: wisemattic, mehadi13
 Tags: woocommerce discounts, countdown, announcements, banner, sales notifications
 Requires at least: 5.4
-Tested up to: 6.8.3
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.13
+Stable tag: 1.1.14
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,34 +23,34 @@ Enhance your WooCommerce store with **wiseCampaign**, the ultimate plugin design
 
 With **wiseCampaign**, you can supercharge your WooCommerce store with a complete set of conversion-focused marketing tools:
 
-- 🚀 **Create High-Converting Banners (wiseBanner)**  
+-  **Create High-Converting Banners (wiseBanner)**  
   Design eye-catching top-bar banners with countdown timers, animated text, and call-to-action buttons. Perfect for flash sales, seasonal promotions, or special announcements.
 
-- ⏳ **Boost Urgency with StockBar**  
+-  **Boost Urgency with StockBar**  
   Display remaining product stock in a dynamic progress bar format. This psychological trigger motivates faster purchases and reduces hesitation.
 
-- 💳 **Enable Direct Checkout**  
+-  **Enable Direct Checkout**  
   Shorten the purchase journey by sending shoppers directly to checkout. Fewer steps mean reduced cart abandonment and more completed orders.
 
-- 📣 **Show Live Sales Notifications**  
+-  **Show Live Sales Notifications**  
   Build social proof and trust with real-time sales popups. Highlight recent purchases to inspire confidence and encourage new buyers to take action.
 
-- 🛒 **Enhance Shopping with wiseCart**  
+-  **Enhance Shopping with wiseCart**  
   Add a modern, customizable mini-cart that keeps customers engaged. Let shoppers review or checkout instantly without leaving the page.
 
 - 🎯 **WooCommerce Discount Manager (Pro Feature)**  
   Go beyond simple coupons with advanced discount rules. Create powerful, automated offers that drive larger orders and reward loyal customers.  
-  Supported discount types:  ✅ Simple Discounts  💰 Spend-Based Discounts  🎁 Free Product Discounts  📦 Bundle Pricing Discounts  🔖 Buy X, Get Y Discounts  📊 Bulk Pricing Discounts
+  Supported discount types:  ✅ Simple Discounts  💰 Spend-Based Discounts  🎁 Free Product Discounts  📦 Buy X for Y Discounts  🔖 Buy X, Get Y Discounts  📊 Bulk Pricing Discounts  💰 Next Order Coupon Discount (Upcoming)
 
 ---
 
 = Why Choose wiseCampaign? =  
 
-- 🎯 **Conversion-Focused Tools** – Every module is purpose-built to turn visitors into customers.  
-- ✨ **Fully Customizable** – Effortlessly match your campaigns with your store’s branding using flexible styling options.  
-- 🔧 **Seamless WooCommerce Integration** – Works flawlessly with your existing store setup and popular WordPress themes.  
-- ⚡ **Performance Optimized** – Lightweight, secure, and built to maintain your site speed.  
-- 📊 **Targeted Display Rules** – Control when, where, and to whom your campaigns appear for maximum relevance.  
+- **Conversion-Focused Tools** – Every module is purpose-built to turn visitors into customers.  
+- **Fully Customizable** – Effortlessly match your campaigns with your store’s branding using flexible styling options.  
+- **Seamless WooCommerce Integration** – Works flawlessly with your existing store setup and popular WordPress themes.  
+- **Performance Optimized** – Lightweight, secure, and built to maintain your site speed.  
+- **Targeted Display Rules** – Control when, where, and to whom your campaigns appear for maximum relevance.  
 
 Whether you’re launching limited-time promotions, seasonal campaigns, or aiming to create urgency-driven shopping experiences, **wiseCampaign gives you the flexibility to boost sales, engage customers, and maximize your WooCommerce store’s potential.**
 
@@ -103,12 +103,14 @@ From WordPress.org
 
 = WooCommerce Discount Manager (Pro Feature) =  
 Take your promotions to the next level with advanced discount rules that go beyond simple coupons. With the **WooCommerce Discount Manager** module, you can create flexible, automated discounts that encourage bigger purchases and reward your customers.
+[youtube https://www.youtube.com/watch?v=dEB2NjmsAn0]
 
 ![wiseCampaign Pro Discount Demo](https://wisemattic.com/wp-content/uploads/2025/09/woo-discount-manager-wiseCampaign.gif)
 
 **Here’s what you can do:**  
 ✅ **Simple Discounts**  💰 **Spend-Based Discounts**  🎁 **Free Product Discounts**  
 📦 **Bundle Pricing Discounts**  🔖 **Buy X, Get Y Discounts**  📊 **Bulk Pricing Discounts**  
+🎁 **Next Order Coupon**
 
 👉 [Read More](https://wisemattic.com/wisecampaign) | [Buy Pro Now](https://wisemattic.com/wisecampaign/pricing)
 
@@ -179,6 +181,12 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+= v1.1.14 =
+- Added button to disable countdown, bogo and cta button.
+- Fix font size after selection cta button.
+- Improved stock visibilty by not showing default stock while stock bar enable.
+- Improved overall plugin security and compatibility.
+
 = v1.1.13 =
 - Added permission_callback to all REST API routes to meet WooCommerce Marketplace requirements.
 - Secured all settings update endpoints with admin-only permissions.

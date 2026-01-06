@@ -6,6 +6,7 @@ interface TextStyle {
     fontFamily: string;
     fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | string;
     fontStyle: string;
+    show: boolean;
 }
 
 interface Bogo {
@@ -13,6 +14,7 @@ interface Bogo {
     alt: string;
     width: string;
     height: string;
+    show: boolean;
 }
 
 interface Countdown {
@@ -24,6 +26,7 @@ interface Countdown {
     fontFamily: string;
     fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | string;
     fontStyle: string;
+    show: boolean;
 }
 
 interface Button {
@@ -43,6 +46,7 @@ interface Button {
     fontFamily: string;
     fontWeight: 'normal' | 'bold' | 'lighter' | 'bolder' | string;
     fontStyle: string;
+    show: boolean;
 }
 
 interface General {
@@ -117,4 +121,9 @@ interface DbColumns {
     button_font_weight: string;
     button_font_style: string;
     is_selected: boolean;
+    show_button_section: boolean;
+    show_bogo_section: boolean;
+    show_countdown_section: boolean;
+    show_headline_section: boolean;
+    show_sub_headline_section: boolean;
 }

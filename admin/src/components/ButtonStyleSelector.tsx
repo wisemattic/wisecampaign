@@ -4,44 +4,39 @@ import { useBannerContext } from "../context/BannerContext";
 import { Button } from "@material-tailwind/react";
 
 const ButtonStyleSelector: React.FC = () => {
-  const [selectedButton, setSelectedButton] = useState(null);
+  const [selectedButton, setSelectedButton] = useState<number | null>(null);
   const { activeBanner, updateActiveBanner } = useBannerContext();
   const { button } = activeBanner.banner;
 
-  const handleClick = (index: number, event: any) => {
-    const buttonStyle = event.target.style;
-    const styleData = {
-      width: activeBanner.banner.button.width,
-      height: activeBanner.banner.button.height,
-      text: activeBanner.banner.button.text,
-      padding: buttonStyle.padding,
-      color: rgbToHex(buttonStyle.color),
-      bgColor: rgbToHex(buttonStyle.backgroundColor),
-      borderColor: activeBanner.banner.button.borderColor,
-      borderRadius: buttonStyle.borderRadius,
-      hoverBgColor: activeBanner.banner.button.hoverBgColor,
-      hoverBorderColor: activeBanner.banner.button.hoverBorderColor,
-      hoverTextColor: activeBanner.banner.button.hoverTextColor,
-      link: activeBanner.banner.button.link,
-      fontSize: activeBanner.banner.button.fontSize,
-      fontFamily: activeBanner.banner.button.fontFamily,
-      fontWeight: activeBanner.banner.button.fontWeight,
-      fontStyle: activeBanner.banner.button.fontStyle,
-    };
-    const updatedValues = {
-      ...activeBanner,
-      banner: {
-        ...activeBanner.banner,
-        button: {
-          ...styleData,
-        },
-      },
+  const handleClick = (index: number, selectedStyle: any) => {
+    const formatSize = (val: any) => {
+      if (!val) return "14px";
+      return isNaN(Number(val)) ? val : `${val}px`;
     };
 
-    updateActiveBanner(updatedValues);
+    const newFontSize = formatSize(selectedStyle.fontSize);
+
+    const styleData = {
+      ...activeBanner.banner.button,
+      padding: selectedStyle.padding || activeBanner.banner.button.padding,
+      color: selectedStyle.color || activeBanner.banner.button.color,
+      bgColor: selectedStyle.backgroundColor || activeBanner.banner.button.bgColor,
+      borderRadius: selectedStyle.borderRadius || activeBanner.banner.button.borderRadius,
+      fontSize: newFontSize, 
+    };
+
+    // 1. Update Context (for the Live Preview)
+    updateActiveBanner({
+      ...activeBanner,
+      banner: { ...activeBanner.banner, button: styleData },
+    });
+
+    // 2. CRITICAL: If you have access to the parent's handleChange 
+    // or a way to update the 'formValues' object, you must call it here.
+    // Otherwise, TypographySetting will still show the old value in the range slider.
+
     setSelectedButton(index);
-    // onCheckedBannerChange(updatedValues);
-  };
+};
 
   const buttons = [
     {
@@ -50,7 +45,7 @@ const ButtonStyleSelector: React.FC = () => {
         padding: "0.5rem 1rem",
         borderRadius: "0rem",
         backgroundColor: "#3B82F6",
-        color: "#FFFFFF",
+        fontSize: "14px"
       },
     },
     {
@@ -60,6 +55,7 @@ const ButtonStyleSelector: React.FC = () => {
         borderRadius: "0.375rem",
         backgroundColor: "#FF5733",
         color: "#FFFFFF",
+        fontSize: "14px"
       },
     },
     {
@@ -69,6 +65,7 @@ const ButtonStyleSelector: React.FC = () => {
         borderRadius: "1rem",
         backgroundColor: "#000000",
         color: "#FFFFFF",
+        fontSize: "14px"
       },
     },
     {
@@ -79,6 +76,7 @@ const ButtonStyleSelector: React.FC = () => {
         backgroundColor: "#10B981",
         color: "#FFFFFF",
         border: "none",
+        fontSize: "14px"
       },
     },
     {
@@ -89,6 +87,7 @@ const ButtonStyleSelector: React.FC = () => {
         backgroundColor: "transparent",
         color: "#3B82F6",
         border: "2px solid #3B82F6",
+        fontSize: "14px"
       },
     },
     {
@@ -99,6 +98,7 @@ const ButtonStyleSelector: React.FC = () => {
         backgroundColor: "#7C3AED",
         color: "#FFFFFF",
         boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+        fontSize: "14px"
       },
     },
     {
@@ -109,6 +109,7 @@ const ButtonStyleSelector: React.FC = () => {
         backgroundColor: "#DC2626",
         color: "#FFFFFF",
         border: "2px solid #991B1B",
+        fontSize: "14px"
       },
     },
     {
@@ -118,6 +119,7 @@ const ButtonStyleSelector: React.FC = () => {
         borderRadius: "0.75rem",
         backgroundColor: "#F59E0B",
         color: "#000000",
+        fontSize: "14px"
       },
     },
     // {
@@ -136,7 +138,8 @@ const ButtonStyleSelector: React.FC = () => {
       {buttons.map(({ id, style }, index) => (
         <div key={id}>
           <button
-            onClick={(event) => handleClick(index, event)}
+            // Change 2: Pass the 'style' object to the handler
+            onClick={() => handleClick(index, style)}
             style={style}
             className={`w-full transition-all duration-300 ${
               selectedButton === index

@@ -192,7 +192,7 @@ const getBackgroundStyle = () => {
               {selectedBanner.subHeadline.text}
             </div>
           </div>
-          <div className="md:basis-1/12 flex justify-center items-center">
+          <div className={`md:basis-1/12 flex justify-center items-center ${selectedBanner.bogo.show ? 'block' : 'hidden'}`}>
             {selectedBanner.bogo?.imgSrc
               ? renderImage(
                   selectedBanner.bogo.imgSrc,
@@ -202,7 +202,7 @@ const getBackgroundStyle = () => {
                 )
               : renderImage(logo, "Bogo Image", "auto", "auto")}
           </div>
-          <div className="grow flex flex-col justify-center">
+          <div className={`grow flex flex-col justify-center ${selectedBanner.countdown.show ? 'block' : 'hidden'}`}>
             {selectedBanner.countdown.component === "DefaultCountdown" ? (
               <DefaultCountdown
                 text={selectedBanner.countdown.text}
@@ -245,7 +245,7 @@ const getBackgroundStyle = () => {
               />
             )}
           </div>
-          <div className="flex justify-center items-center md:justify-end">
+          <div className={`flex justify-center items-center md:justify-end ${selectedBanner.button.show ? 'block' : 'hidden'}`}>
             <a
               href={selectedBanner.button?.link || "#"}
               target={

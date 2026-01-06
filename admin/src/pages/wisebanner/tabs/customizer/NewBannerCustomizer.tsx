@@ -9,6 +9,9 @@ import { CountdownSection } from "./CountdownSection";
 import BannerSettingsReDesign from "../setting/BannerSettingsReDesign";
 import UpdateBannerButton from "../../../../components/UpdateBannerButton";
 import UpdateBannerSettingButton from "../../../../components/UpdateBannerSettingButton";
+import ToggleSwitch from "../../../../components/Common/ToggleSwitch";
+import ReactSwitch from "react-switch";
+import { b } from "vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf";
 
 export default function NewBannerCustomizer() {
   const [activeSection, setActiveSection] = useState("background");
@@ -46,6 +49,41 @@ export default function NewBannerCustomizer() {
         updateActiveBanner(updatedValues);
       };
 
+// Remove the (e: React.ChangeEvent<HTMLInputElement>) => {} wrapping
+// And change the third argument (value) to a newCheckedState parameter
+const handleShowToggle =
+  (section: keyof FormValues["banner"], key: string) =>
+  (newCheckedState: boolean) => { // <--- newCheckedState is passed by ReactSwitch
+    // Preserve the id while updating form values
+    const updatedValues = {
+      ...activeBanner,
+      banner: {
+        ...activeBanner.banner,
+        [section]: {
+          ...activeBanner.banner[section],
+          // Use the newCheckedState directly
+          [key]: newCheckedState,
+        },
+        id: activeBanner.banner?.id || null, // Ensure the ID is preserved
+      },
+    };
+
+    console.log("TTTTTT Toggle::", updatedValues);
+
+    updateActiveBanner(updatedValues);
+  };
+
+  // Helper function to safely get the 'show' status
+const getSectionShowStatus = (sectionKey: string) => {
+    // Use the sectionKey from activeSection to access the corresponding property
+    const sectionData = activeBanner?.banner?.[sectionKey];
+    
+    // Safely return the 'show' boolean, or false if data is missing
+    return sectionData && typeof sectionData.show === 'boolean'
+        ? sectionData.show
+        : false;
+};
+
   const sectionTitles = {
     background: "Background Customization",
     text: "Text & Typography Settings",
@@ -79,7 +117,7 @@ export default function NewBannerCustomizer() {
       </div>
     </div>,
     button: <ButtonSection formValues={activeBanner} handleChange={handleChange} />,
-    countdown: <CountdownSection formValues={activeBanner} handleChange={handleChange} />,
+    countdown: <CountdownSection formValues={activeBanner} handleChange={handleChange}/>,
     advanced: <BannerSettingsReDesign />
   };
 
@@ -122,6 +160,8 @@ export default function NewBannerCustomizer() {
     },
   ];
 
+  const toggleableSections = ["bogo", "button", "countdown"];
+
   return (
     <div className="mt-6">
       {/* Layout */}
@@ -156,10 +196,25 @@ export default function NewBannerCustomizer() {
             <h2 className="text-lg font-semibold">
               {sectionTitles[activeSection] || "Customization Options"}
             </h2>
-            <p className="text-sm text-gray-500">
+            <span className="text-sm text-gray-500">
               {sectionDescriptions[activeSection] ||
                 "Select a section from the left to customize its properties."}
-            </p>
+            </span>
+            <div className="flex items-baseline gap-2 mt-2">
+              {toggleableSections.includes(activeSection) && activeBanner?.banner && (
+              <>
+              <span className="text-sm text-gray-500">{getSectionShowStatus(activeSection) ? "Hide" : "Show"} {sectionTitles[activeSection]}</span>
+              <ReactSwitch
+                checked={getSectionShowStatus(activeSection)}
+                onChange={handleShowToggle(activeSection as keyof FormValues["banner"], "show")}
+                onColor="#2196F2"
+                offColor="#757575"
+                height={18}
+                width={36}
+              />
+              </>
+              )}
+            </div>
           </div>
 
           <div className="border rounded-sm p-4">
@@ -169,13 +224,8 @@ export default function NewBannerCustomizer() {
       </div>
 
       <div className="bg-red-400 mt-1 mb-1">
-        {activeSection === "advanced" ? (
-          <></>
-        ) : (
-          <UpdateBannerButton />
-        )}
+        {activeSection === "advanced" ? <></> : <UpdateBannerButton />}
       </div>
-
     </div>
   );
 }
