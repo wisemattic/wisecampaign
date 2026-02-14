@@ -1,0 +1,23 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+    content: [
+        "./index.html",
+        "./src/**/*.{js,ts,jsx,tsx}",
+    ],
+    theme: {
+        extend: {
+            colors: {
+                'wise-purple': '#8B5CF6',
+                'wise-dark': '#1e1b4b',
+                'wise-bg': '#F8FAFC',
+            },
+            spacing: {
+                '8': '8px',
+                '16': '16px',
+                '24': '24px',
+                '32': '32px',
+            }
+        },
+    },
+    plugins: [],
+}

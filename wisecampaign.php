@@ -119,13 +119,15 @@ use WISECAMPAIGN\Classes\StockBar;
 /**
  * Main class for the WiseCampaign plugin
  */
-class Wisecampaign {
+class Wisecampaign
+{
 
     private static $instance;
     private static $plugin_dir_path;
     private static $plugin_dir_url;
 
-    public static function get_instance() {
+    public static function get_instance()
+    {
         if (!isset(self::$instance)) {
             self::$instance = new self();
             self::$instance->init();
@@ -133,7 +135,8 @@ class Wisecampaign {
         return self::$instance;
     }
 
-    private function init() {
+    private function init()
+    {
         $this->include_require_files();
         $this->register_classes();
         $this->register_hooks();
@@ -144,14 +147,16 @@ class Wisecampaign {
         });
     }
 
-    public function appsero_init_tracker_wisecampaign() {
+    public function appsero_init_tracker_wisecampaign()
+    {
         $client = new Appsero\Client('78f49ac6-4577-4712-b9b4-2dc7a67a07f2', 'wiseCampaign', __FILE__);
 
         // Active insights
         $client->insights()->init();
     }
 
-    private function include_require_files() {
+    private function include_require_files()
+    {
         self::$plugin_dir_path = plugin_dir_path(__FILE__);
         self::$plugin_dir_url = plugin_dir_url(__FILE__);
 
@@ -159,10 +164,18 @@ class Wisecampaign {
         define('WISECAMPAIGN_DIR_URL', self::$plugin_dir_url);
     }
 
-    private function register_classes() {
+    private function register_classes()
+    {
         Menu::getInstance();
         Register::getInstance();
         Banner::getInstance();
+
+        // Initialize Modular System
+        $module_manager = \WISECAMPAIGN\Classes\Modular\ModuleManager::get_instance();
+        $module_manager->register_module('wise-stock-bar', [
+            'name' => 'wiseStockBar',
+            'menu_slug' => 'wise_stock_bar'
+        ]);
 
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
@@ -171,7 +184,8 @@ class Wisecampaign {
         }
     }
 
-    private function register_hooks() {
+    private function register_hooks()
+    {
         $this->on_activation();
         // register_activation_hook(__FILE__, [$this, 'on_activation']);
         register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
@@ -183,7 +197,8 @@ class Wisecampaign {
      *
      * @return void
      */
-    public function on_activation() {
+    public function on_activation()
+    {
         // if (!WISECAMPAIGN_HAS_WC) {
         //     deactivate_plugins(plugin_basename(__FILE__));
         //     wp_die(
@@ -196,11 +211,13 @@ class Wisecampaign {
         $this->wise_campaign_create_banner_table();
     }
 
-    public static function uninstall() {
+    public static function uninstall()
+    {
         require_once plugin_dir_path(__FILE__) . 'uninstall.php';
     }
 
-    function wise_campaign_deactivate() {
+    function wise_campaign_deactivate()
+    {
         global $wpdb;
         $table_name = $wpdb->prefix . 'wc_banners';
 
@@ -226,10 +243,11 @@ class Wisecampaign {
         }
     }
 
-    public function wise_campaign_create_banner_table() {
+    public function wise_campaign_create_banner_table()
+    {
         Banner::getInstance()->create_banner_table();
         // if (WISECAMPAIGN_HAS_WC) {
-            StockBar::getInstance()->initialize_stockbar_defaults();
+        StockBar::getInstance()->initialize_stockbar_defaults();
         // }
     }
 }

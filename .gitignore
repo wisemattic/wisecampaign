@@ -11,3 +11,5 @@ composer.lock
 admin/package-lock.json
 stock-bar-dist
 vite-stock-bar/node_modules
+modules/**/node_modules
+modules/**/dist

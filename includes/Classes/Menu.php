@@ -118,11 +118,35 @@ class Menu
             'wisecampaign_cart',
             [$this, 'wisecampaign_cart_page']
         );
+        // wiseStockBar (Modular)
+        add_submenu_page(
+            'wisecampaign_menu',
+            'wiseStockBar',
+            'wiseStockBar',
+            'manage_options',
+            'wise_stock_bar',
+            [$this, 'wise_stock_bar_page']
+        );
     }
 
     /**
-     * Add Help and Upgrade to Pro menus at the end (after Pro plugin menus)
+     * Render the wiseStockBar modular React app
      */
+    public function wise_stock_bar_page()
+    {
+        ?>
+        <style>
+            #wpbody-content { padding-bottom: 0 !important; }
+            #wpcontent { padding-left: 0 !important; }
+            .wrap { margin: 0 !important; max-width: none !important; padding: 0 !important; }
+            #wise-stock-bar-app { width: 100%; margin: 0; }
+            #wpfooter { display: none; }
+            /* Optional: Hide admin notices for a cleaner builder experience */
+            .notice, .updated, .error { display: none !important; }
+        </style>
+        <div id="wise-stock-bar-app"></div>
+        <?php
+    }
     function add_help_and_upgrade_menus()
     {
         // Add Help submenu that redirects to support page
@@ -246,10 +270,8 @@ class Menu
                 </p>
             </div>
             <p>
-                <a
-                    href="<?php echo esc_url(admin_url('plugin-install.php?s=woocommerce&tab=search&type=term')); ?>"
-                    class="button button-primary"
-                >
+                <a href="<?php echo esc_url(admin_url('plugin-install.php?s=woocommerce&tab=search&type=term')); ?>"
+                    class="button button-primary">
                     <?php esc_html_e('Install WooCommerce', 'wisecampaign'); ?>
                 </a>
                 <a href="<?php echo esc_url(admin_url('plugins.php')); ?>" class="button">
@@ -263,7 +285,7 @@ class Menu
     function wisecampaign_banner_page()
     {
         ?>
-                        <div id="wisecampaign-banner-page-app"></div>
+        <div id="wisecampaign-banner-page-app"></div>
         <?php
     }
     function wisecampaign_stockbar_page()
@@ -323,32 +345,35 @@ class Menu
     {
         ?>
         <div class="wrap wisecampaign-dashboard-wrap">
-            
+
             <!-- Main Dashboard App -->
             <div id="wisecampaign-getting-started-page-app"></div>
-            
+
             <!-- Feature Request Section -->
             <div class="wisecampaign-feature-request-section">
                 <div class="wisecampaign-feature-request-content">
                     <div class="wisecampaign-feature-request-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14,2 14,8 20,8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <polyline points="10,9 9,9 8,9"/>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14,2 14,8 20,8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                            <polyline points="10,9 9,9 8,9" />
                         </svg>
                     </div>
                     <div class="wisecampaign-feature-request-text">
                         <h3><?php esc_html_e('Have a Feature Request?', 'wisecampaign'); ?></h3>
-                        <p><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?></p>
+                        <p><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?>
+                        </p>
                     </div>
                     <div class="wisecampaign-feature-request-action">
-                        <a href="https://wisecampaign.canny.io/feature-requests" target="_blank" class="button button-primary button-large">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                <polyline points="15,3 21,3 21,9"/>
-                                <line x1="10" y1="14" x2="21" y2="3"/>
+                        <a href="https://wisecampaign.canny.io/feature-requests" target="_blank"
+                            class="button button-primary button-large">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                style="margin-right: 8px;">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15,3 21,3 21,9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
                             </svg>
                             <?php esc_html_e('Submit Feature Request', 'wisecampaign'); ?>
                         </a>
@@ -375,7 +400,7 @@ class Menu
         // Immediately redirect to support page in new window
         ?>
         <script>
-            (function() {
+            (function () {
                 var supportUrl = 'https://wisemattic.com/support/';
                 window.open(supportUrl, '_blank');
                 // Redirect current page back to dashboard
@@ -388,7 +413,9 @@ class Menu
         </script>
         <div class="wrap">
             <h1><?php esc_html_e('Opening Support Page...', 'wisecampaign'); ?></h1>
-            <p><?php esc_html_e('The support page should open in a new window. If it doesn\'t,', 'wisecampaign'); ?> <a href="https://wisemattic.com/support/" target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.</p>
+            <p><?php esc_html_e('The support page should open in a new window. If it doesn\'t,', 'wisecampaign'); ?> <a
+                    href="https://wisemattic.com/support/"
+                    target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.</p>
         </div>
         <?php
     }
@@ -401,7 +428,7 @@ class Menu
         // Immediately open pricing page in new window
         ?>
         <script>
-            (function() {
+            (function () {
                 var pricingUrl = 'https://wisemattic.com/wisecampaign/pricing';
                 window.open(pricingUrl, '_blank');
                 // Redirect current page back to dashboard
@@ -416,7 +443,8 @@ class Menu
             <h1><?php esc_html_e('Opening Upgrade Page...', 'wisecampaign'); ?></h1>
             <p>
                 <?php esc_html_e('The pricing page should open in a new window. If it doesn\'t,', 'wisecampaign'); ?>
-                <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.
+                <a href="https://wisemattic.com/wisecampaign/pricing"
+                    target="_blank"><?php esc_html_e('click here', 'wisecampaign'); ?></a>.
             </p>
         </div>
         <?php
@@ -434,6 +462,7 @@ class Menu
                 color: #dc3232 !important;
                 font-weight: bold !important;
             }
+
             #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"],
             #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
                 color: #0a8d48 !important;
@@ -441,11 +470,11 @@ class Menu
             }
         </style>
         <script>
-            (function() {
-                document.addEventListener('DOMContentLoaded', function() {
+            (function () {
+                document.addEventListener('DOMContentLoaded', function () {
                     var helpLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]');
-                    helpLinks.forEach(function(link) {
-                        link.addEventListener('click', function(e) {
+                    helpLinks.forEach(function (link) {
+                        link.addEventListener('click', function (e) {
                             e.preventDefault();
                             window.open('https://wisemattic.com/support/', '_blank');
                             return false;
@@ -453,8 +482,8 @@ class Menu
                     });
 
                     var upgradeLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]');
-                    upgradeLinks.forEach(function(link) {
-                        link.addEventListener('click', function(e) {
+                    upgradeLinks.forEach(function (link) {
+                        link.addEventListener('click', function (e) {
                             e.preventDefault();
                             window.open('https://wisemattic.com/wisecampaign/pricing', '_blank');
                             return false;
