@@ -115,6 +115,7 @@ use WISECAMPAIGN\Classes\Banner;
 use WISECAMPAIGN\Classes\Menu;
 use WISECAMPAIGN\Classes\Register;
 use WISECAMPAIGN\Classes\StockBar;
+use WISECAMPAIGN\Classes\WiseBannerV2;
 
 /**
  * Main class for the WiseCampaign plugin
@@ -177,11 +178,18 @@ class Wisecampaign
             'menu_slug' => 'wise_stock_bar'
         ]);
 
+        $module_manager->register_module('wise-banner-v2', [
+            'name' => 'wiseBannerV2',
+            'menu_slug' => 'wise_banner_v2'
+        ]);
+
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
             WISECAMPAIGN\Classes\SalesNotification::getInstance();
             WISECAMPAIGN\Features\WiseCart::getInstance();
         }
+
+        WiseBannerV2::getInstance();
     }
 
     private function register_hooks()
@@ -248,6 +256,7 @@ class Wisecampaign
         Banner::getInstance()->create_banner_table();
         // if (WISECAMPAIGN_HAS_WC) {
         StockBar::getInstance()->initialize_stockbar_defaults();
+        WiseBannerV2::getInstance()->initialize_defaults();
         // }
     }
 }

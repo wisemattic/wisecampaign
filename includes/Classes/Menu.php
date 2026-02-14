@@ -127,6 +127,16 @@ class Menu
             'wise_stock_bar',
             [$this, 'wise_stock_bar_page']
         );
+
+        // wiseBannerV2 (Modular)
+        add_submenu_page(
+            'wisecampaign_menu',
+            'wiseBannerV2',
+            'wiseBannerV2',
+            'manage_options',
+            'wise_banner_v2',
+            [$this, 'wise_banner_v2_page']
+        );
     }
 
     /**
@@ -136,15 +146,76 @@ class Menu
     {
         ?>
         <style>
-            #wpbody-content { padding-bottom: 0 !important; }
-            #wpcontent { padding-left: 0 !important; }
-            .wrap { margin: 0 !important; max-width: none !important; padding: 0 !important; }
-            #wise-stock-bar-app { width: 100%; margin: 0; }
-            #wpfooter { display: none; }
-            /* Optional: Hide admin notices for a cleaner builder experience */
-            .notice, .updated, .error { display: none !important; }
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-stock-bar-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
         </style>
         <div id="wise-stock-bar-app"></div>
+        <?php
+    }
+
+    /**
+     * Render the wiseBannerV2 modular React app
+     */
+    public function wise_banner_v2_page()
+    {
+        ?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-banner-v2-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-banner-v2-app"></div>
         <?php
     }
     function add_help_and_upgrade_menus()
