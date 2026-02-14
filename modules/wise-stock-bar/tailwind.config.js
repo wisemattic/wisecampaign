@@ -11,6 +11,9 @@ export default {
                 'wise-dark': '#1e1b4b',
                 'wise-bg': '#F8FAFC',
             },
+            fontFamily: {
+                sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            },
             spacing: {
                 '8': '8px',
                 '16': '16px',
