@@ -354,8 +354,9 @@ function App() {
                             W
                         </div>
                         <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg tracking-tight">WiseCampaign</span>
+                            <div className="flex items-center gap-2 text-left">
+                                <span className="font-bold text-lg tracking-tight text-[#0F172A]">WiseCampaign</span>
+                                {/* <span className="px-1.5 py-0.5 bg-blue-50 text-[10px] font-black text-blue-600 rounded-md border border-blue-100 uppercase tracking-tighter">Pro</span> */}
                             </div>
                         </div>
                         <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
@@ -384,8 +385,17 @@ function App() {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-5">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 pr-2">
+                        <div className="flex items-center gap-2 text-green-500">
+                            <CheckCircle2 size={16} />
+                            <span className="text-xs font-bold text-slate-400">Last saved just now</span>
+                        </div>
+                        <div className="h-6 w-[1px] bg-slate-200 mx-1"></div>
+                        <button className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-all text-sm font-bold border border-slate-100 shadow-sm">
+                            <Eye size={16} />
+                            Preview
+                        </button>
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
@@ -441,11 +451,11 @@ function App() {
                     </div>
 
                     {/* Sidebar Content */}
-                    <div className="px-6 py-2 space-y-8 pb-10 text-left">
+                    <div className="px-6 py-4 space-y-0 pb-10 text-left">
                         {activeTab === 'design' && (
-                            <>
+                            <div className="space-y-8">
                                 {/* Color Settings */}
-                                <section>
+                                <section className="pb-8 border-b border-slate-100">
                                     <h3 className="text-sm font-black mb-4 flex items-center gap-2">
                                         <Palette size={16} className="text-blue-600" />
                                         Color Settings
@@ -486,7 +496,7 @@ function App() {
                                 </section>
 
                                 {/* Typography */}
-                                <section>
+                                <section className="pt-2">
                                     <h3 className="text-sm font-black mb-4 flex items-center gap-2">
                                         <Type size={16} className="text-blue-600" />
                                         Typography
@@ -522,7 +532,7 @@ function App() {
                                         </div>
                                     </div>
                                 </section>
-                            </>
+                            </div>
                         )}
 
                         {activeTab === 'content' && (
@@ -615,17 +625,24 @@ function App() {
                 {/* Preview Area */}
                 <main className="flex-1 overflow-y-auto p-12 flex justify-center items-start">
                     <div className={`transition-all duration-300 w-full max-w-5xl ${device === 'mobile' ? 'max-w-[375px]' : ''}`}>
-                        <div className="bg-white rounded-[32px] shadow-2xl overflow-hidden border border-slate-200">
+                        <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
                             {/* Browser UI */}
-                            <div className="bg-[#F1F5F9]/50 px-6 py-4 border-b border-slate-200 flex items-center gap-6">
-                                <div className="flex gap-1.5">
-                                    <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm"></div>
-                                    <div className="w-3 h-3 rounded-full bg-amber-400 shadow-sm"></div>
-                                    <div className="w-3 h-3 rounded-full bg-green-400 shadow-sm"></div>
+                            <div className="bg-[#F8FAFC] px-6 py-2 border-b border-slate-200 flex items-center gap-4">
+                                <div className="flex gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
                                 </div>
-                                <div className="flex-1 bg-white h-9 rounded-xl flex items-center px-4 gap-3 border border-slate-200/50 shadow-inner">
-                                    <div className="w-2 h-2 rounded-full bg-slate-200"></div>
-                                    <span className="text-[11px] font-bold text-slate-400 tracking-tight">mysite.com/products/premium-leather-bag</span>
+                                <div className="flex-1 max-w-4xl mx-auto bg-white h-6 rounded-lg flex items-center px-3 gap-2 border border-slate-200/60 shadow-sm">
+                                    <div className="w-4 h-4 rounded-full bg-slate-100 shrink-0 flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-slate-300"></div>
+                                    </div>
+                                    <span className="text-[11px] font-medium text-slate-500 flex-1 truncate text-center">
+                                        mysite.com/products/ergonomic-chair
+                                    </span>
+                                    <div className="w-4 h-4 shrink-0 flex items-center justify-center opacity-30">
+                                        <Search size={10} className="text-slate-500" />
+                                    </div>
                                 </div>
                             </div>
 
