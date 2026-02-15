@@ -50,3 +50,19 @@ body {
         background-position: 200% 0;
     }
 }
+
+@keyframes bounce-subtle {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-12deg);
+    }
+
+    50% {
+        transform: translateY(-4px) rotate(-12deg);
+    }
+}
+
+.animate-bounce-subtle {
+    animation: bounce-subtle 3s ease-in-out infinite;
+}

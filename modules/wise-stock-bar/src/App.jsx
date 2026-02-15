@@ -387,7 +387,7 @@ function App() {
                 {/* Right: Actions */}
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3 pr-2">
-                        <div className="flex items-center gap-2 text-green-500">
+                        {/* <div className="flex items-center gap-2 text-green-500">
                             <CheckCircle2 size={16} />
                             <span className="text-xs font-bold text-slate-400">Last saved just now</span>
                         </div>
@@ -395,7 +395,7 @@ function App() {
                         <button className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-all text-sm font-bold border border-slate-100 shadow-sm">
                             <Eye size={16} />
                             Preview
-                        </button>
+                        </button> */}
                         <button
                             onClick={handleSave}
                             disabled={isSaving}
@@ -410,7 +410,7 @@ function App() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto">
+                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden">
                     <div className="p-4 border-b border-slate-100">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
@@ -451,7 +451,7 @@ function App() {
                     </div>
 
                     {/* Sidebar Content */}
-                    <div className="px-6 py-4 space-y-0 pb-10 text-left">
+                    <div className="px-6 py-4 space-y-8 pb-10 text-left overflow-y-auto custom-scrollbar flex-1">
                         {activeTab === 'design' && (
                             <div className="space-y-8">
                                 {/* Color Settings */}

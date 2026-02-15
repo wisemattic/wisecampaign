@@ -74,6 +74,28 @@ const TEMPLATES = [
             ctaTextColor: '#EF4444'
         },
         icon: <div className="w-full h-full rounded-lg bg-gradient-to-br from-orange-400 to-red-600" />
+    },
+    {
+        id: 'bogo-special',
+        name: 'BOGO Special',
+        style: 'Promo',
+        description: 'Features a high-contrast BOGO badge to grab attention.',
+        config: {
+            bgType: 'solid',
+            bgSolid: '#000000',
+            headlineColor: '#FFFFFF',
+            subHeadlineColor: '#FCD34D',
+            ctaBg: '#FCD34D',
+            ctaTextColor: '#000000',
+            showBogoBadge: true,
+            bogoText: '50% OFF'
+        },
+        icon: (
+            <div className="w-full h-full rounded-lg bg-black flex items-center justify-center overflow-hidden relative">
+                <div className="absolute -right-1 -top-1 w-6 h-6 bg-red-600 rounded-full border border-white/20 flex items-center justify-center text-[6px] font-black text-white rotate-12">BOGO</div>
+                <div className="w-1/2 h-0.5 bg-yellow-400" />
+            </div>
+        )
     }
 ];
 
@@ -99,17 +121,19 @@ function App() {
         subHeadlineColor: '#E2E8F0',
         subHeadlineWeight: '500',
         showTimer: true,
+        endDate: '2025-12-31',
+        endTime: '23:59',
         timerLabel: 'OFFER ENDS IN:',
         timerTextColor: '#FFFFFF',
-        timerBgColor: 'rgba(255,255,255,0.1)',
-        endDate: '2024-11-30',
-        endTime: '23:59',
+        timerBgColor: 'rgba(255, 255, 255, 0.1)',
         showCTA: true,
-        ctaText: 'Shop Now',
+        ctaText: 'SHOP NOW',
         ctaUrl: 'https://myshop.com/sale',
         ctaBg: '#FCD34D',
         ctaTextColor: '#111827',
         ctaRadius: '12px',
+        showBogoBadge: false,
+        bogoText: '50% OFF',
         isActive: true
     });
 
@@ -276,6 +300,16 @@ function App() {
                     zIndex: 9999
                 }}
             >
+                {config.showBogoBadge && (
+                    <div className="absolute -left-2 -top-2 z-[10000] animate-bounce-subtle pointer-events-none">
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-red-600 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity" />
+                            <div className="relative bg-gradient-to-br from-red-500 to-red-700 text-white font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center rotate-[-12deg] tracking-tighter">
+                                {config.bogoText}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="flex flex-col text-center md:text-left flex-1 w-full md:w-auto">
                     <span
                         className="tracking-tight drop-shadow-sm line-clamp-2 md:line-clamp-1"
@@ -592,6 +626,34 @@ function App() {
                                     <div className="h-[1px] bg-slate-50" />
                                 </section>
 
+                                {/* Promotional Badge */}
+                                <section className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Promotional Badge</h3>
+                                        <button
+                                            onClick={() => setConfig(prev => ({ ...prev, showBogoBadge: !prev.showBogoBadge }))}
+                                            className={`w-10 h-5 rounded-full transition-all relative ${config.showBogoBadge ? 'bg-red-600' : 'bg-slate-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showBogoBadge ? 'right-1' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+                                    {config.showBogoBadge && (
+                                        <div className="space-y-4 animate-fade-in">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
+                                                <input
+                                                    type="text"
+                                                    value={config.bogoText}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, bogoText: e.target.value }))}
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
+                                                    placeholder="e.g. 50% OFF"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="h-[1px] bg-slate-50" />
+                                </section>
+
                                 {/* Banner Background */}
                                 <section className="space-y-6">
                                     <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Background</h3>
@@ -636,51 +698,73 @@ function App() {
                         )}
 
                         {activeTab === 'design' && (
-                            <div className="space-y-6 animate-fade-in">
+                            <div className="space-y-4 animate-fade-in">
                                 {/* Background Styling */}
-                                <section className="space-y-6">
+                                <section className="space-y-2">
                                     <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Background Styling</h3>
+
                                     {config.bgType === 'solid' && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Fill Color</label>
-                                                <div className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                        <div className="space-y-2">
+                                            {/* Fill Color */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Fill Color</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.bgSolid}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
-                                                        className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
-                                                    <span className="text-xs font-bold font-mono uppercase">{config.bgSolid}</span>
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.bgSolid }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.bgSolid}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     )}
+
                                     {config.bgType === 'gradient' && (
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Gradient Value</label>
+                                        <div className="space-y-2">
+                                            {/* Gradient Value */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Gradient Value</span>
                                                 <input
                                                     type="text"
                                                     value={config.bgGradient}
                                                     onChange={(e) => setConfig(prev => ({ ...prev, bgGradient: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[10px] font-mono font-bold outline-none focus:border-blue-500 shadow-sm"
+                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-40 text-right outline-none p-0 focus:text-slate-900"
                                                 />
                                             </div>
-                                            <div className="flex gap-2">
-                                                {[
-                                                    'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-                                                    'linear-gradient(135deg, #111827 0%, #374151 100%)',
-                                                    'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-                                                    'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-                                                ].map(grad => (
-                                                    <button
-                                                        key={grad}
-                                                        onClick={() => setConfig(prev => ({ ...prev, bgGradient: grad }))}
-                                                        className="w-8 h-8 rounded-lg border-2 border-white shadow-sm ring-1 ring-black/5"
-                                                        style={{ background: grad }}
-                                                    />
-                                                ))}
+
+                                            {/* Gradient Presets */}
+                                            <div className="p-2 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs font-bold text-slate-600">Presets</span>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    {[
+                                                        'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                                                        'linear-gradient(135deg, #111827 0%, #374151 100%)',
+                                                        'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+                                                        'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                                                    ].map(grad => (
+                                                        <button
+                                                            key={grad}
+                                                            onClick={() => setConfig(prev => ({ ...prev, bgGradient: grad }))}
+                                                            className="w-8 h-8 rounded-lg border-2 border-white shadow-sm ring-1 ring-black/5 hover:scale-110 transition-transform"
+                                                            style={{ background: grad }}
+                                                        />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -697,31 +781,47 @@ function App() {
                                             <Type size={14} className="text-blue-500" />
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Headline Style</span>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Font Size</label>
-                                                <select
-                                                    value={config.headlineSize}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs font-bold outline-none"
-                                                >
-                                                    <option value="12px">12px</option>
-                                                    <option value="14px">14px</option>
-                                                    <option value="16px">16px</option>
-                                                    <option value="18px">18px</option>
-                                                    <option value="20px">20px</option>
-                                                </select>
+                                        <div className="space-y-2">
+                                            {/* Font Size */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                                <div className="flex items-center gap-3">
+                                                    <select
+                                                        value={config.headlineSize}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: e.target.value }))}
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                    >
+                                                        <option value="12px">12px</option>
+                                                        <option value="14px">14px</option>
+                                                        <option value="16px">16px</option>
+                                                        <option value="18px">18px</option>
+                                                        <option value="20px">20px</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Text Color</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
+
+                                            {/* Text Color */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Text Color</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.headlineColor}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
-                                                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
-                                                    <span className="text-[9px] font-mono font-bold uppercase">{config.headlineColor}</span>
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.headlineColor }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.headlineColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -733,30 +833,46 @@ function App() {
                                             <Type size={14} className="text-blue-500" />
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Sub-headline Style</span>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Font Size</label>
-                                                <select
-                                                    value={config.subHeadlineSize}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs font-bold outline-none"
-                                                >
-                                                    <option value="10px">10px</option>
-                                                    <option value="11px">11px</option>
-                                                    <option value="12px">12px</option>
-                                                    <option value="13px">13px</option>
-                                                </select>
+                                        <div className="space-y-2">
+                                            {/* Font Size */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                                <div className="flex items-center gap-3">
+                                                    <select
+                                                        value={config.subHeadlineSize}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: e.target.value }))}
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                    >
+                                                        <option value="10px">10px</option>
+                                                        <option value="11px">11px</option>
+                                                        <option value="12px">12px</option>
+                                                        <option value="13px">13px</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Text Color</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
+
+                                            {/* Text Color */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Text Color</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.subHeadlineColor}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
-                                                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
-                                                    <span className="text-[9px] font-mono font-bold uppercase">{config.subHeadlineColor}</span>
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.subHeadlineColor }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.subHeadlineColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -766,26 +882,42 @@ function App() {
 
                                 {/* Timer Design */}
                                 {config.showTimer && (
-                                    <section className="space-y-6 animate-fade-in">
+                                    <section className="space-y-2 animate-fade-in">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Timer Components</h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Timer Digits</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
+
+                                        {/* Timer Colors */}
+                                        <div className="space-y-2">
+                                            {/* Timer Digits */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Timer Digits</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.timerTextColor}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
-                                                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
-                                                    <span className="text-[9px] font-mono font-bold uppercase">{config.timerTextColor}</span>
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.timerTextColor }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.timerTextColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Unit Labels</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
-                                                    <div className="w-6 h-6 rounded-md bg-white/20 border border-slate-100" />
-                                                    <span className="text-[9px] font-bold text-slate-400">Fixed Opacity</span>
+
+                                            {/* Unit Labels - Special case with fixed opacity display */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Unit Labels</span>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400">Fixed Opacity</span>
+                                                    <div className="w-6 h-6 rounded-md bg-white/20 border border-slate-200 shadow-sm" />
                                                 </div>
                                             </div>
                                         </div>
@@ -794,46 +926,56 @@ function App() {
 
                                 {/* CTA Design */}
                                 {config.showCTA && (
-                                    <section className="space-y-6 animate-fade-in">
+                                    <section className="space-y-2 animate-fade-in">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight text-left">Button Styling</h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Background</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
-                                                    <input
-                                                        type="color"
-                                                        value={config.ctaBg}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaBg: e.target.value }))}
-                                                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0"
-                                                    />
-                                                    <span className="text-[9px] font-mono font-bold uppercase">{config.ctaBg}</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 pl-1">Text Color</label>
-                                                <div className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl">
-                                                    <input
-                                                        type="color"
-                                                        value={config.ctaTextColor}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaTextColor: e.target.value }))}
-                                                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0"
-                                                    />
-                                                    <span className="text-[9px] font-mono font-bold uppercase">{config.ctaTextColor}</span>
-                                                </div>
-                                            </div>
-                                        </div>
+
+                                        {/* Button Colors */}
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Corner Radius</label>
-                                            <div className="flex items-center gap-4">
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="24"
-                                                    value={parseInt(config.ctaRadius)}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
-                                                    className="flex-1 accent-blue-600"
-                                                />
-                                                <span className="text-xs font-black text-[#0F172A] w-8">{config.ctaRadius}</span>
+                                            {[
+                                                { id: 'ctaBg', label: 'Background' },
+                                                { id: 'ctaTextColor', label: 'Text Color' }
+                                            ].map((item) => (
+                                                <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">{item.label}</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="text"
+                                                            value={config[item.id]}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                            className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                        />
+                                                        <div className="relative group/color cursor-pointer">
+                                                            <div
+                                                                className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                style={{ backgroundColor: config[item.id] }}
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={config[item.id]}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Corner Radius */}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Corner Radius</span>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="24"
+                                                        value={parseInt(config.ctaRadius)}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
+                                                        className="w-24 accent-blue-600"
+                                                    />
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.ctaRadius}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
@@ -842,7 +984,7 @@ function App() {
                         )}
 
                         {activeTab === 'settings' && (
-                            <div className="space-y-6 animate-fade-in text-left">
+                            <div className="space-y-4 animate-fade-in text-left">
                                 <h3 className="text-sm font-black text-[#0F172A] tracking-tight mb-4">Display Locations</h3>
                                 <div className="space-y-3">
                                     {[
