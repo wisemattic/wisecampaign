@@ -17,7 +17,13 @@ import {
     Zap,
     Star,
     ShoppingBag,
-    Search
+    Search,
+    Clock,
+    Package,
+    Timer,
+    Gauge,
+    Sparkles,
+    Target
 } from 'lucide-react';
 
 const TEMPLATES = [
@@ -41,6 +47,20 @@ const TEMPLATES = [
         style: 'Simple Counter',
         description: 'Clean typography focus, perfect for high-end fashion or tech stores.',
         icon: <TrendingUp size={16} className="text-slate-800" />
+    },
+    {
+        id: 'countdown',
+        name: 'Flash Sale Timer',
+        style: 'Countdown Clock',
+        description: 'Creates urgency with a countdown timer showing when stock might run out.',
+        icon: <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-white"><Clock size={12} /></div>
+    },
+    {
+        id: 'badge',
+        name: 'Low Stock Badge',
+        style: 'Status Badge',
+        description: 'Simple badge indicator for low stock items with optional text.',
+        icon: <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Package size={12} /></div>
     }
 ];
 
@@ -51,7 +71,13 @@ const ICON_MAP = {
     Zap,
     Star,
     ShoppingBag,
-    CheckCircle2
+    CheckCircle2,
+    Clock,
+    Package,
+    Timer,
+    Gauge,
+    Sparkles,
+    Target
 };
 
 function App() {
@@ -70,7 +96,9 @@ function App() {
         content: {
             linear: { mainText: "Hurry! Selling fast!", icon: "Flame", subText: "items left" },
             pulse: { mainText: "Extremely Limited Stock!", icon: "AlertCircle", subText: "Only 12 items remaining" },
-            minimal: { mainText: "Popular Product", icon: "TrendingUp", subText: "Pieces available" }
+            minimal: { mainText: "Popular Product", icon: "TrendingUp", subText: "Pieces available" },
+            countdown: { mainText: "Flash Sale Ends In", icon: "Clock", subText: "left" },
+            badge: { mainText: "Limited Stock", icon: "Package", subText: "left" }
         }
     });
 
@@ -300,6 +328,54 @@ function App() {
                         </div>
                     </div>
                 )}
+
+                {selectedTemplateId === 'countdown' && (
+                    <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-3 text-left">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 relative shrink-0">
+                                <ActiveIcon size={18} />
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-pulse"></div>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tight`}>
+                                    {config.content.countdown?.mainText || "Flash Sale"}
+                                </span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex gap-1">
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">15</div>
+                                        <span className="text-[8px] font-black opacity-40">h</span>
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">30</div>
+                                        <span className="text-[8px] font-black opacity-40">m</span>
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">45</div>
+                                        <span className="text-[8px] font-black opacity-40">s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-xl font-black text-amber-600">{stockInfo.availableItems}</span>
+                            <span className="text-[8px] font-black opacity-40 block">{config.content.countdown?.subText || "left"}</span>
+                        </div>
+                    </div>
+                )}
+
+                {selectedTemplateId === 'badge' && (
+                    <div className="flex items-center justify-between py-2">
+                        <div className="flex items-center gap-3 text-left">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 relative shrink-0">
+                                <ActiveIcon size={16} />
+                            </div>
+                            <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tight`}>
+                                {config.content.badge?.mainText || "Limited Stock"}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-emerald-500 text-white px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider">
+                                {stockInfo.availableItems} {config.content.badge?.subText || "left"}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     };
@@ -312,38 +388,109 @@ function App() {
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
             {/* Template Selection Modal */}
             {showTemplateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden">
-                        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                    <div className="bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
+                        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
                             <div>
-                                <h2 className="text-xl font-black text-[#0F172A]">Select Template</h2>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Choose a visual style for your stock bar</p>
+                                <h2 className="text-xl font-black text-[#0F172A] tracking-tight">Select Template</h2>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1 opacity-70">Choose a visual style for your stock bar</p>
                             </div>
                             <button
                                 onClick={() => setShowTemplateModal(false)}
-                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+                                className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400 flex-shrink-0"
                             >
-                                <X size={20} />
+                                <X size={18} />
                             </button>
                         </div>
-                        <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {TEMPLATES.map((template) => (
-                                <button
-                                    key={template.id}
-                                    onClick={() => {
-                                        setSelectedTemplateId(template.id);
-                                        setShowTemplateModal(false);
-                                    }}
-                                    className={`group flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/30' : 'border-slate-100 hover:border-blue-200 bg-white'}`}
-                                >
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all ${selectedTemplateId === template.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100 group-hover:text-slate-600'}`}>
-                                        {template.icon}
-                                    </div>
-                                    <h3 className="font-black text-sm text-[#0F172A] mb-1">{template.name}</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase">{template.style}</p>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2">{template.description}</p>
-                                </button>
-                            ))}
+
+                        <div className="p-4 overflow-y-auto">
+                            <div className="flex flex-col gap-4">
+                                {TEMPLATES.map((template) => (
+                                    <button
+                                        key={template.id}
+                                        onClick={() => {
+                                            setSelectedTemplateId(template.id);
+                                            setShowTemplateModal(false);
+                                        }}
+                                        className={`group flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
+                                    >
+                                        {/* Large Stock Bar Design Preview */}
+                                        <div className="w-full aspect-[2.5/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-4 group-hover:bg-slate-100 transition-colors">
+                                            <div className="w-full scale-100">
+                                                {template.id === 'linear' && (
+                                                    <div className="w-full space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center text-red-500"><Flame size={10} /></div>
+                                                                <div className="h-2 w-20 bg-slate-200 rounded-full" />
+                                                            </div>
+                                                            <div className="h-1.5 w-10 bg-slate-100 rounded-full" />
+                                                        </div>
+                                                        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                            <div className="h-2 bg-red-500 w-3/4" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {template.id === 'pulse' && (
+                                                    <div className="w-full flex items-center gap-3 px-2">
+                                                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative flex-shrink-0">
+                                                            <AlertCircle size={14} />
+                                                            <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20"></div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-1.5 w-full">
+                                                            <div className="h-2 w-24 bg-slate-400 rounded-full" />
+                                                            <div className="h-1.5 w-32 bg-slate-200 rounded-full" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {template.id === 'minimal' && (
+                                                    <div className="w-full flex flex-col items-center gap-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <TrendingUp size={12} className="text-blue-500 font-black" />
+                                                            <div className="h-2.5 w-32 bg-slate-400 rounded-full" />
+                                                        </div>
+                                                        <div className="h-2 w-40 bg-slate-200 rounded-full" />
+                                                    </div>
+                                                )}
+                                                {template.id === 'countdown' && (
+                                                    <div className="w-full flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                                                <Clock size={12} />
+                                                            </div>
+                                                            <div className="h-2 w-16 bg-slate-200 rounded-full" />
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                            <div className="w-4 h-3 bg-slate-200 rounded text-[6px] flex items-center justify-center">15</div>
+                                                            <div className="w-4 h-3 bg-slate-200 rounded text-[6px] flex items-center justify-center">30</div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {template.id === 'badge' && (
+                                                    <div className="w-full flex items-center justify-between px-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-5 h-5 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                                                <Package size={10} />
+                                                            </div>
+                                                            <div className="h-2 w-12 bg-slate-200 rounded-full" />
+                                                        </div>
+                                                        <div className="w-10 h-4 bg-emerald-500 rounded-full"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Text content below preview */}
+                                        <div className="w-full space-y-1">
+                                            <div className="flex items-center justify-between w-full">
+                                                <h3 className="text-xs font-black text-[#0F172A] tracking-tight">{template.name}</h3>
+                                                <span className="text-[8px] text-blue-600 font-black uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded-full">{template.style}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed line-clamp-2">{template.description}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
