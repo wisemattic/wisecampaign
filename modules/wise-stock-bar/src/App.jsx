@@ -65,7 +65,7 @@ function App() {
         stockBarBg: '#FFFFFF',
         textColor: '#111827',
         borderColor: '#F1F5F9',
-        fontSize: 'M',
+        fontSize: '12px',
         fontWeight: 'Bold',
         content: {
             linear: { mainText: "Hurry! Selling fast!", icon: "Flame", subText: "items left" },
@@ -189,6 +189,10 @@ function App() {
     };
 
     const getFontSizeClass = (size) => {
+        if (typeof size === 'string' && size.endsWith('px')) {
+            return `text-[${size}]`;
+        }
+        // Fallback for legacy data
         switch (size) {
             case 'S': return 'text-[10px]';
             case 'L': return 'text-[14px]';
@@ -501,29 +505,30 @@ function App() {
                                         <Type size={16} className="text-blue-600" />
                                         Typography
                                     </h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Font Size</label>
-                                            <div className="flex bg-slate-50 border border-slate-200 rounded-xl p-1">
-                                                {['S', 'M', 'L'].map(s => (
-                                                    <button
-                                                        key={s}
-                                                        onClick={() => handleConfigChange('fontSize', s)}
-                                                        className={`flex-1 py-1 text-[10px] font-black rounded-lg transition-all ${config.fontSize === s ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                                    >
-                                                        {s}
-                                                    </button>
-                                                ))}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
+                                            <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="range"
+                                                    min="5"
+                                                    max="50"
+                                                    value={parseInt(config.fontSize)}
+                                                    onChange={(e) => handleConfigChange('fontSize', `${e.target.value}px`)}
+                                                    className="w-32 accent-blue-600 cursor-pointer"
+                                                />
+                                                <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.fontSize}</span>
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weight</label>
-                                            <div className="flex bg-slate-50 border border-slate-200 rounded-xl p-1">
+
+                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
+                                            <span className="text-xs font-bold text-slate-600">Font Weight</span>
+                                            <div className="flex bg-slate-100 p-1 rounded-lg w-[120px]">
                                                 {['Reg', 'Bold'].map(w => (
                                                     <button
                                                         key={w}
                                                         onClick={() => handleConfigChange('fontWeight', w)}
-                                                        className={`flex-1 py-1 text-[10px] font-black rounded-lg transition-all ${config.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all ${config.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
                                                     >
                                                         {w}
                                                     </button>

@@ -785,18 +785,16 @@ function App() {
                                             {/* Font Size */}
                                             <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Font Size</span>
-                                                <div className="flex items-center gap-3">
-                                                    <select
-                                                        value={config.headlineSize}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    >
-                                                        <option value="12px">12px</option>
-                                                        <option value="14px">14px</option>
-                                                        <option value="16px">16px</option>
-                                                        <option value="18px">18px</option>
-                                                        <option value="20px">20px</option>
-                                                    </select>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="range"
+                                                        min="10"
+                                                        max="48"
+                                                        value={parseInt(config.headlineSize)}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: `${e.target.value}px` }))}
+                                                        className="w-32 accent-blue-600"
+                                                    />
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.headlineSize}</span>
                                                 </div>
                                             </div>
 
@@ -837,17 +835,16 @@ function App() {
                                             {/* Font Size */}
                                             <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Font Size</span>
-                                                <div className="flex items-center gap-3">
-                                                    <select
-                                                        value={config.subHeadlineSize}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    >
-                                                        <option value="10px">10px</option>
-                                                        <option value="11px">11px</option>
-                                                        <option value="12px">12px</option>
-                                                        <option value="13px">13px</option>
-                                                    </select>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="range"
+                                                        min="8"
+                                                        max="32"
+                                                        value={parseInt(config.subHeadlineSize)}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: `${e.target.value}px` }))}
+                                                        className="w-32 accent-blue-600"
+                                                    />
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.subHeadlineSize}</span>
                                                 </div>
                                             </div>
 
@@ -972,7 +969,7 @@ function App() {
                                                         max="24"
                                                         value={parseInt(config.ctaRadius)}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
-                                                        className="w-24 accent-blue-600"
+                                                        className="w-32 accent-blue-600"
                                                     />
                                                     <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.ctaRadius}</span>
                                                 </div>
