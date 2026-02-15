@@ -32,35 +32,65 @@ const TEMPLATES = [
         name: 'High Demand Flow',
         style: 'Linear Progress',
         description: 'Classic progress bar with real-time stock reduction visualization.',
-        icon: <div className="w-8 h-1 bg-pink-400 rounded-full" />
+        icon: <div className="w-8 h-1 bg-pink-400 rounded-full" />,
+        config: {
+            progressBarColor: '#EC4899',
+            stockBarBg: '#FFFFFF',
+            textColor: '#111827',
+            borderColor: '#F1F5F9'
+        }
     },
     {
         id: 'pulse',
         name: 'Urgent Alert',
         style: 'Pulsing Badge',
         description: 'Minimalist design with a pulsing alert icon for high urgency.',
-        icon: <div className="w-5 h-5 rounded-full bg-red-500 animate-pulse flex items-center justify-center text-[10px] text-white">!</div>
+        icon: <div className="w-5 h-5 rounded-full bg-red-500 animate-pulse flex items-center justify-center text-[10px] text-white">!</div>,
+        config: {
+            progressBarColor: '#EF4444',
+            stockBarBg: '#FEF2F2',
+            textColor: '#991B1B',
+            borderColor: '#FEE2E2'
+        }
     },
     {
         id: 'minimal',
         name: 'Modern Minimal',
         style: 'Simple Counter',
         description: 'Clean typography focus, perfect for high-end fashion or tech stores.',
-        icon: <TrendingUp size={16} className="text-slate-800" />
+        icon: <TrendingUp size={16} className="text-slate-800" />,
+        config: {
+            progressBarColor: '#3B82F6',
+            stockBarBg: '#F8FAFC',
+            textColor: '#1E293B',
+            borderColor: '#E2E8F0'
+        }
     },
     {
         id: 'countdown',
         name: 'Flash Sale Timer',
         style: 'Countdown Clock',
         description: 'Creates urgency with a countdown timer showing when stock might run out.',
-        icon: <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-white"><Clock size={12} /></div>
+        icon: <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-white"><Clock size={12} /></div>,
+        config: {
+            progressBarColor: '#F59E0B',
+            stockBarBg: '#FFFBEB',
+            textColor: '#92400E',
+            borderColor: '#FEF3C7'
+        }
     },
     {
         id: 'badge',
         name: 'Low Stock Badge',
         style: 'Status Badge',
         description: 'Simple badge indicator for low stock items with optional text.',
-        icon: <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Package size={12} /></div>
+        icon: <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white"><Package size={12} /></div>,
+        config: {
+            progressBarColor: '#10B981',
+            stockBarBg: '#F0FDF4',
+            textColor: '#065F46',
+            borderColor: '#DCFCE7'
+        }
     }
 ];
 
@@ -410,6 +440,13 @@ function App() {
                                         key={template.id}
                                         onClick={() => {
                                             setSelectedTemplateId(template.id);
+                                            // Apply template's default config if available
+                                            if (template.config) {
+                                                setConfig(prev => ({
+                                                    ...prev,
+                                                    ...template.config
+                                                }));
+                                            }
                                             setShowTemplateModal(false);
                                         }}
                                         className={`group flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
@@ -418,63 +455,73 @@ function App() {
                                         <div className="w-full aspect-[2.5/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-4 group-hover:bg-slate-100 transition-colors">
                                             <div className="w-full scale-100">
                                                 {template.id === 'linear' && (
-                                                    <div className="w-full space-y-2">
+                                                    <div className="w-full h-full flex flex-col justify-center gap-3">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-2">
-                                                                <div className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center text-red-500"><Flame size={10} /></div>
-                                                                <div className="h-2 w-20 bg-slate-200 rounded-full" />
+                                                                <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shadow-sm">
+                                                                    <Flame size={12} fill="currentColor" />
+                                                                </div>
+                                                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Hurry! Selling Fast!</span>
                                                             </div>
-                                                            <div className="h-1.5 w-10 bg-slate-100 rounded-full" />
+                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">12 Items Left</span>
                                                         </div>
-                                                        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                                                            <div className="h-2 bg-red-500 w-3/4" />
+                                                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner border border-slate-300/30">
+                                                            <div className="h-full bg-pink-500 w-3/4 rounded-full" />
                                                         </div>
                                                     </div>
                                                 )}
                                                 {template.id === 'pulse' && (
-                                                    <div className="w-full flex items-center gap-3 px-2">
-                                                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative flex-shrink-0">
-                                                            <AlertCircle size={14} />
+                                                    <div className="w-full flex items-center gap-4 px-2 py-3 bg-red-50 rounded-xl border border-red-100">
+                                                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative flex-shrink-0">
+                                                            <AlertCircle size={18} />
                                                             <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20"></div>
                                                         </div>
-                                                        <div className="flex flex-col gap-1.5 w-full">
-                                                            <div className="h-2 w-24 bg-slate-400 rounded-full" />
-                                                            <div className="h-1.5 w-32 bg-slate-200 rounded-full" />
+                                                        <div className="flex flex-col gap-0.5 w-full">
+                                                            <span className="text-[10px] font-black text-red-900 uppercase tracking-tighter leading-none">Limited Stock!</span>
+                                                            <span className="text-[8px] font-bold text-red-700/60 uppercase">Only 12 items remaining</span>
                                                         </div>
                                                     </div>
                                                 )}
                                                 {template.id === 'minimal' && (
-                                                    <div className="w-full flex flex-col items-center gap-2">
+                                                    <div className="w-full flex flex-col items-center gap-2 py-3 bg-slate-50/50 rounded-xl border border-slate-200/50">
                                                         <div className="flex items-center gap-2">
-                                                            <TrendingUp size={12} className="text-blue-500 font-black" />
-                                                            <div className="h-2.5 w-32 bg-slate-400 rounded-full" />
+                                                            <TrendingUp size={14} className="text-blue-500 font-black" />
+                                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">Popular Product</span>
                                                         </div>
-                                                        <div className="h-2 w-40 bg-slate-200 rounded-full" />
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pieces available</span>
                                                     </div>
                                                 )}
                                                 {template.id === 'countdown' && (
-                                                    <div className="w-full flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                                                                <Clock size={12} />
+                                                    <div className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                                                                <Clock size={16} />
                                                             </div>
-                                                            <div className="h-2 w-16 bg-slate-200 rounded-full" />
+                                                            <span className="text-[10px] font-black text-amber-900 uppercase">Flash Sale Ends In</span>
                                                         </div>
                                                         <div className="flex gap-1">
-                                                            <div className="w-4 h-3 bg-slate-200 rounded text-[6px] flex items-center justify-center">15</div>
-                                                            <div className="w-4 h-3 bg-slate-200 rounded text-[6px] flex items-center justify-center">30</div>
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-5 h-4 bg-white/80 rounded shadow-sm text-[8px] flex items-center justify-center font-black">15</div>
+                                                                <span className="text-[5px] font-black text-amber-900/40 uppercase mt-0.5">h</span>
+                                                            </div>
+                                                            <div className="flex flex-col items-center">
+                                                                <div className="w-5 h-4 bg-white/80 rounded shadow-sm text-[8px] flex items-center justify-center font-black">30</div>
+                                                                <span className="text-[5px] font-black text-amber-900/40 uppercase mt-0.5">m</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )}
                                                 {template.id === 'badge' && (
-                                                    <div className="w-full flex items-center justify-between px-2">
+                                                    <div className="w-full flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-5 h-5 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                                <Package size={10} />
+                                                            <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                                                <Package size={14} />
                                                             </div>
-                                                            <div className="h-2 w-12 bg-slate-200 rounded-full" />
+                                                            <span className="text-[11px] font-black text-emerald-900 uppercase tracking-tight">Status Badge</span>
                                                         </div>
-                                                        <div className="w-10 h-4 bg-emerald-500 rounded-full"></div>
+                                                        <div className="px-3 py-1 bg-emerald-500 text-white rounded-full text-[8px] font-black uppercase tracking-wider">
+                                                            12 Left
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
