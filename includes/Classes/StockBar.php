@@ -58,17 +58,63 @@ class StockBar
     public function initialize_stockbar_defaults()
     {
         $default_config = [
-            'progressBarColor' => '#EC4899',
-            'progressBg' => '#F1F5F9',
-            'stockBarBg' => '#FFFFFF',
-            'textColor' => '#111827',
-            'borderColor' => '#F1F5F9',
-            'fontSize' => 'M',
-            'fontWeight' => 'Bold',
-            'content' => [
-                'linear' => ['mainText' => "Hurry! Selling fast!", 'icon' => "Flame", 'subText' => "items left"],
-                'pulse' => ['mainText' => "Extremely Limited Stock!", 'icon' => "AlertCircle", 'subText' => "Only 12 items remaining"],
-                'minimal' => ['mainText' => "Popular Product", 'icon' => "TrendingUp", 'subText' => "Pieces available"]
+            'linear' => [
+                'progressBarColor' => '#EC4899',
+                'stockBarBg' => '#FFFFFF',
+                'textColor' => '#111827',
+                'borderColor' => '#F1F5F9',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Hurry! Selling fast!",
+                'icon' => "Flame",
+                'subText' => "items left"
+            ],
+            'pulse' => [
+                'progressBarColor' => '#EF4444',
+                'stockBarBg' => '#FEF2F2',
+                'textColor' => '#991B1B',
+                'borderColor' => '#FEE2E2',
+                'fontSize' => '13px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Extremely Limited Stock!",
+                'icon' => "AlertCircle",
+                'subText' => "Only 12 items remaining"
+            ],
+            'minimal' => [
+                'progressBarColor' => '#3B82F6',
+                'stockBarBg' => '#F8FAFC',
+                'textColor' => '#1E293B',
+                'borderColor' => '#E2E8F0',
+                'fontSize' => '11px',
+                'fontWeight' => 'Medium',
+                'mainText' => "Popular Product",
+                'icon' => "TrendingUp",
+                'subText' => "Pieces available"
+            ],
+            'countdown' => [
+                'progressBarColor' => '#F59E0B',
+                'stockBarBg' => '#FFFBEB',
+                'textColor' => '#92400E',
+                'borderColor' => '#FEF3C7',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Flash Sale Ends In",
+                'icon' => "Clock",
+                'subText' => "left",
+                'hours' => "15",
+                'minutes' => "30",
+                'seconds' => "45"
+            ],
+            'badge' => [
+                'progressBarColor' => '#10B981',
+                'stockBarBg' => '#F0FDF4',
+                'textColor' => '#065F46',
+                'borderColor' => '#DCFCE7',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Limited Stock",
+                'icon' => "Package",
+                'subText' => "left"
             ]
         ];
 

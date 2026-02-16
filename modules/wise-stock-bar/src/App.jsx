@@ -37,7 +37,12 @@ const TEMPLATES = [
             progressBarColor: '#EC4899',
             stockBarBg: '#FFFFFF',
             textColor: '#111827',
-            borderColor: '#F1F5F9'
+            borderColor: '#F1F5F9',
+            fontSize: '12px',
+            fontWeight: 'Bold',
+            mainText: "Hurry! Selling fast!",
+            icon: "Flame",
+            subText: "items left"
         }
     },
     {
@@ -50,7 +55,12 @@ const TEMPLATES = [
             progressBarColor: '#EF4444',
             stockBarBg: '#FEF2F2',
             textColor: '#991B1B',
-            borderColor: '#FEE2E2'
+            borderColor: '#FEE2E2',
+            fontSize: '13px',
+            fontWeight: 'Bold',
+            mainText: "Extremely Limited Stock!",
+            icon: "AlertCircle",
+            subText: "Only 12 items remaining"
         }
     },
     {
@@ -63,7 +73,12 @@ const TEMPLATES = [
             progressBarColor: '#3B82F6',
             stockBarBg: '#F8FAFC',
             textColor: '#1E293B',
-            borderColor: '#E2E8F0'
+            borderColor: '#E2E8F0',
+            fontSize: '11px',
+            fontWeight: 'Medium',
+            mainText: "Popular Product",
+            icon: "TrendingUp",
+            subText: "Pieces available"
         }
     },
     {
@@ -76,7 +91,15 @@ const TEMPLATES = [
             progressBarColor: '#F59E0B',
             stockBarBg: '#FFFBEB',
             textColor: '#92400E',
-            borderColor: '#FEF3C7'
+            borderColor: '#FEF3C7',
+            fontSize: '12px',
+            fontWeight: 'Bold',
+            mainText: "Flash Sale Ends In",
+            icon: "Clock",
+            subText: "left",
+            hours: "15",
+            minutes: "30",
+            seconds: "45"
         }
     },
     {
@@ -89,7 +112,12 @@ const TEMPLATES = [
             progressBarColor: '#10B981',
             stockBarBg: '#F0FDF4',
             textColor: '#065F46',
-            borderColor: '#DCFCE7'
+            borderColor: '#DCFCE7',
+            fontSize: '12px',
+            fontWeight: 'Bold',
+            mainText: "Limited Stock",
+            icon: "Package",
+            subText: "left"
         }
     }
 ];
@@ -115,21 +143,12 @@ function App() {
     const [device, setDevice] = useState('desktop');
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [selectedTemplateId, setSelectedTemplateId] = useState('linear');
-    const [config, setConfig] = useState({
-        progressBarColor: '#EC4899',
-        progressBg: '#F1F5F9',
-        stockBarBg: '#FFFFFF',
-        textColor: '#111827',
-        borderColor: '#F1F5F9',
-        fontSize: '12px',
-        fontWeight: 'Bold',
-        content: {
-            linear: { mainText: "Hurry! Selling fast!", icon: "Flame", subText: "items left" },
-            pulse: { mainText: "Extremely Limited Stock!", icon: "AlertCircle", subText: "Only 12 items remaining" },
-            minimal: { mainText: "Popular Product", icon: "TrendingUp", subText: "Pieces available" },
-            countdown: { mainText: "Flash Sale Ends In", icon: "Clock", subText: "left" },
-            badge: { mainText: "Limited Stock", icon: "Package", subText: "left" }
-        }
+    const [config, setConfig] = useState(() => {
+        const initialConfig = {};
+        TEMPLATES.forEach(t => {
+            initialConfig[t.id] = { ...t.config };
+        });
+        return initialConfig;
     });
 
     const [displaySettings, setDisplaySettings] = useState({
@@ -148,8 +167,19 @@ function App() {
         } else {
             // If storefront, we already have data in window.wiseStockbarData.config
             if (window.wiseStockbarData?.config) {
-                setConfig(window.wiseStockbarData.config);
-                setSelectedTemplateId(window.wiseStockbarData.config.id || 'linear');
+                const incoming = window.wiseStockbarData.config;
+                const id = incoming.id || 'linear';
+
+                // Detection: if top level has colors, it might be legacy
+                if (incoming.progressBarColor && !incoming[id]) {
+                    setConfig(prev => ({
+                        ...prev,
+                        [id]: { ...prev[id], ...incoming }
+                    }));
+                } else {
+                    setConfig(incoming);
+                }
+                setSelectedTemplateId(id);
             }
             setIsLoading(false);
         }
@@ -166,9 +196,20 @@ function App() {
             // Find active one
             const activeBar = stockbars.find(b => b.isActive) || stockbars[0];
             if (activeBar) {
-                const { db_id, name, isActive, ...restConfig } = activeBar;
-                setConfig(prev => ({ ...prev, ...restConfig, db_id }));
-                setSelectedTemplateId(activeBar.id || 'linear');
+                const { db_id, name, isActive, id: barId, ...restConfig } = activeBar;
+                const id = barId || 'linear';
+
+                // Detection: if restConfig has colors at top level, it's legacy
+                if (restConfig.progressBarColor && !restConfig[id]) {
+                    setConfig(prev => ({
+                        ...prev,
+                        [id]: { ...prev[id], ...restConfig },
+                        db_id
+                    }));
+                } else {
+                    setConfig(prev => ({ ...prev, ...restConfig, db_id }));
+                }
+                setSelectedTemplateId(id);
             }
 
             // Fetch Display Settings
@@ -229,33 +270,25 @@ function App() {
 
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId);
 
-    const handleConfigChange = (key, value) => {
-        setConfig(prev => ({ ...prev, [key]: value }));
-    };
+    const activeConfig = config[selectedTemplateId] || TEMPLATES[0].config;
 
-    const handleContentChange = (key, value) => {
+    const handleConfigChange = (key, value) => {
         setConfig(prev => ({
             ...prev,
-            content: {
-                ...prev.content,
-                [selectedTemplateId]: {
-                    ...prev.content[selectedTemplateId],
-                    [key]: value
-                }
+            [selectedTemplateId]: {
+                ...prev[selectedTemplateId],
+                [key]: value
             }
         }));
     };
+
+    const handleContentChange = handleConfigChange; // Unify handlers
 
     const getFontSizeClass = (size) => {
         if (typeof size === 'string' && size.endsWith('px')) {
             return `text-[${size}]`;
         }
-        // Fallback for legacy data
-        switch (size) {
-            case 'S': return 'text-[10px]';
-            case 'L': return 'text-[14px]';
-            default: return 'text-[12px]';
-        }
+        return 'text-[12px]';
     };
 
     const getFontWeightClass = (weight) => {
@@ -270,7 +303,7 @@ function App() {
     };
 
     const ActiveIcon = ({ size = 20, className = '', fill = 'none' }) => {
-        const iconName = config.content[selectedTemplateId]?.icon;
+        const iconName = activeConfig.icon;
         const IconComp = ICON_MAP[iconName] || ICON_MAP.Flame;
         return <IconComp size={size} className={className} fill={fill} />;
     };
@@ -288,9 +321,9 @@ function App() {
             <div
                 className={`w-full overflow-hidden transition-all duration-500`}
                 style={{
-                    backgroundColor: config.stockBarBg,
-                    color: config.textColor,
-                    border: `1px solid ${config.borderColor}`,
+                    backgroundColor: activeConfig.stockBarBg,
+                    color: activeConfig.textColor,
+                    border: `1px solid ${activeConfig.borderColor}`,
                     borderRadius: '16px',
                     padding: '20px'
                 }}
@@ -299,15 +332,15 @@ function App() {
                     <div className="space-y-5">
                         <div className="flex items-center justify-between text-left">
                             <div className="flex items-center gap-2.5">
-                                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shadow-sm">
+                                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shadow-sm" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
                                     <ActiveIcon size={14} fill="currentColor" />
                                 </div>
-                                <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tight`}>
-                                    {config.content.linear.mainText}
+                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
+                                    {activeConfig.mainText}
                                 </span>
                             </div>
                             <span className="text-[10px] font-black opacity-50 uppercase tracking-widest text-right">
-                                {stockInfo.availableItems} {config.content.linear.subText}
+                                {stockInfo.availableItems} {activeConfig.subText}
                             </span>
                         </div>
                         <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
@@ -315,8 +348,8 @@ function App() {
                                 className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out flex items-center justify-end px-2"
                                 style={{
                                     width: `${stockInfo.percentage}%`,
-                                    background: config.progressBarColor,
-                                    boxShadow: `0 0 20px ${config.progressBarColor}40`
+                                    background: activeConfig.progressBarColor,
+                                    boxShadow: `0 0 20px ${activeConfig.progressBarColor}40`
                                 }}
                             >
                                 <div className="w-1 h-1 bg-white rounded-full animate-pulse opacity-50"></div>
@@ -328,16 +361,16 @@ function App() {
                 {selectedTemplateId === 'pulse' && (
                     <div className="flex flex-col items-center gap-3 py-2">
                         <div className="flex items-center gap-3 text-left">
-                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
                                 <ActiveIcon size={20} />
-                                <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20"></div>
+                                <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20" style={{ backgroundColor: activeConfig.progressBarColor }}></div>
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tighter leading-none mb-1`}>
-                                    {config.content.pulse.mainText}
+                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tighter leading-none mb-1`}>
+                                    {activeConfig.mainText}
                                 </span>
-                                <span className="text-[10px] font-bold opacity-50 uppercase tracking-widest">
-                                    {stockInfo.availableItems} {config.content.pulse.subText}
+                                <span className="text-[10px] font-black opacity-40 uppercase tracking-widest">
+                                    {activeConfig.subText}
                                 </span>
                             </div>
                         </div>
@@ -345,46 +378,47 @@ function App() {
                 )}
 
                 {selectedTemplateId === 'minimal' && (
-                    <div className="flex items-center justify-center gap-4 py-1">
-                        <div className="flex items-center gap-2 text-left">
-                            <ActiveIcon size={16} className="text-blue-500" />
-                            <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-widest border-r pr-4 border-slate-200`}>
-                                {config.content.minimal.mainText}
+                    <div className="flex flex-col items-center gap-2 py-2">
+                        <div className="flex items-center gap-2.5">
+                            <div className="text-blue-600" style={{ color: activeConfig.progressBarColor }}>
+                                <ActiveIcon size={18} />
+                            </div>
+                            <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
+                                {activeConfig.mainText}
                             </span>
                         </div>
-                        <div className="flex items-center gap-1.5 text-left">
-                            <span className="text-xl font-black text-red-500">{stockInfo.availableItems}</span>
-                            <span className="text-[10px] font-black opacity-40 uppercase tracking-widest">{config.content.minimal.subText}</span>
-                        </div>
+                        <span className="text-[10px] font-black opacity-40 uppercase tracking-[0.2em] scale-90">
+                            {stockInfo.availableItems} {activeConfig.subText}
+                        </span>
                     </div>
                 )}
 
                 {selectedTemplateId === 'countdown' && (
                     <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3 text-left">
-                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 relative shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
                                 <ActiveIcon size={18} />
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-pulse"></div>
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-pulse" style={{ backgroundColor: activeConfig.progressBarColor }}></div>
                             </div>
                             <div className="flex flex-col">
-                                <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tight`}>
-                                    {config.content.countdown?.mainText || "Flash Sale"}
+                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
+                                    {activeConfig.mainText}
                                 </span>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="flex gap-1">
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">15</div>
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.hours || '00'}</div>
                                         <span className="text-[8px] font-black opacity-40">h</span>
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">30</div>
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.minutes || '00'}</div>
                                         <span className="text-[8px] font-black opacity-40">m</span>
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black">45</div>
+                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.seconds || '00'}</div>
                                         <span className="text-[8px] font-black opacity-40">s</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div className="text-right">
-                            <span className="text-xl font-black text-amber-600">{stockInfo.availableItems}</span>
-                            <span className="text-[8px] font-black opacity-40 block">{config.content.countdown?.subText || "left"}</span>
+                            <span className="text-xl font-black" style={{ color: activeConfig.progressBarColor }}>{stockInfo.availableItems}</span>
+                            <span className="text-[8px] font-black opacity-40 block">{activeConfig.subText}</span>
                         </div>
                     </div>
                 )}
@@ -392,16 +426,16 @@ function App() {
                 {selectedTemplateId === 'badge' && (
                     <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3 text-left">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 relative shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
                                 <ActiveIcon size={16} />
                             </div>
-                            <span className={`${getFontSizeClass(config.fontSize)} ${getFontWeightClass(config.fontWeight)} uppercase tracking-tight`}>
-                                {config.content.badge?.mainText || "Limited Stock"}
+                            <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
+                                {activeConfig.mainText}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="bg-emerald-500 text-white px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider">
-                                {stockInfo.availableItems} {config.content.badge?.subText || "left"}
+                            <div className="text-white px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider" style={{ backgroundColor: activeConfig.progressBarColor }}>
+                                {stockInfo.availableItems} {activeConfig.subText}
                             </div>
                         </div>
                     </div>
@@ -444,7 +478,7 @@ function App() {
                                             if (template.config) {
                                                 setConfig(prev => ({
                                                     ...prev,
-                                                    ...template.config
+                                                    [template.id]: { ...template.config }
                                                 }));
                                             }
                                             setShowTemplateModal(false);
@@ -658,31 +692,30 @@ function App() {
                                         <Palette size={16} className="text-blue-600" />
                                         Color Settings
                                     </h3>
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         {[
-                                            { id: 'progressBarColor', label: 'Progress Bar Color' },
-                                            { id: 'progressBg', label: 'Progress Background' },
-                                            { id: 'stockBarBg', label: 'Stock Bar Background' },
+                                            { id: 'progressBarColor', label: 'Primary Color' },
+                                            { id: 'stockBarBg', label: 'Background' },
                                             { id: 'textColor', label: 'Text Color' },
-                                            { id: 'borderColor', label: 'Border Color' }
+                                            { id: 'borderColor', label: 'Border Color' },
                                         ].map((item) => (
-                                            <div key={item.id} className="flex items-center justify-between p-3 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors group">
+                                            <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-white">
                                                 <span className="text-xs font-bold text-slate-600">{item.label}</span>
                                                 <div className="flex items-center gap-3">
                                                     <input
                                                         type="text"
-                                                        value={config[item.id]}
+                                                        value={activeConfig[item.id]}
                                                         onChange={(e) => handleConfigChange(item.id, e.target.value)}
                                                         className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
                                                     <div className="relative group/color cursor-pointer">
                                                         <div
                                                             className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: config[item.id] }}
+                                                            style={{ backgroundColor: activeConfig[item.id] }}
                                                         />
                                                         <input
                                                             type="color"
-                                                            value={config[item.id]}
+                                                            value={activeConfig[item.id]}
                                                             onChange={(e) => handleConfigChange(item.id, e.target.value)}
                                                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                                         />
@@ -707,11 +740,11 @@ function App() {
                                                     type="range"
                                                     min="5"
                                                     max="50"
-                                                    value={parseInt(config.fontSize)}
+                                                    value={parseInt(activeConfig.fontSize)}
                                                     onChange={(e) => handleConfigChange('fontSize', `${e.target.value}px`)}
                                                     className="w-32 accent-blue-600 cursor-pointer"
                                                 />
-                                                <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.fontSize}</span>
+                                                <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{activeConfig.fontSize}</span>
                                             </div>
                                         </div>
 
@@ -722,7 +755,7 @@ function App() {
                                                     <button
                                                         key={w}
                                                         onClick={() => handleConfigChange('fontWeight', w)}
-                                                        className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all ${config.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all ${activeConfig.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
                                                     >
                                                         {w}
                                                     </button>
@@ -736,49 +769,83 @@ function App() {
 
                         {activeTab === 'content' && (
                             <section className="space-y-8">
-                                <div>
-                                    <h3 className="text-sm font-black mb-4 flex items-center gap-2">
-                                        <SettingsIcon size={16} className="text-blue-600" />
-                                        Content Icon
-                                    </h3>
-                                    <div className="grid grid-cols-5 gap-2">
-                                        {Object.keys(ICON_MAP).map(iconName => {
-                                            const IconComp = ICON_MAP[iconName];
-                                            const isActive = config.content[selectedTemplateId]?.icon === iconName;
-                                            return (
-                                                <button
-                                                    key={iconName}
-                                                    onClick={() => handleContentChange('icon', iconName)}
-                                                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-center ${isActive ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm' : 'border-slate-100 hover:border-slate-200 text-slate-400'}`}
-                                                >
-                                                    <IconComp size={20} />
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
                                 <div className="space-y-5">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Main Message</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Main Message</label>
                                         <input
                                             type="text"
-                                            value={config.content[selectedTemplateId]?.mainText}
-                                            onChange={(e) => handleContentChange('mainText', e.target.value)}
-                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-400 focus:bg-white transition-all shadow-sm"
-                                            placeholder="Enter message..."
+                                            value={activeConfig.mainText}
+                                            onChange={(e) => handleConfigChange('mainText', e.target.value)}
+                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                         />
                                     </div>
+
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                                            {selectedTemplateId === 'pulse' ? 'Subtext Message' : 'Counter Label'}
-                                        </label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Subtext (Value)</label>
                                         <input
                                             type="text"
-                                            value={config.content[selectedTemplateId]?.subText}
-                                            onChange={(e) => handleContentChange('subText', e.target.value)}
-                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-blue-400 focus:bg-white transition-all shadow-sm"
-                                            placeholder="e.g. items left"
+                                            value={activeConfig.subText}
+                                            onChange={(e) => handleConfigChange('subText', e.target.value)}
+                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                         />
+                                    </div>
+
+                                    {selectedTemplateId === 'countdown' && (
+                                        <div className="space-y-3 p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
+                                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest pl-1 flex items-center gap-2">
+                                                <Timer size={12} /> Timer Configuration
+                                            </label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div className="space-y-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Hours</span>
+                                                    <input
+                                                        type="number"
+                                                        value={activeConfig.hours}
+                                                        onChange={(e) => handleConfigChange('hours', e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
+                                                        placeholder="HH"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Mins</span>
+                                                    <input
+                                                        type="number"
+                                                        value={activeConfig.minutes}
+                                                        onChange={(e) => handleConfigChange('minutes', e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
+                                                        placeholder="MM"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Secs</span>
+                                                    <input
+                                                        type="number"
+                                                        value={activeConfig.seconds}
+                                                        onChange={(e) => handleConfigChange('seconds', e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
+                                                        placeholder="SS"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between px-1 mb-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Content Icon</label>
+                                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">{activeConfig.icon}</span>
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {Object.keys(ICON_MAP).map(iconName => (
+                                                <button
+                                                    key={iconName}
+                                                    onClick={() => handleConfigChange('icon', iconName)}
+                                                    className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center ${activeConfig.icon === iconName ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-50 bg-white text-slate-400 hover:border-slate-200'}`}
+                                                >
+                                                    {React.createElement(ICON_MAP[iconName], { size: 18 })}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </section>
