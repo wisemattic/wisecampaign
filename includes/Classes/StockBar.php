@@ -101,9 +101,7 @@ class StockBar
                 'mainText' => "Flash Sale Ends In",
                 'icon' => "Clock",
                 'subText' => "left",
-                'hours' => "15",
-                'minutes' => "30",
-                'seconds' => "45"
+                'timerExpiry' => ""
             ],
             'badge' => [
                 'progressBarColor' => '#10B981',
@@ -301,7 +299,12 @@ class StockBar
                 'borderColor',
                 'fontSize',
                 'fontWeight',
-                'content'
+                'content',
+                'linear',
+                'pulse',
+                'minimal',
+                'countdown',
+                'badge'
             ];
 
             foreach ($fields_to_save as $field) {

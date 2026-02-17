@@ -97,9 +97,7 @@ const TEMPLATES = [
             mainText: "Flash Sale Ends In",
             icon: "Clock",
             subText: "left",
-            hours: "15",
-            minutes: "30",
-            seconds: "45"
+            timerExpiry: ""
         }
     },
     {
@@ -268,9 +266,8 @@ function App() {
         }
     };
 
-    const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId);
-
-    const activeConfig = config[selectedTemplateId] || TEMPLATES[0].config;
+    const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
+    const activeConfig = config[selectedTemplateId] || activeTemplate.config;
 
     const handleConfigChange = (key, value) => {
         setConfig(prev => ({
@@ -308,13 +305,90 @@ function App() {
         return <IconComp size={size} className={className} fill={fill} />;
     };
 
+    const CountdownTimer = ({ expiryDate, textColor }) => {
+        const [timeLeft, setTimeLeft] = useState({ hours: '00', minutes: '00', seconds: '00', expired: false });
+
+        useEffect(() => {
+            if (!expiryDate) return;
+
+            const calculateTimeLeft = () => {
+                const difference = +new Date(expiryDate) - +new Date();
+                let timeLeft = {};
+
+                if (difference > 0) {
+                    timeLeft = {
+                        hours: Math.floor((difference / (1000 * 60 * 60))).toString().padStart(2, '0'),
+                        minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, '0'),
+                        seconds: Math.floor((difference / 1000) % 60).toString().padStart(2, '0'),
+                        expired: false
+                    };
+                } else {
+                    timeLeft = { hours: '00', minutes: '00', seconds: '00', expired: true };
+                }
+                return timeLeft;
+            };
+
+            const timer = setInterval(() => {
+                setTimeLeft(calculateTimeLeft());
+            }, 1000);
+
+            setTimeLeft(calculateTimeLeft());
+
+            return () => clearInterval(timer);
+        }, [expiryDate]);
+
+        if (timeLeft.expired && isStorefront) return null;
+
+        return (
+            <div className="flex gap-1">
+                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.hours}</div>
+                <span className="text-[8px] font-black opacity-40">h</span>
+                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.minutes}</div>
+                <span className="text-[8px] font-black opacity-40">m</span>
+                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.seconds}</div>
+                <span className="text-[8px] font-black opacity-40">s</span>
+            </div>
+        );
+    };
+
     const StockBarContent = () => {
+        const [isExpired, setIsExpired] = useState(false);
+
+        useEffect(() => {
+            if (selectedTemplateId === 'countdown' && activeConfig.timerExpiry) {
+                const checkExpiry = () => {
+                    const difference = +new Date(activeConfig.timerExpiry) - +new Date();
+                    if (difference <= 0) {
+                        setIsExpired(true);
+                        return true;
+                    }
+                    setIsExpired(false);
+                    return false;
+                };
+
+                if (!checkExpiry()) {
+                    const timer = setInterval(() => {
+                        if (checkExpiry()) {
+                            clearInterval(timer);
+                        }
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }
+            } else {
+                setIsExpired(false);
+            }
+        }, [selectedTemplateId, activeConfig.timerExpiry]);
+
         if (isLoading) {
             return (
                 <div className="flex items-center justify-center p-8 bg-slate-50 rounded-2xl">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
             );
+        }
+
+        if (isExpired && selectedTemplateId === 'countdown' && isStorefront) {
+            return null;
         }
 
         return (
@@ -405,14 +479,7 @@ function App() {
                                     {activeConfig.mainText}
                                 </span>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <div className="flex gap-1">
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.hours || '00'}</div>
-                                        <span className="text-[8px] font-black opacity-40">h</span>
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.minutes || '00'}</div>
-                                        <span className="text-[8px] font-black opacity-40">m</span>
-                                        <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${activeConfig.textColor}10`, color: activeConfig.textColor }}>{activeConfig.seconds || '00'}</div>
-                                        <span className="text-[8px] font-black opacity-40">s</span>
-                                    </div>
+                                    <CountdownTimer expiryDate={activeConfig.timerExpiry} textColor={activeConfig.textColor} />
                                 </div>
                             </div>
                         </div>
@@ -795,37 +862,14 @@ function App() {
                                             <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest pl-1 flex items-center gap-2">
                                                 <Timer size={12} /> Timer Configuration
                                             </label>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Hours</span>
-                                                    <input
-                                                        type="number"
-                                                        value={activeConfig.hours}
-                                                        onChange={(e) => handleConfigChange('hours', e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
-                                                        placeholder="HH"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Mins</span>
-                                                    <input
-                                                        type="number"
-                                                        value={activeConfig.minutes}
-                                                        onChange={(e) => handleConfigChange('minutes', e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
-                                                        placeholder="MM"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Secs</span>
-                                                    <input
-                                                        type="number"
-                                                        value={activeConfig.seconds}
-                                                        onChange={(e) => handleConfigChange('seconds', e.target.value)}
-                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
-                                                        placeholder="SS"
-                                                    />
-                                                </div>
+                                            <div className="space-y-1">
+                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Expiry Date & Time</span>
+                                                <input
+                                                    type="datetime-local"
+                                                    value={activeConfig.timerExpiry || ""}
+                                                    onChange={(e) => handleConfigChange('timerExpiry', e.target.value)}
+                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
+                                                />
                                             </div>
                                         </div>
                                     )}
