@@ -101,6 +101,7 @@ class StockBar
                 'mainText' => "Flash Sale Ends In",
                 'icon' => "Clock",
                 'subText' => "left",
+                'labelPosition' => "top",
                 'timerExpiry' => ""
             ],
             'badge' => [

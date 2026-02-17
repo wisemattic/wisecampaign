@@ -97,6 +97,10 @@ const TEMPLATES = [
             mainText: "Flash Sale Ends In",
             icon: "Clock",
             subText: "left",
+            labelPosition: "top",
+            hoursLabel: "h",
+            minutesLabel: "m",
+            secondsLabel: "s",
             timerExpiry: ""
         }
     },
@@ -267,7 +271,7 @@ function App() {
     };
 
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
-    const activeConfig = config[selectedTemplateId] || activeTemplate.config;
+    const activeConfig = { ...activeTemplate.config, ...(config[selectedTemplateId] || {}) };
 
     const handleConfigChange = (key, value) => {
         setConfig(prev => ({
@@ -305,7 +309,7 @@ function App() {
         return <IconComp size={size} className={className} fill={fill} />;
     };
 
-    const CountdownTimer = ({ expiryDate, textColor }) => {
+    const CountdownTimer = ({ expiryDate, textColor, hoursLabel = 'h', minutesLabel = 'm', secondsLabel = 's' }) => {
         const [timeLeft, setTimeLeft] = useState({ hours: '00', minutes: '00', seconds: '00', expired: false });
 
         useEffect(() => {
@@ -342,11 +346,11 @@ function App() {
         return (
             <div className="flex gap-1">
                 <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.hours}</div>
-                <span className="text-[8px] font-black opacity-40">h</span>
+                <span className="text-[8px] font-black opacity-40">{hoursLabel}</span>
                 <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.minutes}</div>
-                <span className="text-[8px] font-black opacity-40">m</span>
+                <span className="text-[8px] font-black opacity-40">{minutesLabel}</span>
                 <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.seconds}</div>
-                <span className="text-[8px] font-black opacity-40">s</span>
+                <span className="text-[8px] font-black opacity-40">{secondsLabel}</span>
             </div>
         );
     };
@@ -474,12 +478,23 @@ function App() {
                                 <ActiveIcon size={18} />
                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-pulse" style={{ backgroundColor: activeConfig.progressBarColor }}></div>
                             </div>
-                            <div className="flex flex-col">
+                            <div className={`flex ${activeConfig.labelPosition === 'below' ? 'flex-col-reverse' :
+                                activeConfig.labelPosition === 'right' ? 'flex-row-reverse items-center gap-3' :
+                                    activeConfig.labelPosition === 'left' ? 'flex-row items-center gap-3' :
+                                        'flex-col'
+                                }`}>
                                 <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
                                     {activeConfig.mainText}
                                 </span>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <CountdownTimer expiryDate={activeConfig.timerExpiry} textColor={activeConfig.textColor} />
+                                <div className={`flex items-center gap-2 ${(activeConfig.labelPosition === 'top' || activeConfig.labelPosition === 'below' || !activeConfig.labelPosition) ? 'mt-1' : ''
+                                    }`}>
+                                    <CountdownTimer
+                                        expiryDate={activeConfig.timerExpiry}
+                                        textColor={activeConfig.textColor}
+                                        hoursLabel={activeConfig.hoursLabel}
+                                        minutesLabel={activeConfig.minutesLabel}
+                                        secondsLabel={activeConfig.secondsLabel}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -550,10 +565,10 @@ function App() {
                                             }
                                             setShowTemplateModal(false);
                                         }}
-                                        className={`group flex flex-col items-start p-4 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
+                                        className={`group flex flex-col items-start p-2 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
                                     >
                                         {/* Large Stock Bar Design Preview */}
-                                        <div className="w-full aspect-[2.5/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-4 group-hover:bg-slate-100 transition-colors">
+                                        <div className="w-full aspect-[2.5/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-2 group-hover:bg-slate-100 transition-colors">
                                             <div className="w-full scale-100">
                                                 {template.id === 'linear' && (
                                                     <div className="w-full h-full flex flex-col justify-center gap-3">
@@ -862,6 +877,22 @@ function App() {
                                             <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest pl-1 flex items-center gap-2">
                                                 <Timer size={12} /> Timer Configuration
                                             </label>
+
+                                            <div className="space-y-1 mb-2">
+                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Label Position</span>
+                                                <div className="flex bg-white rounded-lg border border-slate-200 p-1">
+                                                    {['left', 'top', 'right', 'below'].map(pos => (
+                                                        <button
+                                                            key={pos}
+                                                            onClick={() => handleConfigChange('labelPosition', pos)}
+                                                            className={`flex-1 py-1 text-[10px] font-black uppercase rounded transition-all ${activeConfig.labelPosition === pos ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                        >
+                                                            {pos}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
                                             <div className="space-y-1">
                                                 <span className="text-[9px] font-bold text-slate-400 ml-1">Expiry Date & Time</span>
                                                 <input
@@ -870,6 +901,42 @@ function App() {
                                                     onChange={(e) => handleConfigChange('timerExpiry', e.target.value)}
                                                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
                                                 />
+                                            </div>
+
+                                            <div className="space-y-1">
+                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Unit Labels</span>
+                                                <div className="flex gap-2">
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Hours</span>
+                                                        <input
+                                                            type="text"
+                                                            value={activeConfig.hoursLabel || 'h'}
+                                                            onChange={(e) => handleConfigChange('hoursLabel', e.target.value)}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                            maxLength={2}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Mins</span>
+                                                        <input
+                                                            type="text"
+                                                            value={activeConfig.minutesLabel || 'm'}
+                                                            onChange={(e) => handleConfigChange('minutesLabel', e.target.value)}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                            maxLength={2}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Secs</span>
+                                                        <input
+                                                            type="text"
+                                                            value={activeConfig.secondsLabel || 's'}
+                                                            onChange={(e) => handleConfigChange('secondsLabel', e.target.value)}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                            maxLength={2}
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

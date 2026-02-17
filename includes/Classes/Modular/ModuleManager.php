@@ -71,6 +71,10 @@ class ModuleManager
                 continue;
             }
 
+
+            // Enqueue WordPress Media
+            wp_enqueue_media();
+
             $module_dist_path = $this->plugin_path . $module['module_path'] . '/dist/';
             $module_dist_url = wp_make_link_relative($this->plugin_url . $module['module_path'] . '/dist/');
 

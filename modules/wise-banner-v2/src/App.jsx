@@ -120,6 +120,7 @@ function App() {
         subHeadlineSize: '12px',
         subHeadlineColor: '#E2E8F0',
         subHeadlineWeight: '500',
+        showSubHeadline: true,
         showTimer: true,
         endDate: '2025-12-31',
         endTime: '23:59',
@@ -133,7 +134,16 @@ function App() {
         ctaTextColor: '#111827',
         ctaRadius: '12px',
         showBogoBadge: false,
+        badgeType: 'text',
+        badgeImage: '',
         bogoText: '50% OFF',
+        badgeBgColor: '#EF4444',
+        badgeTextColor: '#FFFFFF',
+        badgeRotation: '-12deg',
+        timerLabelPosition: 'left',
+        daysLabel: 'D',
+        hoursLabel: 'H',
+        minutesLabel: 'M',
         isActive: true
     });
 
@@ -222,10 +232,34 @@ function App() {
         }
     };
 
+    const handleImageUpload = () => {
+        if (window.wp && window.wp.media) {
+            const mediaFrame = window.wp.media({
+                title: 'Select Badge Image',
+                multiple: false,
+                library: {
+                    type: 'image'
+                },
+                button: {
+                    text: 'Use this image'
+                }
+            });
+
+            mediaFrame.on('select', () => {
+                const attachment = mediaFrame.state().get('selection').first().toJSON();
+                setConfig(prev => ({ ...prev, badgeImage: attachment.url }));
+            });
+
+            mediaFrame.open();
+        } else {
+            alert('WordPress Media Library not available. Please ensure you are logged in as admin.');
+        }
+    };
+
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
 
-    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label }) => {
+    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M' }) => {
         const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00' });
 
         useEffect(() => {
@@ -257,14 +291,24 @@ function App() {
             return () => clearInterval(timer);
         }, [endDate, endTime]);
 
+        const getFlexDirection = () => {
+            switch (labelPosition) {
+                case 'top': return 'flex-col items-center';
+                case 'bottom': return 'flex-col-reverse items-center';
+                case 'right': return 'flex-row-reverse items-center';
+                case 'left':
+                default: return 'flex-row items-center';
+            }
+        };
+
         return (
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                <span className="text-[7px] sm:text-[9px] font-black tracking-[0.1em] sm:tracking-[0.2em] opacity-60 uppercase" style={{ color: textColor }}>{label}</span>
+            <div className={`flex gap-2 sm:gap-4 shrink-0 ${getFlexDirection()}`}>
+                <span className="text-[7px] sm:text-[9px] font-black tracking-[0.1em] sm:tracking-[0.2em] opacity-60 uppercase whitespace-nowrap" style={{ color: textColor }}>{label}</span>
                 <div className="flex gap-1 sm:gap-2">
                     {[
-                        { val: timeLeft.days, label: 'D' },
-                        { val: timeLeft.hrs, label: 'H' },
-                        { val: timeLeft.min, label: 'M' }
+                        { val: timeLeft.days, label: daysLabel },
+                        { val: timeLeft.hrs, label: hoursLabel },
+                        { val: timeLeft.min, label: minutesLabel }
                     ].map((t, idx) => (
                         <React.Fragment key={idx}>
                             <div
@@ -303,10 +347,30 @@ function App() {
                 {config.showBogoBadge && (
                     <div className="absolute -left-2 -top-2 z-[10000] animate-bounce-subtle pointer-events-none">
                         <div className="relative group">
-                            <div className="absolute inset-0 bg-red-600 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity" />
-                            <div className="relative bg-gradient-to-br from-red-500 to-red-700 text-white font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center rotate-[-12deg] tracking-tighter">
-                                {config.bogoText}
-                            </div>
+                            {config.badgeType === 'image' && config.badgeImage ? (
+                                <img
+                                    src={config.badgeImage}
+                                    alt="Badge"
+                                    className="w-16 sm:w-20 object-contain drop-shadow-xl hover:scale-105 transition-transform"
+                                />
+                            ) : (
+                                <>
+                                    <div
+                                        className="absolute inset-0 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity"
+                                        style={{ backgroundColor: config.badgeBgColor }}
+                                    />
+                                    <div
+                                        className="relative font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter"
+                                        style={{
+                                            backgroundColor: config.badgeBgColor,
+                                            color: config.badgeTextColor,
+                                            transform: `rotate(${config.badgeRotation || '-12deg'})`
+                                        }}
+                                    >
+                                        {config.bogoText}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
@@ -321,16 +385,18 @@ function App() {
                     >
                         {config.headline}
                     </span>
-                    <span
-                        className="font-bold tracking-tight mt-0.5 line-clamp-2 md:line-clamp-1 opacity-90"
-                        style={{
-                            color: config.subHeadlineColor,
-                            fontSize: `clamp(11px, 1vw, ${config.subHeadlineSize})`,
-                            fontWeight: config.subHeadlineWeight
-                        }}
-                    >
-                        {config.subHeadline}
-                    </span>
+                    {config.showSubHeadline && (
+                        <span
+                            className="font-bold tracking-tight mt-0.5 line-clamp-2 md:line-clamp-1 opacity-90"
+                            style={{
+                                color: config.subHeadlineColor,
+                                fontSize: `clamp(11px, 1vw, ${config.subHeadlineSize})`,
+                                fontWeight: config.subHeadlineWeight
+                            }}
+                        >
+                            {config.subHeadline}
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 sm:gap-8 md:gap-10 w-full md:w-auto">
@@ -341,6 +407,10 @@ function App() {
                             textColor={config.timerTextColor}
                             bgColor={config.timerBgColor}
                             label={config.timerLabel}
+                            labelPosition={config.timerLabelPosition}
+                            daysLabel={config.daysLabel}
+                            hoursLabel={config.hoursLabel}
+                            minutesLabel={config.minutesLabel}
                         />
                     )}
 
@@ -376,7 +446,7 @@ function App() {
                         <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
                                 <h2 className="text-xl font-black text-[#0F172A]">Select Template</h2>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Choose a visual style for your stock bar</p>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Choose a visual style for your banner</p>
                             </div>
                             <button
                                 onClick={() => setShowTemplateModal(false)}
@@ -524,14 +594,26 @@ function App() {
                                                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                             />
                                         </div>
+
+
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Sub-headline / Promo Code</label>
-                                            <input
-                                                type="text"
-                                                value={config.subHeadline}
-                                                onChange={(e) => setConfig(prev => ({ ...prev, subHeadline: e.target.value }))}
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                            />
+                                            <div className="flex items-center justify-between pb-1">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Sub-headline / Promo Code</label>
+                                                <button
+                                                    onClick={() => setConfig(prev => ({ ...prev, showSubHeadline: !prev.showSubHeadline }))}
+                                                    className={`w-8 h-4 rounded-full transition-all relative ${config.showSubHeadline ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                >
+                                                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${config.showSubHeadline ? 'right-0.5' : 'left-0.5'}`} />
+                                                </button>
+                                            </div>
+                                            {config.showSubHeadline && (
+                                                <input
+                                                    type="text"
+                                                    value={config.subHeadline}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, subHeadline: e.target.value }))}
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                     <div className="h-[1px] bg-slate-50" />
@@ -581,6 +663,58 @@ function App() {
                                                     onChange={(e) => setConfig(prev => ({ ...prev, timerLabel: e.target.value }))}
                                                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                                 />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Position</label>
+                                                <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                    {['left', 'top', 'right', 'bottom'].map((pos) => (
+                                                        <button
+                                                            key={pos}
+                                                            onClick={() => setConfig(prev => ({ ...prev, timerLabelPosition: pos }))}
+                                                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${config.timerLabelPosition === pos ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        >
+                                                            {pos}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Unit Labels</label>
+                                                <div className="flex gap-2">
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Days</span>
+                                                        <input
+                                                            type="text"
+                                                            value={config.daysLabel}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, daysLabel: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                            placeholder="D"
+                                                            maxLength={3}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Hours</span>
+                                                        <input
+                                                            type="text"
+                                                            value={config.hoursLabel}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, hoursLabel: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                            placeholder="H"
+                                                            maxLength={3}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1 flex-1">
+                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Mins</span>
+                                                        <input
+                                                            type="text"
+                                                            value={config.minutesLabel}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, minutesLabel: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                            placeholder="M"
+                                                            maxLength={3}
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -639,16 +773,57 @@ function App() {
                                     </div>
                                     {config.showBogoBadge && (
                                         <div className="space-y-4 animate-fade-in">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
-                                                <input
-                                                    type="text"
-                                                    value={config.bogoText}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, bogoText: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
-                                                    placeholder="e.g. 50% OFF"
-                                                />
+                                            {/* Badge Type Selector */}
+                                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                <button
+                                                    onClick={() => setConfig(prev => ({ ...prev, badgeType: 'text' }))}
+                                                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'text' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                                >
+                                                    Badge Text
+                                                </button>
+                                                <button
+                                                    onClick={() => setConfig(prev => ({ ...prev, badgeType: 'image' }))}
+                                                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'image' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                                >
+                                                    Badge Image
+                                                </button>
                                             </div>
+
+                                            {config.badgeType === 'text' ? (
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
+                                                    <input
+                                                        type="text"
+                                                        value={config.bogoText}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, bogoText: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
+                                                        placeholder="e.g. 50% OFF"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Image URL</label>
+                                                    <div className="flex gap-2">
+                                                        <div className="relative flex-1">
+                                                            <input
+                                                                type="text"
+                                                                value={config.badgeImage}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, badgeImage: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                placeholder="https://..."
+                                                            />
+                                                            <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                        </div>
+                                                        <button
+                                                            onClick={handleImageUpload}
+                                                            className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
+                                                            type="button"
+                                                        >
+                                                            Upload
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     <div className="h-[1px] bg-slate-50" />
@@ -977,6 +1152,64 @@ function App() {
                                         </div>
                                     </section>
                                 )}
+
+                                {/* Badge Styling */}
+                                {config.showBogoBadge && config.badgeType === 'text' && (
+                                    <section className="space-y-4 animate-fade-in">
+                                        <div className="h-[1px] bg-slate-50" />
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Badge Styling</h3>
+
+                                        {/* Badge Background */}
+                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <span className="text-xs font-bold text-slate-600">Background</span>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={config.badgeBgColor}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, badgeBgColor: e.target.value }))}
+                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                />
+                                                <div className="relative group/color cursor-pointer">
+                                                    <div
+                                                        className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                        style={{ backgroundColor: config.badgeBgColor }}
+                                                    />
+                                                    <input
+                                                        type="color"
+                                                        value={config.badgeBgColor}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, badgeBgColor: e.target.value }))}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Badge Text Color */}
+                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <span className="text-xs font-bold text-slate-600">Text Color</span>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="text"
+                                                    value={config.badgeTextColor}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, badgeTextColor: e.target.value }))}
+                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                />
+                                                <div className="relative group/color cursor-pointer">
+                                                    <div
+                                                        className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                        style={{ backgroundColor: config.badgeTextColor }}
+                                                    />
+                                                    <input
+                                                        type="color"
+                                                        value={config.badgeTextColor}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, badgeTextColor: e.target.value }))}
+                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                )}
                             </div>
                         )}
 
@@ -1034,6 +1267,36 @@ function App() {
                                     backgroundPosition: 'center'
                                 }}
                             >
+                                {config.showBogoBadge && (
+                                    <div className="absolute -left-2 -top-2 z-[10000] animate-bounce-subtle pointer-events-none">
+                                        <div className="relative group">
+                                            {config.badgeType === 'image' && config.badgeImage ? (
+                                                <img
+                                                    src={config.badgeImage}
+                                                    alt="Badge"
+                                                    className="w-16 sm:w-20 object-contain drop-shadow-xl hover:scale-105 transition-transform"
+                                                />
+                                            ) : (
+                                                <>
+                                                    <div
+                                                        className="absolute inset-0 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity"
+                                                        style={{ backgroundColor: config.badgeBgColor }}
+                                                    />
+                                                    <div
+                                                        className="relative font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter"
+                                                        style={{
+                                                            backgroundColor: config.badgeBgColor,
+                                                            color: config.badgeTextColor,
+                                                            transform: `rotate(${config.badgeRotation || '-12deg'})`
+                                                        }}
+                                                    >
+                                                        {config.bogoText}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex flex-col flex-1">
                                     <span
                                         className="tracking-tight drop-shadow-sm line-clamp-1"
@@ -1045,16 +1308,18 @@ function App() {
                                     >
                                         {config.headline}
                                     </span>
-                                    <span
-                                        className="font-bold tracking-tight mt-0.5 line-clamp-1"
-                                        style={{
-                                            color: config.subHeadlineColor,
-                                            fontSize: config.subHeadlineSize,
-                                            fontWeight: config.subHeadlineWeight
-                                        }}
-                                    >
-                                        {config.subHeadline}
-                                    </span>
+                                    {config.showSubHeadline && (
+                                        <span
+                                            className="font-bold tracking-tight mt-0.5 line-clamp-1"
+                                            style={{
+                                                color: config.subHeadlineColor,
+                                                fontSize: config.subHeadlineSize,
+                                                fontWeight: config.subHeadlineWeight
+                                            }}
+                                        >
+                                            {config.subHeadline}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center gap-10">
@@ -1065,6 +1330,10 @@ function App() {
                                             textColor={config.timerTextColor}
                                             bgColor={config.timerBgColor}
                                             label={config.timerLabel}
+                                            labelPosition={config.timerLabelPosition}
+                                            daysLabel={config.daysLabel}
+                                            hoursLabel={config.hoursLabel}
+                                            minutesLabel={config.minutesLabel}
                                         />
                                     )}
 
