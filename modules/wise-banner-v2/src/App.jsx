@@ -96,6 +96,49 @@ const TEMPLATES = [
                 <div className="w-1/2 h-0.5 bg-yellow-400" />
             </div>
         )
+    },
+    {
+        id: 'hosting-promo',
+        name: 'Hosting Promo',
+        style: 'Badge Left',
+        description: 'High conversion design with prominent badge and timer.',
+        config: {
+            bgType: 'gradient',
+            bgGradient: 'linear-gradient(90deg, #0ea5e9 0%, #2563eb 100%)',
+            headline: 'Get 10% Off Hosting: on 12 months plans & Longer!',
+            headlineColor: '#FFFFFF',
+            headlineSize: '16px',
+            subHeadline: 'Promocode: RECHARGE100',
+            subHeadlineColor: '#E0F2FE',
+            subHeadlineSize: '12px',
+            showSubHeadline: true,
+            showTimer: true,
+            timerTextColor: '#FFFFFF',
+            timerBgColor: 'rgba(255, 255, 255, 0.2)',
+            timerLabel: '',
+            timerLabelPosition: 'top',
+            daysLabel: 'DAYS',
+            hoursLabel: 'HOURS',
+            minutesLabel: 'MIN',
+            showCTA: true,
+            ctaText: 'Claim Offer >',
+            ctaBg: '#FACC15',
+            ctaTextColor: '#000000',
+            ctaRadius: '4px',
+            showBogoBadge: true,
+            badgeType: 'text',
+            bogoText: '50% OFF',
+            badgeBgColor: '#FACC15',
+            badgeTextColor: '#000000',
+            badgeRotation: '0deg'
+        },
+        icon: (
+            <div className="w-full h-full rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 flex items-center px-4 justify-between relative overflow-hidden">
+                <div className="absolute -left-1 -top-1 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[5px] font-black text-black shadow-sm z-10">50%</div>
+                <div className="flex-1 ml-6 h-2 bg-white/20 rounded-sm"></div>
+                <div className="w-10 h-3 bg-yellow-400 rounded-sm ml-2"></div>
+            </div>
+        )
     }
 ];
 
@@ -259,7 +302,7 @@ function App() {
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
 
-    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M' }) => {
+    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', isMobileMode = false }) => {
         const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00' });
 
         useEffect(() => {
@@ -302,9 +345,9 @@ function App() {
         };
 
         return (
-            <div className={`flex gap-2 sm:gap-4 shrink-0 ${getFlexDirection()}`}>
-                <span className="text-[7px] sm:text-[9px] font-black tracking-[0.1em] sm:tracking-[0.2em] opacity-60 uppercase whitespace-nowrap" style={{ color: textColor }}>{label}</span>
-                <div className="flex gap-1 sm:gap-2">
+            <div className={`flex gap-2 shrink-0 ${getFlexDirection()} ${!isMobileMode ? 'sm:gap-4' : ''}`}>
+                <span className={`text-[7px] font-black tracking-[0.1em] opacity-60 uppercase whitespace-nowrap ${!isMobileMode ? 'sm:text-[9px] sm:tracking-[0.2em]' : ''}`} style={{ color: textColor }}>{label}</span>
+                <div className={`flex gap-1 ${!isMobileMode ? 'sm:gap-2' : ''}`}>
                     {[
                         { val: timeLeft.days, label: daysLabel },
                         { val: timeLeft.hrs, label: hoursLabel },
@@ -312,17 +355,17 @@ function App() {
                     ].map((t, idx) => (
                         <React.Fragment key={idx}>
                             <div
-                                className="flex flex-col items-center backdrop-blur-md rounded-lg px-1.5 sm:px-2 py-0.5 min-w-[28px] sm:min-w-[34px] border border-white/10 shadow-sm"
+                                className={`flex flex-col items-center backdrop-blur-md rounded-lg px-1.5 py-0.5 min-w-[28px] border border-white/10 shadow-sm ${!isMobileMode ? 'sm:px-2 sm:min-w-[34px]' : ''}`}
                                 style={{
                                     backgroundColor: bgColor,
                                     color: textColor,
                                     borderColor: `${textColor}22`
                                 }}
                             >
-                                <span className="text-[10px] sm:text-xs font-black drop-shadow-sm leading-tight">{t.val}</span>
-                                <span className="text-[6px] sm:text-[7px] font-black opacity-50 leading-none mt-0.5 tracking-tighter">{t.label}</span>
+                                <span className={`text-[10px] font-black drop-shadow-sm leading-tight ${!isMobileMode ? 'sm:text-xs' : ''}`}>{t.val}</span>
+                                <span className={`text-[6px] font-black opacity-50 leading-none mt-0.5 tracking-tighter ${!isMobileMode ? 'sm:text-[7px]' : ''}`}>{t.label}</span>
                             </div>
-                            {idx < 2 && <span className="text-[10px] sm:text-xs font-black self-center opacity-30" style={{ color: textColor }}>:</span>}
+                            {idx < 2 && <span className={`text-[10px] font-black self-center opacity-30 ${!isMobileMode ? 'sm:text-xs' : ''}`} style={{ color: textColor }}>:</span>}
                         </React.Fragment>
                     ))}
                 </div>
@@ -330,12 +373,12 @@ function App() {
         );
     };
 
-    const BannerContent = () => {
+    const BannerContent = ({ isMobileMode = false }) => {
         if (isLoading) return null;
 
         return (
             <div
-                className="w-full py-4 sm:py-5 px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4 relative transition-all duration-300"
+                className={`w-full py-4 px-4 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-8 md:flex-row' : ''}`}
                 style={{
                     backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
                     backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
@@ -351,7 +394,7 @@ function App() {
                                 <img
                                     src={config.badgeImage}
                                     alt="Badge"
-                                    className="w-16 sm:w-20 object-contain drop-shadow-xl hover:scale-105 transition-transform"
+                                    className={`w-16 object-contain drop-shadow-xl hover:scale-105 transition-transform ${!isMobileMode ? 'sm:w-20' : ''}`}
                                 />
                             ) : (
                                 <>
@@ -360,7 +403,7 @@ function App() {
                                         style={{ backgroundColor: config.badgeBgColor }}
                                     />
                                     <div
-                                        className="relative font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter"
+                                        className={`relative font-black text-[10px] px-3 py-1.5 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter ${!isMobileMode ? 'sm:text-xs sm:px-4 sm:py-2' : ''}`}
                                         style={{
                                             backgroundColor: config.badgeBgColor,
                                             color: config.badgeTextColor,
@@ -374,9 +417,9 @@ function App() {
                         </div>
                     </div>
                 )}
-                <div className="flex flex-col text-center md:text-left flex-1 w-full md:w-auto">
+                <div className={`flex flex-col text-center flex-1 w-full ${!isMobileMode ? 'md:text-left md:w-auto' : ''}`}>
                     <span
-                        className="tracking-tight drop-shadow-sm line-clamp-2 md:line-clamp-1"
+                        className={`tracking-tight drop-shadow-sm line-clamp-2 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
                         style={{
                             color: config.headlineColor,
                             fontSize: `clamp(14px, 1.2vw, ${config.headlineSize})`,
@@ -387,7 +430,7 @@ function App() {
                     </span>
                     {config.showSubHeadline && (
                         <span
-                            className="font-bold tracking-tight mt-0.5 line-clamp-2 md:line-clamp-1 opacity-90"
+                            className={`font-bold tracking-tight mt-0.5 line-clamp-2 opacity-90 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
                             style={{
                                 color: config.subHeadlineColor,
                                 fontSize: `clamp(11px, 1vw, ${config.subHeadlineSize})`,
@@ -399,7 +442,7 @@ function App() {
                     )}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 sm:gap-8 md:gap-10 w-full md:w-auto">
+                <div className={`flex flex-wrap items-center justify-center gap-4 w-full ${!isMobileMode ? 'md:justify-end sm:gap-8 md:gap-10 md:w-auto' : ''}`}>
                     {config.showTimer && (
                         <CountdownTimer
                             endDate={config.endDate}
@@ -411,13 +454,14 @@ function App() {
                             daysLabel={config.daysLabel}
                             hoursLabel={config.hoursLabel}
                             minutesLabel={config.minutesLabel}
+                            isMobileMode={isMobileMode}
                         />
                     )}
 
                     {config.showCTA && (
                         <a
                             href={config.ctaUrl}
-                            className="px-4 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-black shadow-xl flex items-center gap-2 group cursor-pointer transition-all hover:brightness-105 active:scale-95 shrink-0 no-underline whitespace-nowrap"
+                            className={`px-4 py-2 text-[10px] font-black shadow-xl flex items-center gap-2 group cursor-pointer transition-all hover:brightness-105 active:scale-95 shrink-0 no-underline whitespace-nowrap ${!isMobileMode ? 'sm:px-6 sm:py-2.5 sm:text-xs' : ''}`}
                             style={{
                                 backgroundColor: config.ctaBg,
                                 color: config.ctaTextColor,
@@ -441,41 +485,46 @@ function App() {
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
             {/* Template Selection Modal */}
             {showTemplateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden">
-                        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                    <div className="bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
+                        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
                             <div>
-                                <h2 className="text-xl font-black text-[#0F172A]">Select Template</h2>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">Choose a visual style for your banner</p>
+                                <h2 className="text-xl font-black text-[#0F172A] tracking-tight">Select Template</h2>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1 opacity-70">Choose a visual style for your banner</p>
                             </div>
                             <button
                                 onClick={() => setShowTemplateModal(false)}
-                                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+                                className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400 flex-shrink-0"
                             >
-                                <X size={20} />
+                                <X size={18} />
                             </button>
                         </div>
-                        <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {TEMPLATES.map((template) => (
-                                <button
-                                    key={template.id}
-                                    onClick={() => {
-                                        setSelectedTemplateId(template.id);
-                                        setConfig(prev => ({ ...prev, ...template.config, id: template.id, name: template.name }));
-                                        setShowTemplateModal(false);
-                                    }}
-                                    className={`group flex flex-col items-start p-5 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/30' : 'border-slate-100 hover:border-blue-200 bg-white'}`}
-                                >
-                                    <div className="w-full aspect-[2/1] bg-slate-100 rounded-xl overflow-hidden mb-4 relative drop-shadow-sm border border-slate-100">
-                                        <div className="absolute inset-0 flex items-center justify-center p-2">
+
+                        <div className="p-4 overflow-y-auto">
+                            <div className="flex flex-col gap-4">
+                                {TEMPLATES.map((template) => (
+                                    <button
+                                        key={template.id}
+                                        onClick={() => {
+                                            setSelectedTemplateId(template.id);
+                                            setConfig(prev => ({ ...prev, ...template.config, id: template.id, name: template.name }));
+                                            setShowTemplateModal(false);
+                                        }}
+                                        className={`group flex flex-col items-start p-2 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
+                                    >
+                                        <div className="w-full aspect-[3/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-1 group-hover:bg-slate-100 transition-colors">
                                             {template.icon}
                                         </div>
-                                    </div>
-                                    <h3 className="font-black text-sm text-[#0F172A] mb-1">{template.name}</h3>
-                                    <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-tighter">{template.style}</p>
-                                    <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">{template.description}</p>
-                                </button>
-                            ))}
+                                        <div className="w-full space-y-1">
+                                            <div className="flex items-center justify-between w-full">
+                                                <h3 className="text-xs font-black text-[#0F172A] tracking-tight">{template.name}</h3>
+                                                <span className="text-[8px] text-blue-600 font-black uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded-full">{template.style}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed line-clamp-2">{template.description}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1258,101 +1307,7 @@ function App() {
                             </div>
 
                             {/* Banner Preview (LIVE) */}
-                            <div
-                                className="w-full py-5 px-8 flex items-center justify-between gap-4 relative transition-all duration-300 animate-in slide-in-from-top-4"
-                                style={{
-                                    background: config.bgType === 'gradient' ? config.bgGradient : config.bgSolid,
-                                    backgroundImage: config.bgType === 'image' ? `url(${config.bgImage})` : undefined,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center'
-                                }}
-                            >
-                                {config.showBogoBadge && (
-                                    <div className="absolute -left-2 -top-2 z-[10000] animate-bounce-subtle pointer-events-none">
-                                        <div className="relative group">
-                                            {config.badgeType === 'image' && config.badgeImage ? (
-                                                <img
-                                                    src={config.badgeImage}
-                                                    alt="Badge"
-                                                    className="w-16 sm:w-20 object-contain drop-shadow-xl hover:scale-105 transition-transform"
-                                                />
-                                            ) : (
-                                                <>
-                                                    <div
-                                                        className="absolute inset-0 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity"
-                                                        style={{ backgroundColor: config.badgeBgColor }}
-                                                    />
-                                                    <div
-                                                        className="relative font-black text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter"
-                                                        style={{
-                                                            backgroundColor: config.badgeBgColor,
-                                                            color: config.badgeTextColor,
-                                                            transform: `rotate(${config.badgeRotation || '-12deg'})`
-                                                        }}
-                                                    >
-                                                        {config.bogoText}
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                                <div className="flex flex-col flex-1">
-                                    <span
-                                        className="tracking-tight drop-shadow-sm line-clamp-1"
-                                        style={{
-                                            color: config.headlineColor,
-                                            fontSize: config.headlineSize,
-                                            fontWeight: config.headlineWeight
-                                        }}
-                                    >
-                                        {config.headline}
-                                    </span>
-                                    {config.showSubHeadline && (
-                                        <span
-                                            className="font-bold tracking-tight mt-0.5 line-clamp-1"
-                                            style={{
-                                                color: config.subHeadlineColor,
-                                                fontSize: config.subHeadlineSize,
-                                                fontWeight: config.subHeadlineWeight
-                                            }}
-                                        >
-                                            {config.subHeadline}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center gap-10">
-                                    {config.showTimer && (
-                                        <CountdownTimer
-                                            endDate={config.endDate}
-                                            endTime={config.endTime}
-                                            textColor={config.timerTextColor}
-                                            bgColor={config.timerBgColor}
-                                            label={config.timerLabel}
-                                            labelPosition={config.timerLabelPosition}
-                                            daysLabel={config.daysLabel}
-                                            hoursLabel={config.hoursLabel}
-                                            minutesLabel={config.minutesLabel}
-                                        />
-                                    )}
-
-                                    {config.showCTA && (
-                                        <div
-                                            className="px-6 py-2.5 text-xs font-black shadow-xl flex items-center gap-2 group cursor-pointer transition-all hover:brightness-105 active:scale-95 shrink-0"
-                                            style={{
-                                                backgroundColor: config.ctaBg,
-                                                color: config.ctaTextColor,
-                                                borderRadius: config.ctaRadius
-                                            }}
-                                        >
-                                            {config.ctaText}
-                                            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                                        </div>
-                                    )}
-                                </div>
-                                <button className="absolute right-4 opacity-20 hover:opacity-100 transition-opacity" style={{ color: config.headlineColor }}><X size={18} /></button>
-                            </div>
+                            <BannerContent isMobileMode={device === 'mobile'} />
 
                             {/* Page Content Skeleton */}
                             <div className="flex-1 bg-white overflow-y-auto p-12 custom-scrollbar">
