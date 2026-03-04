@@ -191,9 +191,8 @@ function App() {
     });
 
     const [displaySettings, setDisplaySettings] = useState({
-        displayOnShopPage: true,
-        displayOnProductPage: true,
-        displayOnHomePage: true
+        displayOnAllPages: true,
+        displayOnHomePage: false
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -509,7 +508,7 @@ function App() {
             {/* Template Selection Modal */}
             {showTemplateModal && (
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
-                    <div className="bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
+                    <div className="bg-white w-full max-w-md rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
                             <div>
                                 <h2 className="text-xl font-black text-[#0F172A] tracking-tight">Select Template</h2>
@@ -533,7 +532,7 @@ function App() {
                                             setConfig(prev => ({ ...prev, ...template.config, id: template.id, name: template.name }));
                                             setShowTemplateModal(false);
                                         }}
-                                        className={`group flex flex-col items-start p-2 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
+                                        className={`group flex flex-col items-start p-2 rounded-md border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
                                     >
                                         <div className="w-full aspect-[3/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-1 group-hover:bg-slate-100 transition-colors">
                                             {template.icon}
@@ -574,7 +573,7 @@ function App() {
 
                 {/* Center: Device Switcher */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <div className="flex bg-slate-100 p-1 rounded-md">
                         <button
                             onClick={() => setDevice('desktop')}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${device === 'desktop' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
@@ -622,7 +621,7 @@ function App() {
                         </div>
                         <div
                             onClick={() => setShowTemplateModal(true)}
-                            className="p-3 border border-slate-200 rounded-xl flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
+                            className="p-3 border border-slate-200 rounded-md flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
                         >
                             <div className="w-12 h-10 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all text-left">
                                 {activeTemplate.icon}
@@ -636,7 +635,7 @@ function App() {
 
                     {/* Navigation Tabs */}
                     <div className="px-4 py-4">
-                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <div className="flex bg-slate-100 p-1 rounded-md">
                             {['design', 'content', 'settings'].map((tab) => (
                                 <button
                                     key={tab}
@@ -993,7 +992,7 @@ function App() {
                                             </div>
 
                                             {/* Gradient Presets */}
-                                            <div className="p-2 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+                                            <div className="p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors">
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className="text-xs font-bold text-slate-600">Presets</span>
                                                 </div>
@@ -1057,7 +1056,7 @@ function App() {
                                         </div>
                                         <div className="space-y-2">
                                             {/* Font Size */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Font Size</span>
                                                 <div className="flex items-center gap-4">
                                                     <input
@@ -1073,7 +1072,7 @@ function App() {
                                             </div>
 
                                             {/* Text Color */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Text Color</span>
                                                 <div className="flex items-center gap-3">
                                                     <input
@@ -1107,7 +1106,7 @@ function App() {
                                         </div>
                                         <div className="space-y-2">
                                             {/* Font Size */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Font Size</span>
                                                 <div className="flex items-center gap-4">
                                                     <input
@@ -1123,7 +1122,7 @@ function App() {
                                             </div>
 
                                             {/* Text Color */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
                                                 <span className="text-xs font-bold text-slate-600">Text Color</span>
                                                 <div className="flex items-center gap-3">
                                                     <input
@@ -1317,11 +1316,10 @@ function App() {
                                 <h3 className="text-sm font-black text-[#0F172A] tracking-tight mb-4">Display Locations</h3>
                                 <div className="space-y-3">
                                     {[
-                                        { id: 'displayOnHomePage', label: 'Home Page' },
-                                        { id: 'displayOnShopPage', label: 'Shop/Catalog Page' },
-                                        { id: 'displayOnProductPage', label: 'Product Pages' }
+                                        { id: 'displayOnAllPages', label: 'All Pages' },
+                                        { id: 'displayOnHomePage', label: 'Home Page' }
                                     ].map(item => (
-                                        <label key={item.id} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm">
+                                        <label key={item.id} className="flex items-center justify-between p-4 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm">
                                             <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">{item.label}</span>
                                             <button
                                                 onClick={() => setDisplaySettings(prev => ({ ...prev, [item.id]: !prev[item.id] }))}

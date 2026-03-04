@@ -37,24 +37,14 @@ class WiseBannerV2
         $should_show = false;
 
         // Check Display Locations
+        $show_on_all = isset($settings['displayOnAllPages']) ? (bool) $settings['displayOnAllPages'] : false;
         $show_on_home = isset($settings['displayOnHomePage']) ? (bool) $settings['displayOnHomePage'] : true;
-        $show_on_shop = isset($settings['displayOnShopPage']) ? (bool) $settings['displayOnShopPage'] : true;
-        $show_on_product = isset($settings['displayOnProductPage']) ? (bool) $settings['displayOnProductPage'] : true;
 
-        if ($show_on_home && (is_front_page() || is_home())) {
+        if ($show_on_all) {
+            $should_show = true;
+        } elseif ($show_on_home && (is_front_page() || is_home())) {
             $should_show = true;
         }
-
-        if ($show_on_shop && function_exists('is_shop') && is_shop()) {
-            $should_show = true;
-        }
-
-        if ($show_on_product && is_product()) {
-            $should_show = true;
-        }
-
-        // Fallback for non-WooCommerce setups or other pages if needed
-        // For now, only show on these three if specified
 
         if ($should_show) {
             add_action('wp_body_open', [$this, 'render_banner_container']);
@@ -101,9 +91,8 @@ class WiseBannerV2
 
         if (get_option('wc-wisebanner-v2-setting') === false) {
             update_option('wc-wisebanner-v2-setting', [
-                'displayOnProductPage' => true,
-                'displayOnShopPage' => true,
-                'displayOnHomePage' => true
+                'displayOnAllPages' => true,
+                'displayOnHomePage' => false
             ]);
         }
     }
