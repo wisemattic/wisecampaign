@@ -534,7 +534,7 @@ function App() {
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
             {/* Template Selection Modal */}
             {showTemplateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
                             <div>
@@ -1024,8 +1024,8 @@ function App() {
                             </div>
 
                             {/* Storefront Preview */}
-                            <div className="p-12">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
+                            <div className={`transition-all duration-300 ${device === 'mobile' ? 'p-6' : 'p-12'}`}>
+                                <div className={`grid grid-cols-1 ${device === 'mobile' ? 'gap-8' : 'md:grid-cols-2 gap-16'}`}>
                                     {/* Product Image Skeleton */}
                                     <div className="space-y-6">
                                         <div className="relative aspect-square bg-slate-100 rounded-[32px] overflow-hidden">

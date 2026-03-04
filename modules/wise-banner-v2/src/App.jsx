@@ -134,7 +134,7 @@ const TEMPLATES = [
         },
         icon: (
             <div className="w-full h-full rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 flex items-center px-4 justify-between relative overflow-hidden">
-                <div className="absolute -left-1 -top-1 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[5px] font-black text-black shadow-sm z-10">50%</div>
+                <div className="absolute -left-1 -top-1 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[5px] font-black text-black shadow-sm">50%</div>
                 <div className="flex-1 ml-6 h-2 bg-white/20 rounded-sm"></div>
                 <div className="w-10 h-3 bg-yellow-400 rounded-sm ml-2"></div>
             </div>
@@ -299,6 +299,30 @@ function App() {
         }
     };
 
+    const handleBgImageUpload = () => {
+        if (window.wp && window.wp.media) {
+            const mediaFrame = window.wp.media({
+                title: 'Select Background Image',
+                multiple: false,
+                library: {
+                    type: 'image'
+                },
+                button: {
+                    text: 'Use this image'
+                }
+            });
+
+            mediaFrame.on('select', () => {
+                const attachment = mediaFrame.state().get('selection').first().toJSON();
+                setConfig(prev => ({ ...prev, bgImage: attachment.url }));
+            });
+
+            mediaFrame.open();
+        } else {
+            alert('WordPress Media Library not available. Please ensure you are logged in as admin.');
+        }
+    };
+
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
 
@@ -383,8 +407,7 @@ function App() {
                     backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
                     backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
                     backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    zIndex: 9999
+                    backgroundPosition: 'center'
                 }}
             >
                 {config.showBogoBadge && (
@@ -485,7 +508,7 @@ function App() {
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
             {/* Template Selection Modal */}
             {showTemplateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
                     <div className="bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
                         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
                             <div>
@@ -988,6 +1011,33 @@ function App() {
                                                             style={{ background: grad }}
                                                         />
                                                     ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {config.bgType === 'image' && (
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Background Image URL</label>
+                                                <div className="flex gap-2">
+                                                    <div className="relative flex-1">
+                                                        <input
+                                                            type="text"
+                                                            value={config.bgImage}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgImage: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                            placeholder="https://..."
+                                                        />
+                                                        <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                    </div>
+                                                    <button
+                                                        onClick={handleBgImageUpload}
+                                                        className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
+                                                        type="button"
+                                                    >
+                                                        Upload
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
