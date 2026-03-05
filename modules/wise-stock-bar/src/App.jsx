@@ -23,7 +23,8 @@ import {
     Timer,
     Gauge,
     Sparkles,
-    Target
+    Target,
+    Power
 } from 'lucide-react';
 
 const TEMPLATES = [
@@ -576,15 +577,15 @@ function App() {
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
                     <div className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in p-8 flex flex-col items-center text-center">
                         <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${isEnabled ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500'}`}>
-                            {isEnabled ? <AlertCircle size={32} /> : <Zap size={32} />}
+                            {isEnabled ? <AlertCircle size={32} /> : <CheckCircle2 size={32} />}
                         </div>
                         <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
                             {isEnabled ? 'Deactivate Stock Bar?' : 'Activate Stock Bar?'}
                         </h2>
                         <p className="text-slate-500 font-medium leading-relaxed mb-8">
                             {isEnabled
-                                ? 'Are you sure you want to deactivate the stock bar? It will no longer be visible on your products.'
-                                : 'Are you sure you want to activate the stock bar? It will become visible on your products according to your settings.'}
+                                ? 'Are you sure you want to deactivate the stock bar? It will no longer be visible to your customers.'
+                                : 'Are you sure you want to activate the stock bar? It will become visible to your customers based on your settings.'}
                         </p>
                         <div className="flex gap-3 w-full">
                             <button
@@ -805,7 +806,7 @@ function App() {
                             onClick={() => setShowStatusConfirm(true)}>
                             <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isEnabled ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
-                                    <Zap size={20} className={isEnabled ? 'fill-emerald-600/20' : ''} />
+                                    <Power size={20} />
                                 </div>
                                 <div>
                                     <div className="text-sm font-black text-slate-700 uppercase tracking-tight">Stock Bar Status</div>
@@ -1108,14 +1109,14 @@ function App() {
                                     <X size={18} />
                                 </button>
                                 <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                    <Zap size={32} />
+                                    <Power size={32} />
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight">Feature Disabled</h3>
                                     <p className="text-sm font-medium text-slate-500 mt-1">Stock bars will not be visible on your storefront until activated.</p>
                                 </div>
                                 <button
-                                    onClick={() => setIsEnabled(true)}
+                                    onClick={() => setShowStatusConfirm(true)}
                                     className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
                                 >
                                     Activate Now

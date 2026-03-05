@@ -1518,7 +1518,7 @@ function App() {
                                     <p className="text-sm font-medium text-slate-500 mt-1">This banner will not be visible on your storefront until activated.</p>
                                 </div>
                                 <button
-                                    onClick={() => setConfig(prev => ({ ...prev, isActive: true }))}
+                                    onClick={() => setShowStatusConfirm(true)}
                                     className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
                                 >
                                     Activate Now
