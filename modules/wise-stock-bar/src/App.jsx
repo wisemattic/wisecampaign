@@ -158,10 +158,19 @@ function App() {
         displayOnProductPage: true
     });
 
+    const [isEnabled, setIsEnabled] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [showStatusConfirm, setShowStatusConfirm] = useState(false);
+    const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
 
     const isStorefront = window.wiseStockbarData?.isStorefront || false;
+
+    useEffect(() => {
+        if (!isEnabled) {
+            setShowDisabledOverlay(true);
+        }
+    }, [isEnabled]);
 
     useEffect(() => {
         if (!isStorefront) {
@@ -220,6 +229,13 @@ function App() {
             if (settings) {
                 setDisplaySettings(settings);
             }
+
+            // Fetch Status
+            const resStatus = await fetch(`${baseUrl}stockbar-status`);
+            const statusData = await resStatus.json();
+            if (statusData) {
+                setIsEnabled(statusData.stockBarEnabled !== false);
+            }
         } catch (error) {
             console.error("Error fetching settings:", error);
         } finally {
@@ -227,7 +243,7 @@ function App() {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = async (statusOverride = null) => {
         setIsSaving(true);
         try {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
@@ -258,15 +274,38 @@ function App() {
                 body: JSON.stringify(displaySettings)
             });
 
-            if (resDesign.ok && resDisplay.ok) {
-                // Success notification could go here
-                alert("Settings saved successfully!");
+            // Save Status
+            const targetEnabled = statusOverride !== null ? statusOverride : isEnabled;
+            const resStatus = await fetch(`${baseUrl}stockbar-status`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ stockBarEnabled: targetEnabled })
+            });
+
+            if (resDesign.ok && resDisplay.ok && resStatus.ok) {
+                if (statusOverride === null) {
+                    alert("Settings saved successfully!");
+                }
+                return true;
             }
         } catch (error) {
             console.error("Error saving settings:", error);
-            alert("Failed to save settings.");
+            if (statusOverride === null) {
+                alert("Failed to save settings.");
+            }
         } finally {
             setIsSaving(false);
+        }
+        return false;
+    };
+
+    const confirmStatusChange = async () => {
+        const nextStatus = !isEnabled;
+        const success = await handleSave(nextStatus);
+        if (success) {
+            setIsEnabled(nextStatus);
+            setShowStatusConfirm(false);
+            alert(`Stock Bar ${nextStatus ? 'activated' : 'deactivated'} successfully!`);
         }
     };
 
@@ -532,6 +571,41 @@ function App() {
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
+            {/* Status Confirmation Modal */}
+            {showStatusConfirm && (
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in p-8 flex flex-col items-center text-center">
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${isEnabled ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                            {isEnabled ? <AlertCircle size={32} /> : <Zap size={32} />}
+                        </div>
+                        <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
+                            {isEnabled ? 'Deactivate Stock Bar?' : 'Activate Stock Bar?'}
+                        </h2>
+                        <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                            {isEnabled
+                                ? 'Are you sure you want to deactivate the stock bar? It will no longer be visible on your products.'
+                                : 'Are you sure you want to activate the stock bar? It will become visible on your products according to your settings.'}
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setShowStatusConfirm(false)}
+                                className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmStatusChange}
+                                disabled={isSaving}
+                                className={`flex-1 px-6 py-3 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isEnabled ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-100' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100'}`}
+                            >
+                                {isSaving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                                {isEnabled ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Template Selection Modal */}
             {showTemplateModal && (
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
@@ -724,283 +798,331 @@ function App() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden">
-                    <div className="p-4 border-b border-slate-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
-                            <button
-                                onClick={() => setShowTemplateModal(true)}
-                                className="text-xs font-bold text-blue-600 hover:text-blue-700"
-                            >
-                                Change Template
-                            </button>
-                        </div>
-                        <div
-                            onClick={() => setShowTemplateModal(true)}
-                            className="p-3 border border-slate-200 rounded-xl flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
-                        >
-                            <div className="w-12 h-10 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all text-left">
-                                {activeTemplate.icon}
+                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden relative">
+                    {/* Master Activation Toggle */}
+                    <div className="p-5 border-b-4 border-slate-50 bg-slate-50/30">
+                        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all cursor-pointer group"
+                            onClick={() => setShowStatusConfirm(true)}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isEnabled ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                    <Zap size={20} className={isEnabled ? 'fill-emerald-600/20' : ''} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-black text-slate-700 uppercase tracking-tight">Stock Bar Status</div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                                        {isEnabled ? <span className="text-emerald-500">Currently Active</span> : 'Feature Disabled'}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-left">
-                                <div className="text-sm font-bold group-hover:text-blue-600 transition-colors">{activeTemplate.name}</div>
-                                <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Style: {activeTemplate.style}</div>
+                            <div className={`w-12 h-6 rounded-full transition-all relative ${isEnabled ? 'bg-emerald-500 shadow-lg shadow-emerald-100' : 'bg-slate-200'}`}>
+                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isEnabled ? 'right-1' : 'left-1'}`} />
                             </div>
                         </div>
                     </div>
 
-                    {/* Navigation Tabs */}
-                    <div className="px-4 py-4">
-                        <div className="flex bg-slate-100 p-1 rounded-xl">
-                            {['design', 'content', 'settings'].map((tab) => (
+                    <div className={`flex flex-col flex-1 transition-all duration-300 ${!isEnabled ? 'opacity-40 grayscale pointer-events-none select-none filter blur-[1px]' : ''}`}>
+                        <div className="p-4 border-b border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
                                 <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${activeTab === tab ? 'bg-white shadow-sm text-[#0F172A]' : 'text-slate-500 hover:text-slate-700'}`}
+                                    onClick={() => setShowTemplateModal(true)}
+                                    className="text-xs font-bold text-blue-600 hover:text-blue-700"
                                 >
-                                    {tab}
+                                    Change Template
                                 </button>
-                            ))}
+                            </div>
+                            <div
+                                onClick={() => setShowTemplateModal(true)}
+                                className="p-3 border border-slate-200 rounded-xl flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
+                            >
+                                <div className="w-12 h-10 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all text-left">
+                                    {activeTemplate.icon}
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-sm font-bold group-hover:text-blue-600 transition-colors">{activeTemplate.name}</div>
+                                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Style: {activeTemplate.style}</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Sidebar Content */}
-                    <div className="px-6 py-4 space-y-8 pb-10 text-left overflow-y-auto custom-scrollbar flex-1">
-                        {activeTab === 'design' && (
-                            <div className="space-y-8">
-                                {/* Color Settings */}
-                                <section className="pb-8 border-b border-slate-100">
-                                    <h3 className="text-sm font-black mb-4 flex items-center gap-2">
-                                        <Palette size={16} className="text-blue-600" />
-                                        Color Settings
-                                    </h3>
-                                    <div className="space-y-4">
-                                        {[
-                                            { id: 'progressBarColor', label: 'Primary Color' },
-                                            { id: 'stockBarBg', label: 'Background' },
-                                            { id: 'textColor', label: 'Text Color' },
-                                            { id: 'borderColor', label: 'Border Color' },
-                                        ].map((item) => (
-                                            <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-white">
-                                                <span className="text-xs font-bold text-slate-600">{item.label}</span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={activeConfig[item.id]}
-                                                        onChange={(e) => handleConfigChange(item.id, e.target.value)}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    />
-                                                    <div className="relative group/color cursor-pointer">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: activeConfig[item.id] }}
-                                                        />
+                        {/* Navigation Tabs */}
+                        <div className="px-4 py-4">
+                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                                {['design', 'content', 'settings'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${activeTab === tab ? 'bg-white shadow-sm text-[#0F172A]' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Sidebar Content */}
+                        <div className="px-6 py-4 space-y-8 pb-10 text-left overflow-y-auto custom-scrollbar flex-1">
+                            {activeTab === 'design' && (
+                                <div className="space-y-8">
+                                    {/* Color Settings */}
+                                    <section className="pb-8 border-b border-slate-100">
+                                        <h3 className="text-sm font-black mb-4 flex items-center gap-2">
+                                            <Palette size={16} className="text-blue-600" />
+                                            Color Settings
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {[
+                                                { id: 'progressBarColor', label: 'Primary Color' },
+                                                { id: 'stockBarBg', label: 'Background' },
+                                                { id: 'textColor', label: 'Text Color' },
+                                                { id: 'borderColor', label: 'Border Color' },
+                                            ].map((item) => (
+                                                <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-white">
+                                                    <span className="text-xs font-bold text-slate-600">{item.label}</span>
+                                                    <div className="flex items-center gap-3">
                                                         <input
-                                                            type="color"
+                                                            type="text"
                                                             value={activeConfig[item.id]}
                                                             onChange={(e) => handleConfigChange(item.id, e.target.value)}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                         />
+                                                        <div className="relative group/color cursor-pointer">
+                                                            <div
+                                                                className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                style={{ backgroundColor: activeConfig[item.id] }}
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={activeConfig[item.id]}
+                                                                onChange={(e) => handleConfigChange(item.id, e.target.value)}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+
+                                    {/* Typography */}
+                                    <section className="pt-2">
+                                        <h3 className="text-sm font-black mb-4 flex items-center gap-2">
+                                            <Type size={16} className="text-blue-600" />
+                                            Typography
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
+                                                <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                                <div className="flex items-center gap-4">
+                                                    <input
+                                                        type="range"
+                                                        min="5"
+                                                        max="50"
+                                                        value={parseInt(activeConfig.fontSize)}
+                                                        onChange={(e) => handleConfigChange('fontSize', `${e.target.value}px`)}
+                                                        className="w-32 accent-blue-600 cursor-pointer"
+                                                    />
+                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{activeConfig.fontSize}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
+                                                <span className="text-xs font-bold text-slate-600">Font Weight</span>
+                                                <div className="flex bg-slate-100 p-1 rounded-lg w-[120px]">
+                                                    {['Reg', 'Bold'].map(w => (
+                                                        <button
+                                                            key={w}
+                                                            onClick={() => handleConfigChange('fontWeight', w)}
+                                                            className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all ${activeConfig.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        >
+                                                            {w}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+
+                            {activeTab === 'content' && (
+                                <section className="space-y-8">
+                                    <div className="space-y-5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Main Message</label>
+                                            <input
+                                                type="text"
+                                                value={activeConfig.mainText}
+                                                onChange={(e) => handleConfigChange('mainText', e.target.value)}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Subtext (Value)</label>
+                                            <input
+                                                type="text"
+                                                value={activeConfig.subText}
+                                                onChange={(e) => handleConfigChange('subText', e.target.value)}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                            />
+                                        </div>
+
+                                        {selectedTemplateId === 'countdown' && (
+                                            <div className="space-y-3 p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
+                                                <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest pl-1 flex items-center gap-2">
+                                                    <Timer size={12} /> Timer Configuration
+                                                </label>
+
+                                                <div className="space-y-1 mb-2">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Label Position</span>
+                                                    <div className="flex bg-white rounded-lg border border-slate-200 p-1">
+                                                        {['left', 'top', 'right', 'below'].map(pos => (
+                                                            <button
+                                                                key={pos}
+                                                                onClick={() => handleConfigChange('labelPosition', pos)}
+                                                                className={`flex-1 py-1 text-[10px] font-black uppercase rounded transition-all ${activeConfig.labelPosition === pos ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                                                            >
+                                                                {pos}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Expiry Date & Time</span>
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={activeConfig.timerExpiry || ""}
+                                                        onChange={(e) => handleConfigChange('timerExpiry', e.target.value)}
+                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <span className="text-[9px] font-bold text-slate-400 ml-1">Unit Labels</span>
+                                                    <div className="flex gap-2">
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[8px] font-bold text-slate-400 ml-1">Hours</span>
+                                                            <input
+                                                                type="text"
+                                                                value={activeConfig.hoursLabel || 'h'}
+                                                                onChange={(e) => handleConfigChange('hoursLabel', e.target.value)}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                                maxLength={2}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[8px] font-bold text-slate-400 ml-1">Mins</span>
+                                                            <input
+                                                                type="text"
+                                                                value={activeConfig.minutesLabel || 'm'}
+                                                                onChange={(e) => handleConfigChange('minutesLabel', e.target.value)}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                                maxLength={2}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[8px] font-bold text-slate-400 ml-1">Secs</span>
+                                                            <input
+                                                                type="text"
+                                                                value={activeConfig.secondsLabel || 's'}
+                                                                onChange={(e) => handleConfigChange('secondsLabel', e.target.value)}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
+                                                                maxLength={2}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                </section>
+                                        )}
 
-                                {/* Typography */}
-                                <section className="pt-2">
-                                    <h3 className="text-sm font-black mb-4 flex items-center gap-2">
-                                        <Type size={16} className="text-blue-600" />
-                                        Typography
-                                    </h3>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
-                                            <span className="text-xs font-bold text-slate-600">Font Size</span>
-                                            <div className="flex items-center gap-4">
-                                                <input
-                                                    type="range"
-                                                    min="5"
-                                                    max="50"
-                                                    value={parseInt(activeConfig.fontSize)}
-                                                    onChange={(e) => handleConfigChange('fontSize', `${e.target.value}px`)}
-                                                    className="w-32 accent-blue-600 cursor-pointer"
-                                                />
-                                                <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{activeConfig.fontSize}</span>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between px-1 mb-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Content Icon</label>
+                                                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">{activeConfig.icon}</span>
                                             </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group bg-slate-50/30">
-                                            <span className="text-xs font-bold text-slate-600">Font Weight</span>
-                                            <div className="flex bg-slate-100 p-1 rounded-lg w-[120px]">
-                                                {['Reg', 'Bold'].map(w => (
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {Object.keys(ICON_MAP).map(iconName => (
                                                     <button
-                                                        key={w}
-                                                        onClick={() => handleConfigChange('fontWeight', w)}
-                                                        className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all ${activeConfig.fontWeight === w ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                        key={iconName}
+                                                        onClick={() => handleConfigChange('icon', iconName)}
+                                                        className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center ${activeConfig.icon === iconName ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-50 bg-white text-slate-400 hover:border-slate-200'}`}
                                                     >
-                                                        {w}
+                                                        {React.createElement(ICON_MAP[iconName], { size: 18 })}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
                                 </section>
-                            </div>
-                        )}
+                            )}
 
-                        {activeTab === 'content' && (
-                            <section className="space-y-8">
-                                <div className="space-y-5">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Main Message</label>
-                                        <input
-                                            type="text"
-                                            value={activeConfig.mainText}
-                                            onChange={(e) => handleConfigChange('mainText', e.target.value)}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                        />
+                            {activeTab === 'settings' && (
+                                <section>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-sm font-black">Display Settings</h3>
                                     </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Subtext (Value)</label>
-                                        <input
-                                            type="text"
-                                            value={activeConfig.subText}
-                                            onChange={(e) => handleConfigChange('subText', e.target.value)}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                        />
-                                    </div>
-
-                                    {selectedTemplateId === 'countdown' && (
-                                        <div className="space-y-3 p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
-                                            <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest pl-1 flex items-center gap-2">
-                                                <Timer size={12} /> Timer Configuration
-                                            </label>
-
-                                            <div className="space-y-1 mb-2">
-                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Label Position</span>
-                                                <div className="flex bg-white rounded-lg border border-slate-200 p-1">
-                                                    {['left', 'top', 'right', 'below'].map(pos => (
-                                                        <button
-                                                            key={pos}
-                                                            onClick={() => handleConfigChange('labelPosition', pos)}
-                                                            className={`flex-1 py-1 text-[10px] font-black uppercase rounded transition-all ${activeConfig.labelPosition === pos ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:bg-slate-50'}`}
-                                                        >
-                                                            {pos}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                    <p className="text-[11px] text-slate-400 leading-relaxed mb-4">Configure where the stock bar appears on your store.</p>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-xs font-black">Display on Shop Page</div>
+                                                <div className="text-[10px] text-slate-400 font-medium">Show in product catalogs</div>
                                             </div>
-
-                                            <div className="space-y-1">
-                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Expiry Date & Time</span>
-                                                <input
-                                                    type="datetime-local"
-                                                    value={activeConfig.timerExpiry || ""}
-                                                    onChange={(e) => handleConfigChange('timerExpiry', e.target.value)}
-                                                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <span className="text-[9px] font-bold text-slate-400 ml-1">Unit Labels</span>
-                                                <div className="flex gap-2">
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Hours</span>
-                                                        <input
-                                                            type="text"
-                                                            value={activeConfig.hoursLabel || 'h'}
-                                                            onChange={(e) => handleConfigChange('hoursLabel', e.target.value)}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
-                                                            maxLength={2}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Mins</span>
-                                                        <input
-                                                            type="text"
-                                                            value={activeConfig.minutesLabel || 'm'}
-                                                            onChange={(e) => handleConfigChange('minutesLabel', e.target.value)}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
-                                                            maxLength={2}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[8px] font-bold text-slate-400 ml-1">Secs</span>
-                                                        <input
-                                                            type="text"
-                                                            value={activeConfig.secondsLabel || 's'}
-                                                            onChange={(e) => handleConfigChange('secondsLabel', e.target.value)}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-amber-400"
-                                                            maxLength={2}
-                                                        />
-                                                    </div>
-                                                </div>
+                                            <div
+                                                onClick={() => setDisplaySettings(prev => ({ ...prev, displayOnShopPage: !prev.displayOnShopPage }))}
+                                                className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${displaySettings.displayOnShopPage ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${displaySettings.displayOnShopPage ? 'right-1' : 'left-1'}`}></div>
                                             </div>
                                         </div>
-                                    )}
-
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between px-1 mb-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Content Icon</label>
-                                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">{activeConfig.icon}</span>
-                                        </div>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {Object.keys(ICON_MAP).map(iconName => (
-                                                <button
-                                                    key={iconName}
-                                                    onClick={() => handleConfigChange('icon', iconName)}
-                                                    className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center ${activeConfig.icon === iconName ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-slate-50 bg-white text-slate-400 hover:border-slate-200'}`}
-                                                >
-                                                    {React.createElement(ICON_MAP[iconName], { size: 18 })}
-                                                </button>
-                                            ))}
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <div className="text-xs font-black">Display on Product Page</div>
+                                                <div className="text-[10px] text-slate-400 font-medium">Show on single product pages</div>
+                                            </div>
+                                            <div
+                                                onClick={() => setDisplaySettings(prev => ({ ...prev, displayOnProductPage: !prev.displayOnProductPage }))}
+                                                className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${displaySettings.displayOnProductPage ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${displaySettings.displayOnProductPage ? 'right-1' : 'left-1'}`}></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {activeTab === 'settings' && (
-                            <section>
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-sm font-black">Display Settings</h3>
-                                </div>
-                                <p className="text-[11px] text-slate-400 leading-relaxed mb-4">Configure where the stock bar appears on your store.</p>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-xs font-black">Display on Shop Page</div>
-                                            <div className="text-[10px] text-slate-400 font-medium">Show in product catalogs</div>
-                                        </div>
-                                        <div
-                                            onClick={() => setDisplaySettings(prev => ({ ...prev, displayOnShopPage: !prev.displayOnShopPage }))}
-                                            className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${displaySettings.displayOnShopPage ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${displaySettings.displayOnShopPage ? 'right-1' : 'left-1'}`}></div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="text-xs font-black">Display on Product Page</div>
-                                            <div className="text-[10px] text-slate-400 font-medium">Show on single product pages</div>
-                                        </div>
-                                        <div
-                                            onClick={() => setDisplaySettings(prev => ({ ...prev, displayOnProductPage: !prev.displayOnProductPage }))}
-                                            className={`w-10 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${displaySettings.displayOnProductPage ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${displaySettings.displayOnProductPage ? 'right-1' : 'left-1'}`}></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
+                                </section>
+                            )}
+                        </div>
                     </div>
                 </aside>
 
                 {/* Preview Area */}
-                <main className="flex-1 overflow-y-auto p-12 flex justify-center items-start">
+                <main className="flex-1 overflow-y-auto p-12 flex justify-center items-start relative">
+                    {!isEnabled && showDisabledOverlay && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px] bg-slate-900/10 transition-all duration-500">
+                            <div className="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white flex flex-col items-center gap-4 max-w-sm text-center animate-in fade-in zoom-in duration-300 relative">
+                                <button
+                                    onClick={() => setShowDisabledOverlay(false)}
+                                    className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                                >
+                                    <X size={18} />
+                                </button>
+                                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <Zap size={32} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Feature Disabled</h3>
+                                    <p className="text-sm font-medium text-slate-500 mt-1">Stock bars will not be visible on your storefront until activated.</p>
+                                </div>
+                                <button
+                                    onClick={() => setIsEnabled(true)}
+                                    className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
+                                >
+                                    Activate Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     <div className={`transition-all duration-300 w-full max-w-5xl ${device === 'mobile' ? 'max-w-[375px]' : ''}`}>
                         <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
                             {/* Browser UI */}
@@ -1114,7 +1236,7 @@ function App() {
                         </p>
                     </div>
                 </main>
-            </div>
+            </div >
 
             <style jsx>{`
                 @keyframes fadeIn {
@@ -1134,7 +1256,7 @@ function App() {
                     100% { background-position: 200% 0; }
                 }
             `}</style>
-        </div>
+        </div >
     );
 }
 

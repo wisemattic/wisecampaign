@@ -38,11 +38,15 @@ class WiseBannerV2
 
         // Check Display Locations
         $show_on_all = isset($settings['displayOnAllPages']) ? (bool) $settings['displayOnAllPages'] : false;
-        $show_on_home = isset($settings['displayOnHomePage']) ? (bool) $settings['displayOnHomePage'] : true;
+        $show_on_home = isset($settings['displayOnHomePage']) ? (bool) $settings['displayOnHomePage'] : false;
+        $selected_pages = isset($settings['selectedPages']) ? array_map('intval', (array) $settings['selectedPages']) : [];
+        $current_id = get_queried_object_id();
 
         if ($show_on_all) {
             $should_show = true;
         } elseif ($show_on_home && (is_front_page() || is_home())) {
+            $should_show = true;
+        } elseif (!empty($selected_pages) && (is_page($selected_pages) || in_array($current_id, $selected_pages))) {
             $should_show = true;
         }
 
@@ -92,7 +96,8 @@ class WiseBannerV2
         if (get_option('wc-wisebanner-v2-setting') === false) {
             update_option('wc-wisebanner-v2-setting', [
                 'displayOnAllPages' => true,
-                'displayOnHomePage' => false
+                'displayOnHomePage' => false,
+                'selectedPages' => []
             ]);
         }
     }
@@ -127,6 +132,44 @@ class WiseBannerV2
             'methods' => 'POST',
             'callback' => [$this, 'update_display_settings'],
             'permission_callback' => '__return_true'
+        ]);
+
+        register_rest_route($namespace, '/banner-v2/pages', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_pages'],
+            'permission_callback' => '__return_true'
+        ]);
+
+        register_rest_route($namespace, '/banner-v2/license', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_license_status'],
+            'permission_callback' => '__return_true'
+        ]);
+    }
+
+    public function get_pages()
+    {
+        $pages = get_pages();
+        $formatted_pages = array_map(function ($page) {
+            return [
+                'id' => $page->ID,
+                'title' => $page->post_title
+            ];
+        }, $pages);
+
+        return rest_ensure_response($formatted_pages);
+    }
+
+    public function get_license_status()
+    {
+        if (class_exists('WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $license_response = \WISECAMPAIGNPRO\Classes\ProPluginLicense::get_license_status();
+            return $license_response;
+        }
+
+        return rest_ensure_response([
+            'valid' => false,
+            'message' => 'Pro plugin not active.'
         ]);
     }
 

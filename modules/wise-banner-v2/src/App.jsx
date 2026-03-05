@@ -26,7 +26,8 @@ import {
     Underline,
     Calendar,
     ArrowRight,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Power
 } from 'lucide-react';
 
 const TEMPLATES = [
@@ -192,13 +193,25 @@ function App() {
 
     const [displaySettings, setDisplaySettings] = useState({
         displayOnAllPages: true,
-        displayOnHomePage: false
+        displayOnHomePage: false,
+        selectedPages: []
     });
+
+    const [isPro, setIsPro] = useState(false);
+    const [availablePages, setAvailablePages] = useState([]);
 
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [showStatusConfirm, setShowStatusConfirm] = useState(false);
+    const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
+
+    useEffect(() => {
+        if (!config.isActive) {
+            setShowDisabledOverlay(true);
+        }
+    }, [config.isActive]);
 
     useEffect(() => {
         if (!isStorefront) {
@@ -229,7 +242,20 @@ function App() {
             const resSettings = await fetch(`${baseUrl}banner-v2/settings`);
             const settings = await resSettings.json();
             if (settings) {
-                setDisplaySettings(settings);
+                setDisplaySettings(prev => ({ ...prev, ...settings }));
+            }
+
+            // Fetch License Status
+            const resLicense = await fetch(`${baseUrl}banner-v2/license`);
+            const licenseData = await resLicense.json();
+            if (licenseData && licenseData.valid) {
+                setIsPro(true);
+                // Fetch Available Pages if Pro
+                const resPages = await fetch(`${baseUrl}banner-v2/pages`);
+                const pagesData = await resPages.json();
+                if (Array.isArray(pagesData)) {
+                    setAvailablePages(pagesData);
+                }
             }
         } catch (error) {
             console.error("Error fetching settings:", error);
@@ -238,7 +264,7 @@ function App() {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = async (configOverride = null) => {
         setIsSaving(true);
         try {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
@@ -249,11 +275,13 @@ function App() {
                 ...(nonce ? { 'X-WP-Nonce': nonce } : {})
             };
 
+            const bannerToSave = configOverride || config;
+
             // Save Banner Design
             const resBanner = await fetch(`${baseUrl}banner-v2`, {
                 method: 'POST',
                 headers,
-                body: JSON.stringify(config)
+                body: JSON.stringify(bannerToSave)
             });
 
             // Save Display Settings
@@ -264,13 +292,33 @@ function App() {
             });
 
             if (resBanner.ok && resDisplay.ok) {
-                alert("Settings saved successfully!");
+                if (!configOverride) {
+                    alert("Settings saved successfully!");
+                }
+                return true;
             }
         } catch (error) {
             console.error("Error saving settings:", error);
-            alert("Failed to save settings.");
+            if (!configOverride) {
+                alert("Failed to save settings.");
+            }
         } finally {
             setIsSaving(false);
+        }
+        return false;
+    };
+
+    const confirmStatusChange = async () => {
+        const newStatus = !config.isActive;
+        const newConfig = { ...config, isActive: newStatus };
+
+        // Show loading state or similar if needed
+        const success = await handleSave(newConfig);
+        if (success) {
+            setConfig(newConfig);
+            setShowStatusConfirm(false);
+            // alert("Banner status updated successfully!"); // Optional, handleSave handles success if not override, wait I changed it
+            alert(`Banner ${newStatus ? 'activated' : 'deactivated'} successfully!`);
         }
     };
 
@@ -505,6 +553,41 @@ function App() {
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
+            {/* Status Confirmation Modal */}
+            {showStatusConfirm && (
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in p-8 flex flex-col items-center text-center">
+                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${config.isActive ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                            {config.isActive ? <AlertCircle size={32} /> : <CheckCircle2 size={32} />}
+                        </div>
+                        <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
+                            {config.isActive ? 'Deactivate Banner?' : 'Activate Banner?'}
+                        </h2>
+                        <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                            {config.isActive
+                                ? 'Are you sure you want to deactivate this banner? It will no longer be visible to your customers.'
+                                : 'Are you sure you want to activate this banner? It will become visible to your customers based on your display settings.'}
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setShowStatusConfirm(false)}
+                                className="flex-1 px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmStatusChange}
+                                disabled={isSaving}
+                                className={`flex-1 px-6 py-3 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${config.isActive ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-100' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100'}`}
+                            >
+                                {isSaving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                                {config.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Template Selection Modal */}
             {showTemplateModal && (
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
@@ -608,285 +691,452 @@ function App() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto">
-                    <div className="p-4 border-b border-slate-100">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
-                            <button
-                                onClick={() => setShowTemplateModal(true)}
-                                className="text-xs font-bold text-blue-600 hover:text-blue-700"
-                            >
-                                Change Template
-                            </button>
-                        </div>
-                        <div
-                            onClick={() => setShowTemplateModal(true)}
-                            className="p-3 border border-slate-200 rounded-md flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
-                        >
-                            <div className="w-12 h-10 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all text-left">
-                                {activeTemplate.icon}
+                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto relative">
+                    {/* Master Activation Toggle */}
+                    <div className="p-5 border-b-4 border-slate-50 bg-slate-50/30">
+                        <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all cursor-pointer group"
+                            onClick={() => setShowStatusConfirm(true)}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                    <Power size={20} />
+                                </div>
+                                <div>
+                                    <div className="text-sm font-black text-slate-700 uppercase tracking-tight">Banner Status</div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                                        {config.isActive ? <span className="text-emerald-500">Currently Active</span> : 'Feature Disabled'}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="text-left">
-                                <div className="text-sm font-bold group-hover:text-blue-600 transition-colors">{activeTemplate.name}</div>
-                                <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Style: {activeTemplate.style}</div>
+                            <div className={`w-12 h-6 rounded-full transition-all relative ${config.isActive ? 'bg-emerald-500 shadow-lg shadow-emerald-100' : 'bg-slate-200'}`}>
+                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${config.isActive ? 'right-1' : 'left-1'}`} />
                             </div>
                         </div>
                     </div>
 
-                    {/* Navigation Tabs */}
-                    <div className="px-4 py-4">
-                        <div className="flex bg-slate-100 p-1 rounded-md">
-                            {['design', 'content', 'settings'].map((tab) => (
+                    <div className={`flex flex-col flex-1 transition-all duration-300 ${!config.isActive ? 'opacity-40 grayscale pointer-events-none select-none filter blur-[1px]' : ''}`}>
+                        <div className="p-4 border-b border-slate-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
                                 <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${activeTab === tab ? 'bg-white shadow-sm text-[#0F172A]' : 'text-slate-500 hover:text-slate-700'}`}
+                                    onClick={() => setShowTemplateModal(true)}
+                                    className="text-xs font-bold text-blue-600 hover:text-blue-700"
                                 >
-                                    {tab}
+                                    Change Template
                                 </button>
-                            ))}
+                            </div>
+                            <div
+                                onClick={() => setShowTemplateModal(true)}
+                                className="p-3 border border-slate-200 rounded-md flex items-center gap-3 bg-white hover:border-blue-200 transition-colors cursor-pointer group"
+                            >
+                                <div className="w-12 h-10 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all text-left">
+                                    {activeTemplate.icon}
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-sm font-bold group-hover:text-blue-600 transition-colors">{activeTemplate.name}</div>
+                                    <div className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">Style: {activeTemplate.style}</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Sidebar Content */}
-                    <div className="px-6 py-4 space-y-8 pb-10 text-left overflow-y-auto custom-scrollbar">
-                        {activeTab === 'content' && (
-                            <div className="space-y-10 animate-fade-in">
-                                {/* Banner Text */}
-                                <section className="space-y-6">
-                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Text</h3>
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Headline</label>
-                                            <input
-                                                type="text"
-                                                value={config.headline}
-                                                onChange={(e) => setConfig(prev => ({ ...prev, headline: e.target.value }))}
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                            />
-                                        </div>
+                        {/* Navigation Tabs */}
+                        <div className="px-4 py-4">
+                            <div className="flex bg-slate-100 p-1 rounded-md">
+                                {['design', 'content', 'settings'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all capitalize ${activeTab === tab ? 'bg-white shadow-sm text-[#0F172A]' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between pb-1">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Sub-headline / Promo Code</label>
-                                                <button
-                                                    onClick={() => setConfig(prev => ({ ...prev, showSubHeadline: !prev.showSubHeadline }))}
-                                                    className={`w-8 h-4 rounded-full transition-all relative ${config.showSubHeadline ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                                >
-                                                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${config.showSubHeadline ? 'right-0.5' : 'left-0.5'}`} />
-                                                </button>
-                                            </div>
-                                            {config.showSubHeadline && (
+                        {/* Sidebar Content */}
+                        <div className="px-6 py-4 space-y-8 pb-10 text-left overflow-y-auto custom-scrollbar">
+                            {activeTab === 'content' && (
+                                <div className="space-y-10 animate-fade-in">
+                                    {/* Banner Text */}
+                                    <section className="space-y-6">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Text</h3>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Headline</label>
                                                 <input
                                                     type="text"
-                                                    value={config.subHeadline}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, subHeadline: e.target.value }))}
+                                                    value={config.headline}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, headline: e.target.value }))}
                                                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                                 />
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
+                                            </div>
 
-                                {/* Countdown Timer */}
-                                <section className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Countdown Timer</h3>
-                                        <button
-                                            onClick={() => setConfig(prev => ({ ...prev, showTimer: !prev.showTimer }))}
-                                            className={`w-10 h-5 rounded-full transition-all relative ${config.showTimer ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showTimer ? 'right-1' : 'left-1'}`} />
-                                        </button>
-                                    </div>
-                                    {config.showTimer && (
-                                        <div className="space-y-4 animate-fade-in">
+
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
-                                                <div className="flex gap-3">
-                                                    <div className="relative flex-1">
-                                                        <input
-                                                            type="date"
-                                                            value={config.endDate}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, endDate: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                        />
-                                                        <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                <div className="flex items-center justify-between pb-1">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Sub-headline / Promo Code</label>
+                                                    <button
+                                                        onClick={() => setConfig(prev => ({ ...prev, showSubHeadline: !prev.showSubHeadline }))}
+                                                        className={`w-8 h-4 rounded-full transition-all relative ${config.showSubHeadline ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                    >
+                                                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${config.showSubHeadline ? 'right-0.5' : 'left-0.5'}`} />
+                                                    </button>
+                                                </div>
+                                                {config.showSubHeadline && (
+                                                    <input
+                                                        type="text"
+                                                        value={config.subHeadline}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadline: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="h-[1px] bg-slate-50" />
+                                    </section>
+
+                                    {/* Countdown Timer */}
+                                    <section className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Countdown Timer</h3>
+                                            <button
+                                                onClick={() => setConfig(prev => ({ ...prev, showTimer: !prev.showTimer }))}
+                                                className={`w-10 h-5 rounded-full transition-all relative ${config.showTimer ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showTimer ? 'right-1' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+                                        {config.showTimer && (
+                                            <div className="space-y-4 animate-fade-in">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
+                                                    <div className="flex gap-3">
+                                                        <div className="relative flex-1">
+                                                            <input
+                                                                type="date"
+                                                                value={config.endDate}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, endDate: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                            />
+                                                            <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                        </div>
+                                                        <div className="relative w-[130px]">
+                                                            <input
+                                                                type="time"
+                                                                value={config.endTime}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, endTime: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm rounded-xl"
+                                                            />
+                                                            <Clock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                        </div>
                                                     </div>
-                                                    <div className="relative w-[130px]">
-                                                        <input
-                                                            type="time"
-                                                            value={config.endTime}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, endTime: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm rounded-xl"
-                                                        />
-                                                        <Clock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Text (Optional)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={config.timerLabel}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, timerLabel: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Position</label>
+                                                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                        {['left', 'top', 'right', 'bottom'].map((pos) => (
+                                                            <button
+                                                                key={pos}
+                                                                onClick={() => setConfig(prev => ({ ...prev, timerLabelPosition: pos }))}
+                                                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${config.timerLabelPosition === pos ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                            >
+                                                                {pos}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Unit Labels</label>
+                                                    <div className="flex gap-2">
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">Days</span>
+                                                            <input
+                                                                type="text"
+                                                                value={config.daysLabel}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, daysLabel: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                placeholder="D"
+                                                                maxLength={3}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">Hours</span>
+                                                            <input
+                                                                type="text"
+                                                                value={config.hoursLabel}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, hoursLabel: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                placeholder="H"
+                                                                maxLength={3}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">Mins</span>
+                                                            <input
+                                                                type="text"
+                                                                value={config.minutesLabel}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, minutesLabel: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                placeholder="M"
+                                                                maxLength={3}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Text (Optional)</label>
-                                                <input
-                                                    type="text"
-                                                    value={config.timerLabel}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, timerLabel: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                />
+                                        )}
+                                        <div className="h-[1px] bg-slate-50" />
+                                    </section>
+
+                                    {/* Call to Action */}
+                                    <section className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Call to Action</h3>
+                                            <button
+                                                onClick={() => setConfig(prev => ({ ...prev, showCTA: !prev.showCTA }))}
+                                                className={`w-10 h-5 rounded-full transition-all relative ${config.showCTA ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showCTA ? 'right-1' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+                                        {config.showCTA && (
+                                            <div className="space-y-4 animate-fade-in">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Button Text</label>
+                                                    <input
+                                                        type="text"
+                                                        value={config.ctaText}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaText: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Button Link</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            value={config.ctaUrl}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm text-blue-600"
+                                                        />
+                                                        <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Position</label>
+                                        )}
+                                        <div className="h-[1px] bg-slate-50" />
+                                    </section>
+
+                                    {/* Promotional Badge */}
+                                    <section className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Promotional Badge</h3>
+                                            <button
+                                                onClick={() => setConfig(prev => ({ ...prev, showBogoBadge: !prev.showBogoBadge }))}
+                                                className={`w-10 h-5 rounded-full transition-all relative ${config.showBogoBadge ? 'bg-red-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showBogoBadge ? 'right-1' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+                                        {config.showBogoBadge && (
+                                            <div className="space-y-4 animate-fade-in">
+                                                {/* Badge Type Selector */}
                                                 <div className="flex bg-slate-100 p-1 rounded-lg">
-                                                    {['left', 'top', 'right', 'bottom'].map((pos) => (
-                                                        <button
-                                                            key={pos}
-                                                            onClick={() => setConfig(prev => ({ ...prev, timerLabelPosition: pos }))}
-                                                            className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${config.timerLabelPosition === pos ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                                        >
-                                                            {pos}
-                                                        </button>
-                                                    ))}
+                                                    <button
+                                                        onClick={() => setConfig(prev => ({ ...prev, badgeType: 'text' }))}
+                                                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'text' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Badge Text
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setConfig(prev => ({ ...prev, badgeType: 'image' }))}
+                                                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'image' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                                    >
+                                                        Badge Image
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Unit Labels</label>
-                                                <div className="flex gap-2">
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Days</span>
-                                                        <input
-                                                            type="text"
-                                                            value={config.daysLabel}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, daysLabel: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                            placeholder="D"
-                                                            maxLength={3}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Hours</span>
-                                                        <input
-                                                            type="text"
-                                                            value={config.hoursLabel}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, hoursLabel: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                            placeholder="H"
-                                                            maxLength={3}
-                                                        />
-                                                    </div>
-                                                    <div className="space-y-1 flex-1">
-                                                        <span className="text-[9px] font-bold text-slate-400 ml-1">Mins</span>
-                                                        <input
-                                                            type="text"
-                                                            value={config.minutesLabel}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, minutesLabel: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                            placeholder="M"
-                                                            maxLength={3}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
 
-                                {/* Call to Action */}
-                                <section className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Call to Action</h3>
-                                        <button
-                                            onClick={() => setConfig(prev => ({ ...prev, showCTA: !prev.showCTA }))}
-                                            className={`w-10 h-5 rounded-full transition-all relative ${config.showCTA ? 'bg-blue-600' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showCTA ? 'right-1' : 'left-1'}`} />
-                                        </button>
-                                    </div>
-                                    {config.showCTA && (
-                                        <div className="space-y-4 animate-fade-in">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Button Text</label>
-                                                <input
-                                                    type="text"
-                                                    value={config.ctaText}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, ctaText: e.target.value }))}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                />
+                                                {config.badgeType === 'text' ? (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
+                                                        <input
+                                                            type="text"
+                                                            value={config.bogoText}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, bogoText: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
+                                                            placeholder="e.g. 50% OFF"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Image URL</label>
+                                                        <div className="flex gap-2">
+                                                            <div className="relative flex-1">
+                                                                <input
+                                                                    type="text"
+                                                                    value={config.badgeImage}
+                                                                    onChange={(e) => setConfig(prev => ({ ...prev, badgeImage: e.target.value }))}
+                                                                    className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                    placeholder="https://..."
+                                                                />
+                                                                <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
+                                                            </div>
+                                                            <button
+                                                                onClick={handleImageUpload}
+                                                                className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
+                                                                type="button"
+                                                            >
+                                                                Upload
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
+                                        )}
+                                        <div className="h-[1px] bg-slate-50" />
+                                    </section>
+
+                                    {/* Banner Background */}
+                                    <section className="space-y-6">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Background</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {[
+                                                { id: 'gradient', name: 'Gradient', color: 'bg-gradient-to-r from-blue-700 to-blue-500' },
+                                                { id: 'solid', name: 'Solid Color', color: 'bg-[#111827]' }
+                                            ].map(bg => (
+                                                <button
+                                                    key={bg.id}
+                                                    onClick={() => setConfig(prev => ({ ...prev, bgType: bg.id }))}
+                                                    className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all gap-3 ${config.bgType === bg.id ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                                >
+                                                    <div className={`w-full h-8 rounded-lg ${bg.color} relative`}>
+                                                        {config.bgType === bg.id && (
+                                                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white">
+                                                                <CheckCircle2 size={10} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <span className={`text-[11px] font-black ${config.bgType === bg.id ? 'text-blue-600' : 'text-slate-400'}`}>{bg.name}</span>
+                                                </button>
+                                            ))}
+                                            {/* Image Option */}
+                                            <button
+                                                onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
+                                                className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all gap-3 col-span-1 ${config.bgType === 'image' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                            >
+                                                <div className="w-full h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 relative">
+                                                    <ImageIcon size={16} />
+                                                    {config.bgType === 'image' && (
+                                                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white">
+                                                            <CheckCircle2 size={10} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className={`text-[11px] font-black ${config.bgType === 'image' ? 'text-blue-600' : 'text-slate-400'}`}>Image</span>
+                                            </button>
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+
+                            {activeTab === 'design' && (
+                                <div className="space-y-4 animate-fade-in">
+                                    {/* Background Styling */}
+                                    <section className="space-y-2">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Background Styling</h3>
+
+                                        {config.bgType === 'solid' && (
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Button Link</label>
-                                                <div className="relative">
+                                                {/* Fill Color */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Fill Color</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="text"
+                                                            value={config.bgSolid}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
+                                                            className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                        />
+                                                        <div className="relative group/color cursor-pointer">
+                                                            <div
+                                                                className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                style={{ backgroundColor: config.bgSolid }}
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={config.bgSolid}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {config.bgType === 'gradient' && (
+                                            <div className="space-y-2">
+                                                {/* Gradient Value */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Gradient Value</span>
                                                     <input
                                                         type="text"
-                                                        value={config.ctaUrl}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
-                                                        className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm text-blue-600"
-                                                    />
-                                                    <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
-
-                                {/* Promotional Badge */}
-                                <section className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Promotional Badge</h3>
-                                        <button
-                                            onClick={() => setConfig(prev => ({ ...prev, showBogoBadge: !prev.showBogoBadge }))}
-                                            className={`w-10 h-5 rounded-full transition-all relative ${config.showBogoBadge ? 'bg-red-600' : 'bg-slate-200'}`}
-                                        >
-                                            <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showBogoBadge ? 'right-1' : 'left-1'}`} />
-                                        </button>
-                                    </div>
-                                    {config.showBogoBadge && (
-                                        <div className="space-y-4 animate-fade-in">
-                                            {/* Badge Type Selector */}
-                                            <div className="flex bg-slate-100 p-1 rounded-lg">
-                                                <button
-                                                    onClick={() => setConfig(prev => ({ ...prev, badgeType: 'text' }))}
-                                                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'text' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
-                                                >
-                                                    Badge Text
-                                                </button>
-                                                <button
-                                                    onClick={() => setConfig(prev => ({ ...prev, badgeType: 'image' }))}
-                                                    className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.badgeType === 'image' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
-                                                >
-                                                    Badge Image
-                                                </button>
-                                            </div>
-
-                                            {config.badgeType === 'text' ? (
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
-                                                    <input
-                                                        type="text"
-                                                        value={config.bogoText}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, bogoText: e.target.value }))}
-                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
-                                                        placeholder="e.g. 50% OFF"
+                                                        value={config.bgGradient}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, bgGradient: e.target.value }))}
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-40 text-right outline-none p-0 focus:text-slate-900"
                                                     />
                                                 </div>
-                                            ) : (
+
+                                                {/* Gradient Presets */}
+                                                <div className="p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-xs font-bold text-slate-600">Presets</span>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        {[
+                                                            'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                                                            'linear-gradient(135deg, #111827 0%, #374151 100%)',
+                                                            'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+                                                            'linear-gradient(135deg, #10B981 0%, #059669 100%)'
+                                                        ].map(grad => (
+                                                            <button
+                                                                key={grad}
+                                                                onClick={() => setConfig(prev => ({ ...prev, bgGradient: grad }))}
+                                                                className="w-8 h-8 rounded-lg border-2 border-white shadow-sm ring-1 ring-black/5 hover:scale-110 transition-transform"
+                                                                style={{ background: grad }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {config.bgType === 'image' && (
+                                            <div className="space-y-4">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Image URL</label>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Background Image URL</label>
                                                     <div className="flex gap-2">
                                                         <div className="relative flex-1">
                                                             <input
                                                                 type="text"
-                                                                value={config.badgeImage}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, badgeImage: e.target.value }))}
+                                                                value={config.bgImage}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, bgImage: e.target.value }))}
                                                                 className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                                                 placeholder="https://..."
                                                             />
                                                             <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
                                                         </div>
                                                         <button
-                                                            onClick={handleImageUpload}
+                                                            onClick={handleBgImageUpload}
                                                             className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
                                                             type="button"
                                                         >
@@ -894,449 +1144,388 @@ function App() {
                                                         </button>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
-
-                                {/* Banner Background */}
-                                <section className="space-y-6">
-                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Background</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {[
-                                            { id: 'gradient', name: 'Gradient', color: 'bg-gradient-to-r from-blue-700 to-blue-500' },
-                                            { id: 'solid', name: 'Solid Color', color: 'bg-[#111827]' }
-                                        ].map(bg => (
-                                            <button
-                                                key={bg.id}
-                                                onClick={() => setConfig(prev => ({ ...prev, bgType: bg.id }))}
-                                                className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all gap-3 ${config.bgType === bg.id ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
-                                            >
-                                                <div className={`w-full h-8 rounded-lg ${bg.color} relative`}>
-                                                    {config.bgType === bg.id && (
-                                                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white">
-                                                            <CheckCircle2 size={10} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span className={`text-[11px] font-black ${config.bgType === bg.id ? 'text-blue-600' : 'text-slate-400'}`}>{bg.name}</span>
-                                            </button>
-                                        ))}
-                                        {/* Image Option */}
-                                        <button
-                                            onClick={() => setConfig(prev => ({ ...prev, bgType: 'image' }))}
-                                            className={`flex flex-col items-center p-3 rounded-xl border-2 transition-all gap-3 col-span-1 ${config.bgType === 'image' ? 'border-blue-600 bg-blue-50/50' : 'border-slate-100 bg-white hover:border-slate-200'}`}
-                                        >
-                                            <div className="w-full h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 relative">
-                                                <ImageIcon size={16} />
-                                                {config.bgType === 'image' && (
-                                                    <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white">
-                                                        <CheckCircle2 size={10} />
-                                                    </div>
-                                                )}
                                             </div>
-                                            <span className={`text-[11px] font-black ${config.bgType === 'image' ? 'text-blue-600' : 'text-slate-400'}`}>Image</span>
-                                        </button>
-                                    </div>
-                                </section>
-                            </div>
-                        )}
-
-                        {activeTab === 'design' && (
-                            <div className="space-y-4 animate-fade-in">
-                                {/* Background Styling */}
-                                <section className="space-y-2">
-                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Background Styling</h3>
-
-                                    {config.bgType === 'solid' && (
-                                        <div className="space-y-2">
-                                            {/* Fill Color */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Fill Color</span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={config.bgSolid}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    />
-                                                    <div className="relative group/color cursor-pointer">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: config.bgSolid }}
-                                                        />
-                                                        <input
-                                                            type="color"
-                                                            value={config.bgSolid}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgSolid: e.target.value }))}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {config.bgType === 'gradient' && (
-                                        <div className="space-y-2">
-                                            {/* Gradient Value */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Gradient Value</span>
-                                                <input
-                                                    type="text"
-                                                    value={config.bgGradient}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, bgGradient: e.target.value }))}
-                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-40 text-right outline-none p-0 focus:text-slate-900"
-                                                />
-                                            </div>
-
-                                            {/* Gradient Presets */}
-                                            <div className="p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-xs font-bold text-slate-600">Presets</span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {[
-                                                        'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-                                                        'linear-gradient(135deg, #111827 0%, #374151 100%)',
-                                                        'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
-                                                        'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-                                                    ].map(grad => (
-                                                        <button
-                                                            key={grad}
-                                                            onClick={() => setConfig(prev => ({ ...prev, bgGradient: grad }))}
-                                                            className="w-8 h-8 rounded-lg border-2 border-white shadow-sm ring-1 ring-black/5 hover:scale-110 transition-transform"
-                                                            style={{ background: grad }}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {config.bgType === 'image' && (
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Background Image URL</label>
-                                                <div className="flex gap-2">
-                                                    <div className="relative flex-1">
-                                                        <input
-                                                            type="text"
-                                                            value={config.bgImage}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgImage: e.target.value }))}
-                                                            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                            placeholder="https://..."
-                                                        />
-                                                        <ImageIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
-                                                    </div>
-                                                    <button
-                                                        onClick={handleBgImageUpload}
-                                                        className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 rounded-xl border border-slate-200 transition-colors whitespace-nowrap"
-                                                        type="button"
-                                                    >
-                                                        Upload
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
-
-                                {/* Typography Design */}
-                                <section className="space-y-2">
-                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Typography Design</h3>
-
-                                    {/* Headline Design */}
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2">
-                                            <Type size={14} className="text-blue-500" />
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Headline Style</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {/* Font Size */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Font Size</span>
-                                                <div className="flex items-center gap-4">
-                                                    <input
-                                                        type="range"
-                                                        min="10"
-                                                        max="48"
-                                                        value={parseInt(config.headlineSize)}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: `${e.target.value}px` }))}
-                                                        className="w-32 accent-blue-600"
-                                                    />
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.headlineSize}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Text Color */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Text Color</span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={config.headlineColor}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    />
-                                                    <div className="relative group/color cursor-pointer">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: config.headlineColor }}
-                                                        />
-                                                        <input
-                                                            type="color"
-                                                            value={config.headlineColor}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Sub-headline Design */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <Type size={14} className="text-blue-500" />
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Sub-headline Style</span>
-                                        </div>
-                                        <div className="space-y-2">
-                                            {/* Font Size */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Font Size</span>
-                                                <div className="flex items-center gap-4">
-                                                    <input
-                                                        type="range"
-                                                        min="8"
-                                                        max="32"
-                                                        value={parseInt(config.subHeadlineSize)}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: `${e.target.value}px` }))}
-                                                        className="w-32 accent-blue-600"
-                                                    />
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.subHeadlineSize}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Text Color */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Text Color</span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={config.subHeadlineColor}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    />
-                                                    <div className="relative group/color cursor-pointer">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: config.subHeadlineColor }}
-                                                        />
-                                                        <input
-                                                            type="color"
-                                                            value={config.subHeadlineColor}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="h-[1px] bg-slate-50" />
-                                </section>
-
-                                {/* Timer Design */}
-                                {config.showTimer && (
-                                    <section className="space-y-2 animate-fade-in">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Timer Components</h3>
-
-                                        {/* Timer Colors */}
-                                        <div className="space-y-2">
-                                            {/* Timer Digits */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Timer Digits</span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={config.timerTextColor}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
-                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                    />
-                                                    <div className="relative group/color cursor-pointer">
-                                                        <div
-                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                            style={{ backgroundColor: config.timerTextColor }}
-                                                        />
-                                                        <input
-                                                            type="color"
-                                                            value={config.timerTextColor}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
-                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Unit Labels - Special case with fixed opacity display */}
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Unit Labels</span>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400">Fixed Opacity</span>
-                                                    <div className="w-6 h-6 rounded-md bg-white/20 border border-slate-200 shadow-sm" />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        )}
+                                        <div className="h-[1px] bg-slate-50" />
                                     </section>
-                                )}
 
-                                {/* CTA Design */}
-                                {config.showCTA && (
-                                    <section className="space-y-2 animate-fade-in">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight text-left">Button Styling</h3>
+                                    {/* Typography Design */}
+                                    <section className="space-y-2">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Typography Design</h3>
 
-                                        {/* Button Colors */}
+                                        {/* Headline Design */}
                                         <div className="space-y-2">
-                                            {[
-                                                { id: 'ctaBg', label: 'Background' },
-                                                { id: 'ctaTextColor', label: 'Text Color' }
-                                            ].map((item) => (
-                                                <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                    <span className="text-xs font-bold text-slate-600">{item.label}</span>
+                                            <div className="flex items-center gap-2">
+                                                <Type size={14} className="text-blue-500" />
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Headline Style</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {/* Font Size */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="range"
+                                                            min="10"
+                                                            max="48"
+                                                            value={parseInt(config.headlineSize)}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, headlineSize: `${e.target.value}px` }))}
+                                                            className="w-32 accent-blue-600"
+                                                        />
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.headlineSize}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Text Color */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Text Color</span>
                                                     <div className="flex items-center gap-3">
                                                         <input
                                                             type="text"
-                                                            value={config[item.id]}
-                                                            onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                            value={config.headlineColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
                                                             className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                         />
                                                         <div className="relative group/color cursor-pointer">
                                                             <div
                                                                 className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                                style={{ backgroundColor: config[item.id] }}
+                                                                style={{ backgroundColor: config.headlineColor }}
                                                             />
                                                             <input
                                                                 type="color"
-                                                                value={config[item.id]}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                                value={config.headlineColor}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, headlineColor: e.target.value }))}
                                                                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                                                             />
                                                         </div>
                                                     </div>
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
 
-                                        {/* Corner Radius */}
-                                        <div className="space-y-2">
-                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                                <span className="text-xs font-bold text-slate-600">Corner Radius</span>
-                                                <div className="flex items-center gap-4">
-                                                    <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="24"
-                                                        value={parseInt(config.ctaRadius)}
-                                                        onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
-                                                        className="w-32 accent-blue-600"
-                                                    />
-                                                    <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.ctaRadius}</span>
+                                        {/* Sub-headline Design */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <Type size={14} className="text-blue-500" />
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Sub-headline Style</span>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {/* Font Size */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Font Size</span>
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="range"
+                                                            min="8"
+                                                            max="32"
+                                                            value={parseInt(config.subHeadlineSize)}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineSize: `${e.target.value}px` }))}
+                                                            className="w-32 accent-blue-600"
+                                                        />
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.subHeadlineSize}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Text Color */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Text Color</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="text"
+                                                            value={config.subHeadlineColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
+                                                            className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                        />
+                                                        <div className="relative group/color cursor-pointer">
+                                                            <div
+                                                                className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                style={{ backgroundColor: config.subHeadlineColor }}
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={config.subHeadlineColor}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, subHeadlineColor: e.target.value }))}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </section>
-                                )}
-
-                                {/* Badge Styling */}
-                                {config.showBogoBadge && config.badgeType === 'text' && (
-                                    <section className="space-y-4 animate-fade-in">
                                         <div className="h-[1px] bg-slate-50" />
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Badge Styling</h3>
+                                    </section>
 
-                                        {/* Badge Background */}
-                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                            <span className="text-xs font-bold text-slate-600">Background</span>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="text"
-                                                    value={config.badgeBgColor}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, badgeBgColor: e.target.value }))}
-                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                />
-                                                <div className="relative group/color cursor-pointer">
-                                                    <div
-                                                        className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                        style={{ backgroundColor: config.badgeBgColor }}
-                                                    />
+                                    {/* Timer Design */}
+                                    {config.showTimer && (
+                                        <section className="space-y-2 animate-fade-in">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Timer Components</h3>
+
+                                            {/* Timer Colors */}
+                                            <div className="space-y-2">
+                                                {/* Timer Digits */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Timer Digits</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <input
+                                                            type="text"
+                                                            value={config.timerTextColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
+                                                            className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                        />
+                                                        <div className="relative group/color cursor-pointer">
+                                                            <div
+                                                                className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                style={{ backgroundColor: config.timerTextColor }}
+                                                            />
+                                                            <input
+                                                                type="color"
+                                                                value={config.timerTextColor}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, timerTextColor: e.target.value }))}
+                                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Unit Labels - Special case with fixed opacity display */}
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Unit Labels</span>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400">Fixed Opacity</span>
+                                                        <div className="w-6 h-6 rounded-md bg-white/20 border border-slate-200 shadow-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {/* CTA Design */}
+                                    {config.showCTA && (
+                                        <section className="space-y-2 animate-fade-in">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight text-left">Button Styling</h3>
+
+                                            {/* Button Colors */}
+                                            <div className="space-y-2">
+                                                {[
+                                                    { id: 'ctaBg', label: 'Background' },
+                                                    { id: 'ctaTextColor', label: 'Text Color' }
+                                                ].map((item) => (
+                                                    <div key={item.id} className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                        <span className="text-xs font-bold text-slate-600">{item.label}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <input
+                                                                type="text"
+                                                                value={config[item.id]}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                                className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                            />
+                                                            <div className="relative group/color cursor-pointer">
+                                                                <div
+                                                                    className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                    style={{ backgroundColor: config[item.id] }}
+                                                                />
+                                                                <input
+                                                                    type="color"
+                                                                    value={config[item.id]}
+                                                                    onChange={(e) => setConfig(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Corner Radius */}
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                    <span className="text-xs font-bold text-slate-600">Corner Radius</span>
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="range"
+                                                            min="0"
+                                                            max="24"
+                                                            value={parseInt(config.ctaRadius)}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
+                                                            className="w-32 accent-blue-600"
+                                                        />
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.ctaRadius}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {/* Badge Styling */}
+                                    {config.showBogoBadge && config.badgeType === 'text' && (
+                                        <section className="space-y-4 animate-fade-in">
+                                            <div className="h-[1px] bg-slate-50" />
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Badge Styling</h3>
+
+                                            {/* Badge Background */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Background</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.badgeBgColor}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, badgeBgColor: e.target.value }))}
-                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.badgeBgColor }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.badgeBgColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, badgeBgColor: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Badge Text Color */}
-                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
-                                            <span className="text-xs font-bold text-slate-600">Text Color</span>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="text"
-                                                    value={config.badgeTextColor}
-                                                    onChange={(e) => setConfig(prev => ({ ...prev, badgeTextColor: e.target.value }))}
-                                                    className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
-                                                />
-                                                <div className="relative group/color cursor-pointer">
-                                                    <div
-                                                        className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
-                                                        style={{ backgroundColor: config.badgeTextColor }}
-                                                    />
+                                            {/* Badge Text Color */}
+                                            <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group">
+                                                <span className="text-xs font-bold text-slate-600">Text Color</span>
+                                                <div className="flex items-center gap-3">
                                                     <input
-                                                        type="color"
+                                                        type="text"
                                                         value={config.badgeTextColor}
                                                         onChange={(e) => setConfig(prev => ({ ...prev, badgeTextColor: e.target.value }))}
-                                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
                                                     />
+                                                    <div className="relative group/color cursor-pointer">
+                                                        <div
+                                                            className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                            style={{ backgroundColor: config.badgeTextColor }}
+                                                        />
+                                                        <input
+                                                            type="color"
+                                                            value={config.badgeTextColor}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, badgeTextColor: e.target.value }))}
+                                                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </section>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'settings' && (
-                            <div className="space-y-4 animate-fade-in text-left">
-                                <h3 className="text-sm font-black text-[#0F172A] tracking-tight mb-4">Display Locations</h3>
-                                <div className="space-y-3">
-                                    {[
-                                        { id: 'displayOnAllPages', label: 'All Pages' },
-                                        { id: 'displayOnHomePage', label: 'Home Page' }
-                                    ].map(item => (
-                                        <label key={item.id} className="flex items-center justify-between p-4 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm">
-                                            <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">{item.label}</span>
-                                            <button
-                                                onClick={() => setDisplaySettings(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                                                className={`w-10 h-5 rounded-full transition-all relative ${displaySettings[item.id] ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}
-                                            >
-                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${displaySettings[item.id] ? 'right-1' : 'left-1'}`} />
-                                            </button>
-                                        </label>
-                                    ))}
+                                        </section>
+                                    )}
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                            {activeTab === 'settings' && (
+                                <div className="space-y-4 animate-fade-in text-left">
+                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight mb-4">Display Locations</h3>
+                                    <div className="space-y-3">
+                                        {[
+                                            { id: 'displayOnAllPages', label: 'All Pages' },
+                                            { id: 'displayOnHomePage', label: 'Home Page' }
+                                        ].map(item => (
+                                            <div
+                                                key={item.id}
+                                                onClick={() => {
+                                                    setDisplaySettings(prev => {
+                                                        const newValue = !prev[item.id];
+                                                        let newState = { ...prev, [item.id]: newValue };
+
+                                                        if (item.id === 'displayOnAllPages') {
+                                                            if (newValue) {
+                                                                newState.displayOnHomePage = true;
+                                                                newState.selectedPages = availablePages.map(p => p.id);
+                                                            }
+                                                        } else if (item.id === 'displayOnHomePage') {
+                                                            if (!newValue) {
+                                                                newState.displayOnAllPages = false;
+                                                            }
+                                                        }
+                                                        return newState;
+                                                    });
+                                                }}
+                                                className="flex items-center justify-between p-4 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm"
+                                            >
+                                                <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">{item.label}</span>
+                                                <div
+                                                    className={`w-10 h-5 rounded-full transition-all relative ${displaySettings[item.id] ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${displaySettings[item.id] ? 'right-1' : 'left-1'}`} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {isPro && availablePages.length > 0 && (
+                                            <div className="space-y-3 pt-4 border-t border-slate-100 animate-fade-in">
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Specific Pages</h4>
+                                                <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                                    {availablePages.map(page => {
+                                                        const isSelected = displaySettings.selectedPages?.some(id => String(id) === String(page.id));
+                                                        return (
+                                                            <div
+                                                                key={page.id}
+                                                                onClick={() => {
+                                                                    const currentSelected = displaySettings.selectedPages || [];
+                                                                    const isRemoving = isSelected;
+                                                                    const newSelected = isRemoving
+                                                                        ? currentSelected.filter(id => String(id) !== String(page.id))
+                                                                        : [...currentSelected, page.id];
+
+                                                                    setDisplaySettings(prev => {
+                                                                        let newState = { ...prev, selectedPages: newSelected };
+                                                                        if (isRemoving) {
+                                                                            newState.displayOnAllPages = false;
+                                                                        }
+                                                                        return newState;
+                                                                    });
+                                                                }}
+                                                                className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer group ${isSelected ? 'border-blue-200 bg-blue-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                                            >
+                                                                <span className={`text-[11px] font-bold ${isSelected ? 'text-blue-600' : 'text-slate-500'}`}>{page.title}</span>
+                                                                <div
+                                                                    className={`w-8 h-4 rounded-full transition-all relative ${isSelected ? 'bg-blue-600 shadow-md shadow-blue-100' : 'bg-slate-200'}`}
+                                                                >
+                                                                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${isSelected ? 'right-0.5' : 'left-0.5'}`} />
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </aside>
 
                 {/* Main Preview Area */}
                 <main className="flex-1 overflow-y-auto bg-slate-50 flex flex-col relative group">
+                    {!config.isActive && showDisabledOverlay && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px] bg-slate-900/10 transition-all duration-500">
+                            <div className="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white flex flex-col items-center gap-4 max-w-sm text-center animate-in fade-in zoom-in duration-300 relative">
+                                <button
+                                    onClick={() => setShowDisabledOverlay(false)}
+                                    className="absolute top-4 right-4 p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                                >
+                                    <X size={18} />
+                                </button>
+                                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <Power size={32} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Feature Disabled</h3>
+                                    <p className="text-sm font-medium text-slate-500 mt-1">This banner will not be visible on your storefront until activated.</p>
+                                </div>
+                                <button
+                                    onClick={() => setConfig(prev => ({ ...prev, isActive: true }))}
+                                    className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
+                                >
+                                    Activate Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Mock Browser Frame */}
                     <div className="flex-1 flex justify-center items-start p-24 pt-4">
@@ -1446,7 +1635,7 @@ function App() {
                         <span className="w-8 h-[2px] bg-slate-300" />
                     </div>
                 </main>
-            </div>
+            </div >
 
             <style jsx>{`
                 @keyframes fadeIn {
@@ -1466,7 +1655,7 @@ function App() {
                     100% { background-position: 200% 0; }
                 }
             `}</style>
-        </div>
+        </div >
     );
 }
 
