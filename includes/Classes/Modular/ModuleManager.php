@@ -141,10 +141,35 @@ class ModuleManager
             }
 
             // Localize for module
-            wp_localize_script($module['handle'], 'wiseModuleData', [
+            $localization_handle = (defined('WP_DEBUG') && WP_DEBUG && !($manifest && isset($manifest[$module['entry_point']])))
+                ? $module['handle'] . '-dev'
+                : $module['handle'];
+
+            if (!function_exists('is_plugin_active')) {
+                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+            }
+            $is_wc_active = class_exists('WooCommerce') || is_plugin_active('woocommerce/woocommerce.php');
+            $is_wc_installed = file_exists(WP_PLUGIN_DIR . '/woocommerce/woocommerce.php');
+
+            $wc_install_url = wp_nonce_url(
+                self_admin_url('update.php?action=install-plugin&plugin=woocommerce'),
+                'install-plugin_woocommerce'
+            );
+            $wc_activate_url = wp_nonce_url(
+                self_admin_url('plugins.php?action=activate&plugin=woocommerce/woocommerce.php'),
+                'activate-plugin_woocommerce/woocommerce.php'
+            );
+
+            wp_localize_script($localization_handle, 'wiseModuleData', [
                 'apiUrl' => rest_url('wisecampaign/v1/'),
                 'nonce' => wp_create_nonce('wp_rest'),
-                'moduleId' => $id
+                'moduleId' => $id,
+                'wc' => [
+                    'isActive' => $is_wc_active,
+                    'isInstalled' => $is_wc_installed,
+                    'installUrl' => html_entity_decode($wc_install_url),
+                    'activateUrl' => html_entity_decode($wc_activate_url)
+                ]
             ]);
         }
     }

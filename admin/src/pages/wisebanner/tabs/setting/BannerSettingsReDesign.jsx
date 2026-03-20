@@ -106,10 +106,12 @@ const BannerSettingsReDesign = () => {
           title="Banner Deploy:"
           element={<BannerDeploy value={settingState.bannerDeploy} handleChange={handleChange}/>}
         />
-        <SettingElementLayoutReDesign
-          title="Page targeting:" 
-          element={<PageTargeting pages={pages} value={settingState.pageTargeting} handleChange={handleChange}/>}
-        />
+        {isProActive && (
+          <SettingElementLayoutReDesign
+            title="Page targeting:"
+            element={<PageTargeting pages={pages} value={settingState.pageTargeting} handleChange={handleChange}/>}
+          />
+        )}
         {/* <SettingElementLayout
           title="User targeting:"
           element={<UserTargeting value={settingState.userTargeting} handleChange={handleChange}/>}

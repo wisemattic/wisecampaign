@@ -296,11 +296,17 @@ function App() {
                     alert("Settings saved successfully!");
                 }
                 return true;
+            } else {
+                const errorText = !resBanner.ok ? "Banner save failed" : "Display settings save failed";
+                console.error(errorText, resBanner.status, resDisplay.status);
+                if (!configOverride) {
+                    alert(`${errorText}. Please try again.`);
+                }
             }
         } catch (error) {
             console.error("Error saving settings:", error);
             if (!configOverride) {
-                alert("Failed to save settings.");
+                alert("Failed to save settings: " + error.message);
             }
         } finally {
             setIsSaving(false);
@@ -678,7 +684,7 @@ function App() {
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3 pr-2">
                         <button
-                            onClick={handleSave}
+                            onClick={() => handleSave()}
                             disabled={isSaving}
                             className={`flex items-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-xl hover:bg-slate-800 transition-all text-sm font-bold shadow-lg shadow-slate-200 active:scale-95 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
@@ -1515,7 +1521,7 @@ function App() {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-black text-slate-800 tracking-tight">Feature Disabled</h3>
-                                    <p className="text-sm font-medium text-slate-500 mt-1">This banner will not be visible on your storefront until activated.</p>
+                                    <p className="text-sm font-medium text-slate-500 mt-1">This banner will not be visible on your website frontend until activated.</p>
                                 </div>
                                 <button
                                     onClick={() => setShowStatusConfirm(true)}

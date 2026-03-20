@@ -284,15 +284,23 @@ function App() {
             });
 
             if (resDesign.ok && resDisplay.ok && resStatus.ok) {
-                if (statusOverride === null) {
-                    alert("Settings saved successfully!");
+                if (statusOverride === null || typeof statusOverride === 'boolean') {
+                    if (statusOverride === null) {
+                        alert("Settings saved successfully!");
+                    }
                 }
                 return true;
+            } else {
+                const errorText = !resDesign.ok ? "Design save failed" : (!resDisplay.ok ? "Display settings save failed" : "Status save failed");
+                console.error(errorText, resDesign.status, resDisplay.status, resStatus.status);
+                if (statusOverride === null || typeof statusOverride === 'boolean') {
+                    alert(`${errorText}. Please try again.`);
+                }
             }
         } catch (error) {
             console.error("Error saving settings:", error);
-            if (statusOverride === null) {
-                alert("Failed to save settings.");
+            if (statusOverride === null || typeof statusOverride === 'boolean') {
+                alert("Failed to save settings: " + error.message);
             }
         } finally {
             setIsSaving(false);
@@ -786,7 +794,7 @@ function App() {
                             Preview
                         </button> */}
                         <button
-                            onClick={handleSave}
+                            onClick={() => handleSave()}
                             disabled={isSaving}
                             className={`flex items-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-xl hover:bg-slate-800 transition-all text-sm font-bold shadow-lg shadow-slate-200 active:scale-95 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
@@ -1244,8 +1252,22 @@ function App() {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
+                @keyframes scaleIn {
+                    from { opacity: 0; transform: scale(0.9); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                @keyframes zoomIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
                 .animate-fade-in {
                     animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                .scale-in {
+                    animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                .zoom-in {
+                    animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
                 .shimmer {
                     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);

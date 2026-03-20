@@ -84,14 +84,6 @@ class Menu
         $icon_path = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
         add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page'], $icon_path, 30);
         add_submenu_page('wisecampaign_menu', 'Dashboard', 'Dashboard', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page']);
-        add_submenu_page('wisecampaign_menu', 'wiseBanner', 'wiseBanner', 'manage_options', 'wisecampaign_banner', [$this, 'wisecampaign_banner_page']);
-        $this->add_wc_dependent_submenu(
-            'wisecampaign_menu',
-            __('Stockbar', 'wisecampaign'),
-            __('Stockbar', 'wisecampaign'),
-            'wisecampaign_stockbar',
-            [$this, 'wisecampaign_stockbar_page']
-        );
         $this->add_wc_dependent_submenu(
             'wisecampaign_menu',
             __('Direct Checkout', 'wisecampaign'),
