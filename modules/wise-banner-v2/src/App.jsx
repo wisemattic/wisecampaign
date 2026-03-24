@@ -190,9 +190,9 @@ function App() {
         hoursLabel: 'H',
         minutesLabel: 'M',
         secondsLabel: 'S',
-        timerMode: 'fixed', // 'fixed' or 'recurring'
+        enableRecursion: false,
         recurrenceAmount: 24,
-        recurrenceUnit: 'hours', // 'hours' or 'minutes'
+        recurrenceUnit: 'hours',
         isActive: true
     });
 
@@ -384,7 +384,7 @@ function App() {
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
 
-    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', secondsLabel = 'S', timerMode = 'fixed', recurrenceAmount = 24, recurrenceUnit = 'hours', isMobileMode = false }) => {
+    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', secondsLabel = 'S', enableRecursion = false, recurrenceAmount = 24, recurrenceUnit = 'hours', isMobileMode = false }) => {
         const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00', sec: '00' });
 
         useEffect(() => {
@@ -393,10 +393,10 @@ function App() {
                 let now = new Date();
                 let diff = target.getTime() - now.getTime();
 
-                // Handle Recurring Mode (Evergreen Loop)
-                if (timerMode === 'recurring' && diff <= 0) {
+                // Handle Recurring Mode (Evergreen Loop after fixed end)
+                if (enableRecursion && diff <= 0) {
                     const amount = parseInt(recurrenceAmount) || 24;
-                    const msPerUnit = recurrenceUnit === 'hours' ? 3600000 : 60000;
+                    const msPerUnit = recurrenceUnit === 'days' ? 86400000 : (recurrenceUnit === 'hours' ? 3600000 : 60000);
                     const intervalMs = amount * msPerUnit;
                     
                     // Add intervals until target is in the future
@@ -428,7 +428,7 @@ function App() {
 
             setTimeLeft(calculateTime());
             return () => clearInterval(timer);
-        }, [endDate, endTime, timerMode, recurrenceAmount, recurrenceUnit]);
+        }, [endDate, endTime, enableRecursion, recurrenceAmount, recurrenceUnit]);
 
         const getFlexDirection = () => {
             switch (labelPosition) {
@@ -550,7 +550,7 @@ function App() {
                             daysLabel={config.daysLabel}
                             hoursLabel={config.hoursLabel}
                             secondsLabel={config.secondsLabel}
-                            timerMode={config.timerMode}
+                            enableRecursion={config.enableRecursion}
                             recurrenceAmount={config.recurrenceAmount}
                             recurrenceUnit={config.recurrenceUnit}
                             isMobileMode={isMobileMode}
@@ -838,64 +838,69 @@ function App() {
                                         {config.showTimer && (
                                             <div className="space-y-4 animate-fade-in">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Timer Mode</label>
-                                                    <div className="flex bg-slate-100 p-1 rounded-lg">
-                                                        {[
-                                                            { id: 'fixed', label: 'One-time' },
-                                                            { id: 'recurring', label: 'Recurring' }
-                                                        ].map((mode) => (
-                                                            <button
-                                                                key={mode.id}
-                                                                onClick={() => setConfig(prev => ({ ...prev, timerMode: mode.id }))}
-                                                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.timerMode === mode.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
-                                                            >
-                                                                {mode.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={config.endDate && config.endTime ? `${config.endDate}T${config.endTime}` : (config.endDate || "")}
+                                                        onChange={(e) => {
+                                                            const [date, time] = e.target.value.split('T');
+                                                            setConfig(prev => ({ ...prev, endDate: date || '', endTime: time || '' }));
+                                                        }}
+                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
+                                                    />
                                                 </div>
 
-                                                {config.timerMode === 'fixed' ? (
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
-                                                        <input
-                                                            type="datetime-local"
-                                                            value={config.endDate && config.endTime ? `${config.endDate}T${config.endTime}` : (config.endDate || "")}
-                                                            onChange={(e) => {
-                                                                const [date, time] = e.target.value.split('T');
-                                                                setConfig(prev => ({ ...prev, endDate: date || '', endTime: time || '' }));
-                                                            }}
-                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
-                                                        />
+                                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                                                                <Clock size={14} />
+                                                            </div>
+                                                            <span className="text-xs font-black text-[#0F172A]">Restart Countdown</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setConfig(prev => ({ ...prev, enableRecursion: !prev.enableRecursion }))}
+                                                            className={`w-8 h-4 rounded-full transition-all relative ${config.enableRecursion ? 'bg-blue-600' : 'bg-slate-300'}`}
+                                                        >
+                                                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${config.enableRecursion ? 'right-0.5' : 'left-0.5'}`} />
+                                                        </button>
                                                     </div>
-                                                ) : (
-                                                    <div className="space-y-2">
-                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Restart Every</label>
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="number"
-                                                                value={config.recurrenceAmount}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, recurrenceAmount: e.target.value }))}
-                                                                className="w-20 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
-                                                                min="1"
-                                                            />
-                                                            <select
-                                                                value={config.recurrenceUnit}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, recurrenceUnit: e.target.value }))}
-                                                                className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
-                                                            >
-                                                                <option value="minutes">Minutes</option>
-                                                                <option value="hours">Hours</option>
-                                                            </select>
-                                                            <div className="flex flex-col justify-center border border-slate-200 rounded-lg px-2 bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-none">
-                                                                Loop
+
+                                                    {config.enableRecursion && (
+                                                        <div className="space-y-3 animate-fade-in">
+                                                            <div className="flex gap-2">
+                                                                <div className="flex-1 space-y-1">
+                                                                    <span className="text-[9px] font-black text-slate-400 ml-1">Restart Every</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        value={config.recurrenceAmount}
+                                                                        onChange={(e) => setConfig(prev => ({ ...prev, recurrenceAmount: e.target.value }))}
+                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
+                                                                        min="1"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1 space-y-1">
+                                                                    <span className="text-[9px] font-black text-slate-400 ml-1">Basis</span>
+                                                                    <select
+                                                                        value={config.recurrenceUnit}
+                                                                        onChange={(e) => setConfig(prev => ({ ...prev, recurrenceUnit: e.target.value }))}
+                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                                                                    >
+                                                                        <option value="days">Days</option>
+                                                                        <option value="hours">Hours</option>
+                                                                        <option value="minutes">Minutes</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-start gap-2 p-2 bg-amber-50 rounded-lg border border-amber-100">
+                                                                <AlertCircle size={12} className="text-amber-500 shrink-0 mt-0.5" />
+                                                                <p className="text-[9px] text-amber-700 font-bold leading-tight uppercase tracking-tight">
+                                                                    Once the initial countdown ends, it will restart automatically every {config.recurrenceAmount} {config.recurrenceUnit}.
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                        <div className="text-[9px] text-slate-400 font-bold italic ml-1 opacity-70">
-                                                            Timer will automatically restart once it reaches zero.
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Text (Optional)</label>
                                                     <input
