@@ -191,8 +191,10 @@ function App() {
         minutesLabel: 'M',
         secondsLabel: 'S',
         enableRecursion: false,
-        recurrenceAmount: 24,
         recurrenceUnit: 'hours',
+        showCouponCode: false,
+        couponCode: 'SAVE10',
+        couponPlacement: 'bottom',
         isActive: true
     });
 
@@ -209,6 +211,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
+    const [globalToast, setGlobalToast] = useState(null);
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
 
@@ -336,10 +339,12 @@ function App() {
     const handleImageUpload = () => {
         if (window.wp && window.wp.media) {
             const mediaFrame = window.wp.media({
+                frame: 'select',
                 title: 'Select Badge Image',
                 multiple: false,
                 library: {
-                    type: 'image'
+                    type: 'image',
+                    uploadedTo: null // Show all images, not just those 'uploaded to this post'
                 },
                 button: {
                     text: 'Use this image'
@@ -360,10 +365,12 @@ function App() {
     const handleBgImageUpload = () => {
         if (window.wp && window.wp.media) {
             const mediaFrame = window.wp.media({
+                frame: 'select',
                 title: 'Select Background Image',
                 multiple: false,
                 library: {
-                    type: 'image'
+                    type: 'image',
+                    uploadedTo: null
                 },
                 button: {
                     text: 'Use this image'
@@ -471,7 +478,58 @@ function App() {
     };
 
     const BannerContent = ({ isMobileMode = false }) => {
+        const [copied, setCopied] = useState(false);
         if (isLoading) return null;
+
+        const handleCopyCode = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const code = config.couponCode;
+            
+            try {
+                // Try modern Clipboard API
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(code);
+                } else {
+                    // Fallback to execCommand('copy')
+                    const textArea = document.createElement("textarea");
+                    textArea.value = code;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-9999px";
+                    textArea.style.top = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    if (!successful) throw new Error('execCommand failed');
+                }
+
+                setCopied(true);
+                setGlobalToast(`Coupon code "${code}" copied to clipboard!`);
+                setTimeout(() => setCopied(false), 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                setGlobalToast('Failed to copy code. Please copy it manually.');
+            }
+        };
+
+        const getCouponLayout = () => {
+            switch (config.couponPlacement) {
+                case 'top': return 'flex-col-reverse';
+                case 'left': return 'flex-row-reverse';
+                case 'right': return 'flex-row';
+                case 'bottom':
+                default: return 'flex-col';
+            }
+        };
+
+        const getCouponAlign = () => {
+            const layout = getCouponLayout();
+            if (layout.includes('col')) return isMobileMode ? 'items-center' : 'md:items-start';
+            return 'items-center';
+        };
 
         return (
             <div
@@ -513,28 +571,59 @@ function App() {
                         </div>
                     </div>
                 )}
-                <div className={`flex flex-col text-center flex-1 w-full ${!isMobileMode ? 'md:text-left md:w-auto' : ''}`}>
-                    <span
-                        className={`tracking-tight drop-shadow-sm line-clamp-2 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
-                        style={{
-                            color: config.headlineColor,
-                            fontSize: `clamp(14px, 1.2vw, ${config.headlineSize})`,
-                            fontWeight: config.headlineWeight
-                        }}
-                    >
-                        {config.headline}
-                    </span>
-                    {config.showSubHeadline && (
+                
+                <div className={`flex flex-1 w-full gap-3 ${getCouponLayout()} ${getCouponAlign()} ${!isMobileMode && getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}>
+                    <div className={`flex flex-col text-center ${!isMobileMode ? 'md:text-left md:w-auto' : 'w-full'}`}>
                         <span
-                            className={`font-bold tracking-tight mt-0.5 line-clamp-2 opacity-90 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
+                            className={`tracking-tight drop-shadow-sm line-clamp-2 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
                             style={{
-                                color: config.subHeadlineColor,
-                                fontSize: `clamp(11px, 1vw, ${config.subHeadlineSize})`,
-                                fontWeight: config.subHeadlineWeight
+                                color: config.headlineColor,
+                                fontSize: `clamp(14px, 1.2vw, ${config.headlineSize})`,
+                                fontWeight: config.headlineWeight
                             }}
                         >
-                            {config.subHeadline}
+                            {config.headline}
                         </span>
+                        {config.showSubHeadline && (
+                            <span
+                                className={`font-bold tracking-tight mt-0.5 line-clamp-2 opacity-90 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
+                                style={{
+                                    color: config.subHeadlineColor,
+                                    fontSize: `clamp(11px, 1vw, ${config.subHeadlineSize})`,
+                                    fontWeight: config.subHeadlineWeight
+                                }}
+                            >
+                                {config.subHeadline}
+                            </span>
+                        )}
+                    </div>
+                    
+                    {config.showCouponCode && (
+                        <div 
+                            onClick={handleCopyCode}
+                            title="Click to copy code"
+                            className="shrink-0 group cursor-pointer active:scale-95 transition-all select-none relative"
+                        >
+                            {/* Floating Notification */}
+                            {copied && (
+                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-2xl animate-bounce-subtle z-[10001] whitespace-nowrap">
+                                    Copied!
+                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45" />
+                                </div>
+                            )}
+
+                            <div 
+                                className="px-3 py-1 rounded-lg border-2 border-dashed flex items-center gap-1.5 transition-all duration-300 group-hover:bg-opacity-20"
+                                style={{ 
+                                    borderColor: copied ? '#22c55e' : `${config.headlineColor}44`,
+                                    backgroundColor: copied ? '#22c55e22' : `${config.headlineColor}11`,
+                                    color: copied ? '#16a34a' : config.headlineColor
+                                }}
+                            >
+                                <span className={`text-[10px] uppercase font-black tracking-widest opacity-50`}>CODE:</span>
+                                <span className={`text-xs font-black tracking-tight`}>{config.couponCode}</span>
+                            </div>
+                        </div>
                     )}
                 </div>
 
@@ -576,8 +665,37 @@ function App() {
         );
     };
 
+    const Toast = ({ message, onClose }) => {
+        useEffect(() => {
+            const timer = setTimeout(onClose, 3000);
+            return () => clearTimeout(timer);
+        }, [onClose]);
+
+        return (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100000] animate-slide-up">
+                <div className="bg-[#0F172A] text-white px-6 py-3 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-white/10 backdrop-blur-xl">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <CheckCircle2 size={18} />
+                    </div>
+                    <div>
+                        <p className="text-xs font-black tracking-tight uppercase opacity-50 leading-none mb-0.5">Success</p>
+                        <p className="text-sm font-bold tracking-tight">{message}</p>
+                    </div>
+                    <button onClick={onClose} className="ml-2 text-white/30 hover:text-white transition-colors">
+                        <X size={16} />
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     if (isStorefront) {
-        return <BannerContent />;
+        return (
+            <>
+                <BannerContent />
+                {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
+            </>
+        );
     }
 
     return (
@@ -818,6 +936,45 @@ function App() {
                                                         onChange={(e) => setConfig(prev => ({ ...prev, subHeadline: e.target.value }))}
                                                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                                     />
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between pb-1">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Coupon code</label>
+                                                    <button
+                                                        onClick={() => setConfig(prev => ({ ...prev, showCouponCode: !prev.showCouponCode }))}
+                                                        className={`w-8 h-4 rounded-full transition-all relative ${config.showCouponCode ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                    >
+                                                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${config.showCouponCode ? 'right-0.5' : 'left-0.5'}`} />
+                                                    </button>
+                                                </div>
+                                                {config.showCouponCode && (
+                                                    <div className="space-y-4 animate-fade-in pl-1">
+                                                        <div className="space-y-2">
+                                                            <input
+                                                                type="text"
+                                                                value={config.couponCode}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, couponCode: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs font-black outline-none focus:border-blue-500 transition-all shadow-sm tracking-widest uppercase"
+                                                                placeholder="ENTER CODE"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <label className="text-[9px] font-black text-slate-400 opacity-60 uppercase tracking-widest pl-1">Placement</label>
+                                                            <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
+                                                                {['top', 'bottom', 'left', 'right'].map((pos) => (
+                                                                    <button
+                                                                        key={pos}
+                                                                        onClick={() => setConfig(prev => ({ ...prev, couponPlacement: pos }))}
+                                                                        className={`flex-1 py-1 text-[10px] font-black rounded-md transition-all capitalize ${config.couponPlacement === pos ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                                    >
+                                                                        {pos}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -1714,6 +1871,20 @@ function App() {
                 }
                 .animate-fade-in {
                     animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translate(-50%, 20px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+                .animate-slide-up {
+                    animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                }
+                @keyframes bounceSubtle {
+                    0%, 100% { transform: translate(-50%, 0); }
+                    50% { transform: translate(-50%, -5px); }
+                }
+                .animate-bounce-subtle {
+                    animation: bounceSubtle 2s infinite ease-in-out;
                 }
                 .shimmer {
                     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
