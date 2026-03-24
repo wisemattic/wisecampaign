@@ -405,7 +405,7 @@ function App() {
                     const amount = parseInt(recurrenceAmount) || 24;
                     const msPerUnit = recurrenceUnit === 'days' ? 86400000 : (recurrenceUnit === 'hours' ? 3600000 : 60000);
                     const intervalMs = amount * msPerUnit;
-                    
+
                     // Add intervals until target is in the future
                     const intervalsPassed = Math.floor(Math.abs(diff) / intervalMs) + 1;
                     target = new Date(target.getTime() + (intervalsPassed * intervalMs));
@@ -484,9 +484,9 @@ function App() {
         const handleCopyCode = async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const code = config.couponCode;
-            
+
             try {
                 // Try modern Clipboard API
                 if (navigator.clipboard && window.isSecureContext) {
@@ -533,7 +533,7 @@ function App() {
 
         return (
             <div
-                className={`w-full py-4 px-4 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-8 md:flex-row' : ''}`}
+                className={`w-full py-4 px-6 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-12 md:px-20 md:flex-row' : ''}`}
                 style={{
                     backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
                     backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
@@ -571,7 +571,7 @@ function App() {
                         </div>
                     </div>
                 )}
-                
+
                 <div className={`flex flex-1 w-full gap-3 ${getCouponLayout()} ${getCouponAlign()} ${!isMobileMode && getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}>
                     <div className={`flex flex-col text-center ${!isMobileMode ? 'md:text-left md:w-auto' : 'w-full'}`}>
                         <span
@@ -597,9 +597,9 @@ function App() {
                             </span>
                         )}
                     </div>
-                    
+
                     {config.showCouponCode && (
-                        <div 
+                        <div
                             onClick={handleCopyCode}
                             title="Click to copy code"
                             className="shrink-0 group cursor-pointer active:scale-95 transition-all select-none relative"
@@ -612,9 +612,9 @@ function App() {
                                 </div>
                             )}
 
-                            <div 
+                            <div
                                 className="px-3 py-1 rounded-lg border-2 border-dashed flex items-center gap-1.5 transition-all duration-300 group-hover:bg-opacity-20"
-                                style={{ 
+                                style={{
                                     borderColor: copied ? '#22c55e' : `${config.headlineColor}44`,
                                     backgroundColor: copied ? '#22c55e22' : `${config.headlineColor}11`,
                                     color: copied ? '#16a34a' : config.headlineColor
@@ -1648,8 +1648,7 @@ function App() {
                                     <h3 className="text-sm font-black text-[#0F172A] tracking-tight mb-4">Display Locations</h3>
                                     <div className="space-y-3">
                                         {[
-                                            { id: 'displayOnAllPages', label: 'All Pages' },
-                                            { id: 'displayOnHomePage', label: 'Home Page' }
+                                            { id: 'displayOnAllPages', label: 'All Pages' }
                                         ].map(item => (
                                             <div
                                                 key={item.id}
@@ -1662,10 +1661,6 @@ function App() {
                                                             if (newValue) {
                                                                 newState.displayOnHomePage = true;
                                                                 newState.selectedPages = availablePages.map(p => p.id);
-                                                            }
-                                                        } else if (item.id === 'displayOnHomePage') {
-                                                            if (!newValue) {
-                                                                newState.displayOnAllPages = false;
                                                             }
                                                         }
                                                         return newState;
@@ -1681,10 +1676,30 @@ function App() {
                                                 </div>
                                             </div>
                                         ))}
-                                        {isPro && availablePages.length > 0 && (
+                                        {isPro && (
                                             <div className="space-y-3 pt-4 border-t border-slate-100 animate-fade-in">
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Specific Pages</h4>
                                                 <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                                                    {/* Home Page as a specific page option */}
+                                                    <div
+                                                        onClick={() => {
+                                                            setDisplaySettings(prev => {
+                                                                const newValue = !prev.displayOnHomePage;
+                                                                let newState = { ...prev, displayOnHomePage: newValue };
+                                                                if (!newValue) newState.displayOnAllPages = false;
+                                                                return newState;
+                                                            });
+                                                        }}
+                                                        className={`flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer group ${displaySettings.displayOnHomePage ? 'border-blue-200 bg-blue-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                                                    >
+                                                        <span className={`text-[11px] font-black ${displaySettings.displayOnHomePage ? 'text-blue-600' : 'text-slate-500'}`}>Home Page</span>
+                                                        <div
+                                                            className={`w-8 h-4 rounded-full transition-all relative ${displaySettings.displayOnHomePage ? 'bg-blue-600 shadow-md shadow-blue-100' : 'bg-slate-200'}`}
+                                                        >
+                                                            <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${displaySettings.displayOnHomePage ? 'right-0.5' : 'left-0.5'}`} />
+                                                        </div>
+                                                    </div>
+
                                                     {availablePages.map(page => {
                                                         const isSelected = displaySettings.selectedPages?.some(id => String(id) === String(page.id));
                                                         return (
