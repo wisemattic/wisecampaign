@@ -88,7 +88,7 @@ export default function StockBarDesign({ deactivationButton }) {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm overflow-y-auto max-h-[calc(100vh-120px)]">
       {/* Preview Section */}
       <section className="p-6 border-b">
         <h2 className="text-lg font-semibold mb-4">Preview</h2>
@@ -108,7 +108,7 @@ export default function StockBarDesign({ deactivationButton }) {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Color Customization Section */}
           <section>
-            <div className="bg-white p-6 rounded-lg border">
+            <div className="bg-white p-6 rounded-lg border overflow-y-auto max-h-[calc(100vh-300px)]">
               <h2 className="text-lg font-semibold mb-6">Color Settings</h2>
               <div className="space-y-4">
                 {colorSettings.map(({ id, label, value }) => (
@@ -131,7 +131,7 @@ export default function StockBarDesign({ deactivationButton }) {
 
           {/* Display Settings Section */}
           <section>
-            <div className="bg-white p-6 rounded-lg border">
+            <div className="bg-white p-6 rounded-lg border overflow-y-auto max-h-[calc(100vh-300px)]">
               <h2 className="text-lg font-semibold mb-6">Display Settings</h2>
               <StockBarSetting />
             </div>

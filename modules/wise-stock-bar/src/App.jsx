@@ -807,7 +807,7 @@ function App() {
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden relative">
+                <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto relative">
                     {/* Master Activation Toggle */}
                     <div className="p-5 border-b-4 border-slate-50 bg-slate-50/30">
                         <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all cursor-pointer group"
