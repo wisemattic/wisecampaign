@@ -83,10 +83,11 @@ class Menu
     function wisecampaign_admin_menu()
     {
         $icon_path = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
-        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page'], $icon_path, 30);
-        add_submenu_page('wisecampaign_menu', 'Dashboard', 'Dashboard', 'manage_options', 'wisecampaign_menu', [$this, 'wisecampaign_getting_started_page']);
+        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page'], $icon_path, 30);
+        add_submenu_page('wise_banner_v2', 'wiseBanner', 'wiseBanner', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page']);
+
         $this->add_wc_dependent_submenu(
-            'wisecampaign_menu',
+            'wise_banner_v2',
             __('Direct Checkout', 'wisecampaign'),
             __('Direct Checkout', 'wisecampaign'),
             'wisecampaign_checkout',
@@ -97,7 +98,7 @@ class Menu
             ? [SalesNotification::getInstance(), 'render_admin_page']
             : '__return_null';
         $this->add_wc_dependent_submenu(
-            'wisecampaign_menu',
+            'wise_banner_v2',
             __('Sales Notification', 'wisecampaign'),
             __('Sales Notification', 'wisecampaign'),
             'wisecampaign_notification',
@@ -105,7 +106,7 @@ class Menu
         );
 
         $this->add_wc_dependent_submenu(
-            'wisecampaign_menu',
+            'wise_banner_v2',
             __('wiseCart', 'wisecampaign'),
             __('wiseCart', 'wisecampaign'),
             'wisecampaign_cart',
@@ -113,22 +114,12 @@ class Menu
         );
         // wiseStockBar (Modular)
         add_submenu_page(
-            'wisecampaign_menu',
+            'wise_banner_v2',
             'StockBar',
             'StockBar',
             'manage_options',
             'wise_stock_bar',
         [$this, 'wise_stock_bar_page']
-        );
-
-        // wiseBannerV2 (Modular)
-        add_submenu_page(
-            'wisecampaign_menu',
-            'wiseBanner',
-            'wiseBanner',
-            'manage_options',
-            'wise_banner_v2',
-        [$this, 'wise_banner_v2_page']
         );
     }
 
@@ -215,7 +206,7 @@ class Menu
     {
         // Add Help submenu that redirects to support page
         add_submenu_page(
-            'wisecampaign_menu',
+            'wise_banner_v2',
             __('Help', 'wisecampaign'),
             __('Help', 'wisecampaign'),
             'manage_options',
@@ -226,7 +217,7 @@ class Menu
         // Add Upgrade to Pro submenu linking to pricing page only if Pro is not active
         if (!$this->is_pro_active()) {
             add_submenu_page(
-                'wisecampaign_menu',
+                'wise_banner_v2',
                 __('Upgrade to Pro', 'wisecampaign'),
                 __('Upgrade to Pro', 'wisecampaign'),
                 'manage_options',
@@ -346,20 +337,7 @@ class Menu
         <?php
     }
 
-    function wisecampaign_banner_page()
-    {
-?>
-        <div id="wisecampaign-banner-page-app"></div>
-        <?php
-    }
-    function wisecampaign_stockbar_page()
-    {
-        echo "<div id='wisecampaign-stockbar-page-app'></div>";
-    }
-    function wisecampaign_checkout_page()
-    {
-        echo "<div id='wisecampaign-checkout-page-app'></div>";
-    }
+
 
     function wisecampaign_notification_page()
     {
@@ -405,48 +383,6 @@ class Menu
             echo '<div id="wise-campaign-banner-show"></div>';
     }
 
-    function wisecampaign_getting_started_page()
-    {
-?>
-        <div class="wrap wisecampaign-dashboard-wrap">
-
-            <!-- Main Dashboard App -->
-            <div id="wisecampaign-getting-started-page-app"></div>
-
-            <!-- Feature Request Section -->
-            <div class="wisecampaign-feature-request-section">
-                <div class="wisecampaign-feature-request-content">
-                    <div class="wisecampaign-feature-request-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14,2 14,8 20,8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10,9 9,9 8,9" />
-                        </svg>
-                    </div>
-                    <div class="wisecampaign-feature-request-text">
-                        <h3><?php esc_html_e('Have a Feature Request?', 'wisecampaign'); ?></h3>
-                        <p><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?>
-                        </p>
-                    </div>
-                    <div class="wisecampaign-feature-request-action">
-                        <a href="https://wisecampaign.canny.io/feature-requests" target="_blank"
-                            class="button button-primary button-large">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                style="margin-right: 8px;">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                <polyline points="15,3 21,3 21,9" />
-                                <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                            <?php esc_html_e('Submit Feature Request', 'wisecampaign'); ?>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php
-    }
     function wisecampaign_settings_page()
     {
         if (!defined('WISECAMPAIGN_PRO_VERSION_ACTIVE') || !WISECAMPAIGN_PRO_VERSION_ACTIVE) {
@@ -472,7 +408,7 @@ class Menu
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_menu')); ?>';
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wise_banner_v2')); ?>';
                 }
             })();
         </script>
@@ -500,7 +436,7 @@ class Menu
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_menu')); ?>';
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wise_banner_v2')); ?>';
                 }
             })();
         </script>
@@ -522,14 +458,14 @@ class Menu
     {
 ?>
         <style>
-            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"],
-            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]:hover {
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"],
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"]:hover {
                 color: #dc3232 !important;
                 font-weight: bold !important;
             }
 
-            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"],
-            #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"],
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
                 color: #0a8d48 !important;
                 font-weight: bold !important;
             }
@@ -537,7 +473,7 @@ class Menu
         <script>
             (function () {
                 document.addEventListener('DOMContentLoaded', function () {
-                    var helpLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]');
+                    var helpLinks = document.querySelectorAll('#toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"]');
                     helpLinks.forEach(function (link) {
                         link.addEventListener('click', function (e) {
                             e.preventDefault();
@@ -545,8 +481,8 @@ class Menu
                             return false;
                         });
                     });
-
-                    var upgradeLinks = document.querySelectorAll('#toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_upgrade"]');
+ 
+                    var upgradeLinks = document.querySelectorAll('#toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"]');
                     upgradeLinks.forEach(function (link) {
                         link.addEventListener('click', function (e) {
                             e.preventDefault();

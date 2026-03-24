@@ -22,22 +22,10 @@ class Register
     {
         echo '<script> document.documentElement.style.setProperty("--wpadminbar-top", "0"); </script>';
 
-        wp_enqueue_style('wise_campaign_pro-style', WISECAMPAIGN_DIR_URL.'build/index.css');
-        wp_enqueue_script('wise_campaign_pro-script', WISECAMPAIGN_DIR_URL.'build/index.js', array('wp-element'),
-            '1.0.0', true);
-
         // Load dashboard CSS for the main dashboard page
         if (strpos($hook, 'wisecampaign_menu') !== false || strpos($hook, 'wisecampaign_banner') !== false) {
             wp_enqueue_style('wisecampaign-dashboard-style', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart-admin-settings.css', [], '1.0.0');
         }
-
-        // Localize the script with data
-        wp_localize_script('wise_campaign_pro-script', 'wiseCampaignPageData', array(
-                'wiseCampaignUrl' => WISECAMPAIGN_DIR_URL,
-                'isWooCommerceExists' => class_exists( 'WooCommerce' ),
-                'isProActive' => $this->get_pro_status()
-            ));
-
     }
 
     public function get_pro_status()
@@ -69,13 +57,7 @@ class Register
 
     function wisecampaign_enqueue_scripts()
     {
-
-        wp_enqueue_script('wisecampaign-script', WISECAMPAIGN_DIR_URL.'build/index.js', array('wp-element'),
-            '1.0.0', true);
-        wp_enqueue_style('wise_campaign_pro-style', WISECAMPAIGN_DIR_URL.'build/index.css');
-
-        $activeBannerData = Banner::getInstance()->get_active_banner_data();
-        wp_localize_script('wisecampaign-script', 'wiseCampaignCustomize', $activeBannerData->data);
+        // New modular system handles enqueuing via ModuleManager
     }
 
     // Define a function to enqueue styles

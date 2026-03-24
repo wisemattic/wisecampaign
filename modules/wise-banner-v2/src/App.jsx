@@ -533,7 +533,7 @@ function App() {
 
         return (
             <div
-                className={`w-full py-4 px-6 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-12 md:px-20 md:flex-row' : ''}`}
+                className={`w-full py-4 px-6 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-12 md:px-32 md:flex-row' : ''}`}
                 style={{
                     backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
                     backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
