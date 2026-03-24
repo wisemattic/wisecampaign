@@ -121,6 +121,7 @@ const TEMPLATES = [
             daysLabel: 'DAYS',
             hoursLabel: 'HOURS',
             minutesLabel: 'MIN',
+            secondsLabel: 'SEC',
             showCTA: true,
             ctaText: 'Claim Offer >',
             ctaBg: '#FACC15',
@@ -188,6 +189,10 @@ function App() {
         daysLabel: 'D',
         hoursLabel: 'H',
         minutesLabel: 'M',
+        secondsLabel: 'S',
+        timerMode: 'fixed', // 'fixed' or 'recurring'
+        recurrenceAmount: 24,
+        recurrenceUnit: 'hours', // 'hours' or 'minutes'
         isActive: true
     });
 
@@ -379,27 +384,41 @@ function App() {
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
 
 
-    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', isMobileMode = false }) => {
-        const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00' });
+    const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', secondsLabel = 'S', timerMode = 'fixed', recurrenceAmount = 24, recurrenceUnit = 'hours', isMobileMode = false }) => {
+        const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00', sec: '00' });
 
         useEffect(() => {
             const calculateTime = () => {
-                const target = new Date(`${endDate}T${endTime}:00`);
-                const now = new Date();
-                const diff = target - now;
+                let target = new Date(`${endDate}T${endTime}:00`);
+                let now = new Date();
+                let diff = target.getTime() - now.getTime();
+
+                // Handle Recurring Mode (Evergreen Loop)
+                if (timerMode === 'recurring' && diff <= 0) {
+                    const amount = parseInt(recurrenceAmount) || 24;
+                    const msPerUnit = recurrenceUnit === 'hours' ? 3600000 : 60000;
+                    const intervalMs = amount * msPerUnit;
+                    
+                    // Add intervals until target is in the future
+                    const intervalsPassed = Math.floor(Math.abs(diff) / intervalMs) + 1;
+                    target = new Date(target.getTime() + (intervalsPassed * intervalMs));
+                    diff = target.getTime() - now.getTime();
+                }
 
                 if (diff <= 0) {
-                    return { days: '00', hrs: '00', min: '00' };
+                    return { days: '00', hrs: '00', min: '00', sec: '00' };
                 }
 
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const min = Math.floor((diff / 1000 / 60) % 60);
+                const min = Math.floor((diff / (1000 * 60)) % 60);
+                const sec = Math.floor((diff / 1000) % 60);
 
                 return {
                     days: days.toString().padStart(2, '0'),
                     hrs: hrs.toString().padStart(2, '0'),
-                    min: min.toString().padStart(2, '0')
+                    min: min.toString().padStart(2, '0'),
+                    sec: sec.toString().padStart(2, '0')
                 };
             };
 
@@ -409,7 +428,7 @@ function App() {
 
             setTimeLeft(calculateTime());
             return () => clearInterval(timer);
-        }, [endDate, endTime]);
+        }, [endDate, endTime, timerMode, recurrenceAmount, recurrenceUnit]);
 
         const getFlexDirection = () => {
             switch (labelPosition) {
@@ -428,7 +447,8 @@ function App() {
                     {[
                         { val: timeLeft.days, label: daysLabel },
                         { val: timeLeft.hrs, label: hoursLabel },
-                        { val: timeLeft.min, label: minutesLabel }
+                        { val: timeLeft.min, label: minutesLabel },
+                        { val: timeLeft.sec, label: secondsLabel }
                     ].map((t, idx) => (
                         <React.Fragment key={idx}>
                             <div
@@ -442,7 +462,7 @@ function App() {
                                 <span className={`text-[10px] font-black drop-shadow-sm leading-tight ${!isMobileMode ? 'sm:text-xs' : ''}`}>{t.val}</span>
                                 <span className={`text-[6px] font-black opacity-50 leading-none mt-0.5 tracking-tighter ${!isMobileMode ? 'sm:text-[7px]' : ''}`}>{t.label}</span>
                             </div>
-                            {idx < 2 && <span className={`text-[10px] font-black self-center opacity-30 ${!isMobileMode ? 'sm:text-xs' : ''}`} style={{ color: textColor }}>:</span>}
+                            {idx < 3 && <span className={`text-[10px] font-black self-center opacity-30 ${!isMobileMode ? 'sm:text-xs' : ''}`} style={{ color: textColor }}>:</span>}
                         </React.Fragment>
                     ))}
                 </div>
@@ -529,7 +549,10 @@ function App() {
                             labelPosition={config.timerLabelPosition}
                             daysLabel={config.daysLabel}
                             hoursLabel={config.hoursLabel}
-                            minutesLabel={config.minutesLabel}
+                            secondsLabel={config.secondsLabel}
+                            timerMode={config.timerMode}
+                            recurrenceAmount={config.recurrenceAmount}
+                            recurrenceUnit={config.recurrenceUnit}
                             isMobileMode={isMobileMode}
                         />
                     )}
@@ -815,28 +838,64 @@ function App() {
                                         {config.showTimer && (
                                             <div className="space-y-4 animate-fade-in">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
-                                                    <div className="flex gap-3">
-                                                        <div className="relative flex-1">
-                                                            <input
-                                                                type="date"
-                                                                value={config.endDate}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, endDate: e.target.value }))}
-                                                                className="w-full bg-white border border-slate-200 rounded-xl pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
-                                                            />
-                                                            <Calendar size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
-                                                        </div>
-                                                        <div className="relative w-[130px]">
-                                                            <input
-                                                                type="time"
-                                                                value={config.endTime}
-                                                                onChange={(e) => setConfig(prev => ({ ...prev, endTime: e.target.value }))}
-                                                                className="w-full bg-white border border-slate-200 pl-4 pr-10 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm rounded-xl"
-                                                            />
-                                                            <Clock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
-                                                        </div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Timer Mode</label>
+                                                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                        {[
+                                                            { id: 'fixed', label: 'One-time' },
+                                                            { id: 'recurring', label: 'Recurring' }
+                                                        ].map((mode) => (
+                                                            <button
+                                                                key={mode.id}
+                                                                onClick={() => setConfig(prev => ({ ...prev, timerMode: mode.id }))}
+                                                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${config.timerMode === mode.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                            >
+                                                                {mode.label}
+                                                            </button>
+                                                        ))}
                                                     </div>
                                                 </div>
+
+                                                {config.timerMode === 'fixed' ? (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">End Date & Time</label>
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={config.endDate && config.endTime ? `${config.endDate}T${config.endTime}` : (config.endDate || "")}
+                                                            onChange={(e) => {
+                                                                const [date, time] = e.target.value.split('T');
+                                                                setConfig(prev => ({ ...prev, endDate: date || '', endTime: time || '' }));
+                                                            }}
+                                                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Restart Every</label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="number"
+                                                                value={config.recurrenceAmount}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, recurrenceAmount: e.target.value }))}
+                                                                className="w-20 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all"
+                                                                min="1"
+                                                            />
+                                                            <select
+                                                                value={config.recurrenceUnit}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, recurrenceUnit: e.target.value }))}
+                                                                className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                                                            >
+                                                                <option value="minutes">Minutes</option>
+                                                                <option value="hours">Hours</option>
+                                                            </select>
+                                                            <div className="flex flex-col justify-center border border-slate-200 rounded-lg px-2 bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-none">
+                                                                Loop
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-[9px] text-slate-400 font-bold italic ml-1 opacity-70">
+                                                            Timer will automatically restart once it reaches zero.
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Text (Optional)</label>
                                                     <input

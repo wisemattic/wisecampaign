@@ -237,7 +237,8 @@ class Wisecampaign
         if (is_wp_error($json_data)) {
             $error_message = $json_data->get_error_message();
             echo "Something went wrong: " . esc_html($error_message);
-        } else {
+        }
+        else {
             $body = wp_remote_retrieve_body($json_data);
             $banners = json_decode($body, true);
         }
@@ -245,8 +246,8 @@ class Wisecampaign
         foreach ($banners as $banner) {
             $wpdb->update(
                 $table_name,
-                ['is_active' => 0],
-                ['id' => $banner['id']]
+            ['is_active' => 0],
+            ['id' => $banner['id']]
             );
         }
     }
@@ -257,10 +258,9 @@ class Wisecampaign
         // if (WISECAMPAIGN_HAS_WC) {
         StockBar::getInstance()->initialize_stockbar_defaults();
         WiseBannerV2::getInstance()->initialize_defaults();
-        // }
+    // }
     }
 }
 
 // Initialize plugin
 Wisecampaign::get_instance();
-

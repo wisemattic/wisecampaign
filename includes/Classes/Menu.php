@@ -24,7 +24,8 @@ class Menu
             add_action('wp_footer', function () {
                 $this->wise_campaign_pro_banner_show(true, get_option('banner_type') == 'sticky');
             });
-        } else {
+        }
+        else {
             add_action('wp_head', function () {
                 $this->wise_campaign_pro_banner_show(false, get_option('banner_type') == 'sticky');
             });
@@ -37,44 +38,44 @@ class Menu
         register_rest_route('wise-campaign-plugin/v1', '/setting', [
             'methods' => 'GET',
             'callback' => function () {
-                return ['enabled' => get_option('wisecampaign_plugin_enabled') == '1'];
-            },
+            return ['enabled' => get_option('wisecampaign_plugin_enabled') == '1'];
+        },
             'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/setting', [
             'methods' => 'POST',
             'callback' => function (WP_REST_Request $request) {
-                $enabled = $request->get_json_params()['enabled'];
-                update_option('wisecampaign_plugin_enabled', $enabled ? '1' : '0');
-                return ['enabled' => $enabled];
-            },
+            $enabled = $request->get_json_params()['enabled'];
+            update_option('wisecampaign_plugin_enabled', $enabled ? '1' : '0');
+            return ['enabled' => $enabled];
+        },
             'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
             'methods' => 'GET',
             'callback' => function () {
-                return ['selected_banner' => get_option('wisecampaign_selected_banner')];
-            },
+            return ['selected_banner' => get_option('wisecampaign_selected_banner')];
+        },
             'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
             'methods' => 'POST',
             'callback' => function (WP_REST_Request $request) {
-                $selected_banner = $request->get_json_params()['selected_banner'];
-                update_option('wisecampaign_selected_banner', $selected_banner ? $selected_banner : 'default');
-                return ['selected_banner' => $selected_banner];
-            },
+            $selected_banner = $request->get_json_params()['selected_banner'];
+            update_option('wisecampaign_selected_banner', $selected_banner ? $selected_banner : 'default');
+            return ['selected_banner' => $selected_banner];
+        },
             'permission_callback' => '__return_true'
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/plugin-version', [
             'methods' => 'GET',
             'callback' => function () {
-                return new WP_REST_Response(['is_pro_version' => Register::getInstance()->get_pro_status()], 200);
-            },
+            return new WP_REST_Response(['is_pro_version' => Register::getInstance()->get_pro_status()], 200);
+        },
             'permission_callback' => '__return_true'
         ]);
     }
@@ -108,26 +109,26 @@ class Menu
             __('wiseCart', 'wisecampaign'),
             __('wiseCart', 'wisecampaign'),
             'wisecampaign_cart',
-            [$this, 'wisecampaign_cart_page']
+        [$this, 'wisecampaign_cart_page']
         );
         // wiseStockBar (Modular)
         add_submenu_page(
             'wisecampaign_menu',
-            'wiseStockBar',
-            'wiseStockBar',
+            'StockBar',
+            'StockBar',
             'manage_options',
             'wise_stock_bar',
-            [$this, 'wise_stock_bar_page']
+        [$this, 'wise_stock_bar_page']
         );
 
         // wiseBannerV2 (Modular)
         add_submenu_page(
             'wisecampaign_menu',
-            'wiseBannerV2',
-            'wiseBannerV2',
+            'wiseBanner',
+            'wiseBanner',
             'manage_options',
             'wise_banner_v2',
-            [$this, 'wise_banner_v2_page']
+        [$this, 'wise_banner_v2_page']
         );
     }
 
@@ -136,7 +137,7 @@ class Menu
      */
     public function wise_stock_bar_page()
     {
-        ?>
+?>
         <style>
             #wpbody-content {
                 padding-bottom: 0 !important;
@@ -176,7 +177,7 @@ class Menu
      */
     public function wise_banner_v2_page()
     {
-        ?>
+?>
         <style>
             #wpbody-content {
                 padding-bottom: 0 !important;
@@ -219,7 +220,7 @@ class Menu
             __('Help', 'wisecampaign'),
             'manage_options',
             'wisecampaign_help',
-            [$this, 'wisecampaign_help_redirect']
+        [$this, 'wisecampaign_help_redirect']
         );
 
         // Add Upgrade to Pro submenu linking to pricing page only if Pro is not active
@@ -230,7 +231,7 @@ class Menu
                 __('Upgrade to Pro', 'wisecampaign'),
                 'manage_options',
                 'wisecampaign_upgrade',
-                [$this, 'wisecampaign_upgrade_redirect']
+            [$this, 'wisecampaign_upgrade_redirect']
             );
         }
     }
@@ -305,8 +306,8 @@ class Menu
             'manage_options',
             $menu_slug,
             function () use ($feature_label) {
-                $this->render_wc_missing_feature_notice($feature_label);
-            }
+            $this->render_wc_missing_feature_notice($feature_label);
+        }
         );
     }
 
@@ -318,18 +319,18 @@ class Menu
     private function render_wc_missing_feature_notice($feature_label = '')
     {
         $feature_label = $feature_label ?: __('This feature', 'wisecampaign');
-        ?>
+?>
         <div class="wrap wisecampaign-requires-woocommerce">
             <h1><?php esc_html_e('WooCommerce Required', 'wisecampaign'); ?></h1>
             <div class="notice notice-error">
                 <p>
                     <?php
-                    printf(
-                        /* translators: %s: Feature label */
-                        esc_html__('%s can only be used when WooCommerce is installed and active.', 'wisecampaign'),
-                        esc_html($feature_label)
-                    );
-                    ?>
+        printf(
+            /* translators: %s: Feature label */
+            esc_html__('%s can only be used when WooCommerce is installed and active.', 'wisecampaign'),
+            esc_html($feature_label)
+        );
+?>
                 </p>
             </div>
             <p>
@@ -347,7 +348,7 @@ class Menu
 
     function wisecampaign_banner_page()
     {
-        ?>
+?>
         <div id="wisecampaign-banner-page-app"></div>
         <?php
     }
@@ -366,14 +367,14 @@ class Menu
 
     function wisecampaign_cart_page()
     {
-        ?>
+?>
         <div class="wrap wisecart-settings-wrap">
             <form id="wisecart-settings-form" method="post">
                 <?php
-                wp_nonce_field('wisecart_save_action', 'wisecart_settings_nonce');
+        wp_nonce_field('wisecart_save_action', 'wisecart_settings_nonce');
 
-                do_settings_sections('wisecampaign_cart');
-                ?>
+        do_settings_sections('wisecampaign_cart');
+?>
                 <div class="wisecart-settings-actions">
                     <button type="submit" id="wisecart-save-btn" class="button button-primary">
                         <?php _e('Save Changes', 'wisecampaign'); ?>
@@ -406,7 +407,7 @@ class Menu
 
     function wisecampaign_getting_started_page()
     {
-        ?>
+?>
         <div class="wrap wisecampaign-dashboard-wrap">
 
             <!-- Main Dashboard App -->
@@ -450,7 +451,8 @@ class Menu
     {
         if (!defined('WISECAMPAIGN_PRO_VERSION_ACTIVE') || !WISECAMPAIGN_PRO_VERSION_ACTIVE) {
             echo "<div id='wisecampaign-setting-page-admin-app'>Free</div>";
-        } else {
+        }
+        else {
             echo "<div id='wisecampaign-page-app'>Pro</div>";
         }
     }
@@ -461,7 +463,7 @@ class Menu
     function wisecampaign_help_redirect()
     {
         // Immediately redirect to support page in new window
-        ?>
+?>
         <script>
             (function () {
                 var supportUrl = 'https://wisemattic.com/support/';
@@ -489,7 +491,7 @@ class Menu
     function wisecampaign_upgrade_redirect()
     {
         // Immediately open pricing page in new window
-        ?>
+?>
         <script>
             (function () {
                 var pricingUrl = 'https://wisemattic.com/wisecampaign/pricing';
@@ -518,7 +520,7 @@ class Menu
      */
     function add_menu_link_styles()
     {
-        ?>
+?>
         <style>
             #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"],
             #toplevel_page_wisecampaign_menu .wp-submenu li a[href*="wisecampaign_help"]:hover {
