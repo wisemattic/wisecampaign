@@ -4,7 +4,7 @@ Tags: woocommerce discounts, countdown, announcements, banner, sales notificatio
 Requires at least: 5.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.14
+Stable tag: 1.1.15
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,14 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+= v1.1.15 =
+- Added "Click-to-Copy" functionality for coupon codes with dual notifications (tooltip and toast).
+- Enhanced layout with increased horizontal padding for a premium, spacious appearance.
+- Improved WordPress Media Library integration for background and badge image uploads.
+- Reorganized display settings to integrate "Home Page" within the "Specific Pages" targeting logic.
+- Extensive codebase cleanup: Removed legacy admin/build components in favor of the new modular system.
+- Modernized admin menu navigation for a streamlined user experience.
+
 = v1.1.14 =
 - Added button to disable countdown, bogo and cta button.
 - Fix font size after selection cta button.
