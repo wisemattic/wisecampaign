@@ -83,12 +83,11 @@ class Menu
     function wisecampaign_admin_menu()
     {
         $icon_path = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
-        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_getting_started', [$this, 'getting_started_page'], $icon_path, 30);
-        add_submenu_page('wisecampaign_getting_started', 'Getting Started', 'Getting Started', 'manage_options', 'wisecampaign_getting_started', [$this, 'getting_started_page']);
-        add_submenu_page('wisecampaign_getting_started', 'wiseBanner', 'wiseBanner', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page']);
+        add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page'], $icon_path, 30);
+        add_submenu_page('wise_banner_v2', 'wiseBanner', 'wiseBanner', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page']);
 
         $this->add_wc_dependent_submenu(
-            'wisecampaign_getting_started',
+            'wise_banner_v2',
             __('Direct Checkout', 'wisecampaign'),
             __('Direct Checkout', 'wisecampaign'),
             'wisecampaign_checkout',
@@ -99,7 +98,7 @@ class Menu
             ? [SalesNotification::getInstance(), 'render_admin_page']
             : '__return_null';
         $this->add_wc_dependent_submenu(
-            'wisecampaign_getting_started',
+            'wise_banner_v2',
             __('Sales Notification', 'wisecampaign'),
             __('Sales Notification', 'wisecampaign'),
             'wisecampaign_notification',
@@ -107,7 +106,7 @@ class Menu
         );
 
         $this->add_wc_dependent_submenu(
-            'wisecampaign_getting_started',
+            'wise_banner_v2',
             __('wiseCart', 'wisecampaign'),
             __('wiseCart', 'wisecampaign'),
             'wisecampaign_cart',
@@ -115,7 +114,7 @@ class Menu
         );
         // wiseStockBar (Modular)
         add_submenu_page(
-            'wisecampaign_getting_started',
+            'wise_banner_v2',
             'StockBar',
             'StockBar',
             'manage_options',
@@ -163,46 +162,6 @@ class Menu
         <div id="wise-stock-bar-app"></div>
         <?php
     }
- 
-    /**
-     * Render the Getting Started modular React app
-     */
-    public function getting_started_page()
-    {
-?>
-        <style>
-            #wpbody-content {
-                padding-bottom: 0 !important;
-            }
- 
-            #wpcontent {
-                padding-left: 0 !important;
-            }
- 
-            .wrap {
-                margin: 0 !important;
-                max-width: none !important;
-                padding: 0 !important;
-            }
- 
-            #getting-started-app {
-                width: 100%;
-                margin: 0;
-            }
- 
-            #wpfooter {
-                display: none;
-            }
- 
-            .notice,
-            .updated,
-            .error {
-                display: none !important;
-            }
-        </style>
-        <div id="getting-started-app"></div>
-        <?php
-    }
 
     /**
      * Render the wiseBannerV2 modular React app
@@ -247,7 +206,7 @@ class Menu
     {
         // Add Help submenu that redirects to support page
         add_submenu_page(
-            'wisecampaign_getting_started',
+            'wise_banner_v2',
             __('Help', 'wisecampaign'),
             __('Help', 'wisecampaign'),
             'manage_options',
@@ -258,7 +217,7 @@ class Menu
         // Add Upgrade to Pro submenu linking to pricing page only if Pro is not active
         if (!$this->is_pro_active()) {
             add_submenu_page(
-                'wisecampaign_getting_started',
+                'wise_banner_v2',
                 __('Upgrade to Pro', 'wisecampaign'),
                 __('Upgrade to Pro', 'wisecampaign'),
                 'manage_options',
@@ -449,7 +408,7 @@ class Menu
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_getting_started')); ?>';
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wise_banner_v2')); ?>';
                 }
             })();
         </script>
@@ -477,7 +436,7 @@ class Menu
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wisecampaign_getting_started')); ?>';
+                    window.location.href = '<?php echo esc_js(admin_url('admin.php?page=wise_banner_v2')); ?>';
                 }
             })();
         </script>
@@ -499,14 +458,14 @@ class Menu
     {
 ?>
         <style>
-            #toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_help"],
-            #toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_help"]:hover {
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"],
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"]:hover {
                 color: #dc3232 !important;
                 font-weight: bold !important;
             }
- 
-            #toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_upgrade"],
-            #toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
+
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"],
+            #toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"]:hover {
                 color: #0a8d48 !important;
                 font-weight: bold !important;
             }
@@ -514,7 +473,7 @@ class Menu
         <script>
             (function () {
                 document.addEventListener('DOMContentLoaded', function () {
-                    var helpLinks = document.querySelectorAll('#toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_help"]');
+                    var helpLinks = document.querySelectorAll('#toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_help"]');
                     helpLinks.forEach(function (link) {
                         link.addEventListener('click', function (e) {
                             e.preventDefault();
@@ -523,7 +482,7 @@ class Menu
                         });
                     });
  
-                    var upgradeLinks = document.querySelectorAll('#toplevel_page_wisecampaign_getting_started .wp-submenu li a[href*="wisecampaign_upgrade"]');
+                    var upgradeLinks = document.querySelectorAll('#toplevel_page_wise_banner_v2 .wp-submenu li a[href*="wisecampaign_upgrade"]');
                     upgradeLinks.forEach(function (link) {
                         link.addEventListener('click', function (e) {
                             e.preventDefault();

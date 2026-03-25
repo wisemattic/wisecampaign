@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.wisecampaign-tw {
+    all: initial;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.wisecampaign-tw * {
+    all: revert;
+    box-sizing: border-box;
+}

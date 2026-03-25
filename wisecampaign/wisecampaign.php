@@ -183,11 +183,6 @@ class Wisecampaign
             'menu_slug' => 'wise_banner_v2'
         ]);
 
-        $module_manager->register_module('getting-started', [
-            'name' => 'Getting Started',
-            'menu_slug' => 'wisecampaign_getting_started'
-        ]);
-
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
             WISECAMPAIGN\Classes\SalesNotification::getInstance();
