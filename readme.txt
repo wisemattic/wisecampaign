@@ -4,7 +4,7 @@ Tags: woocommerce discounts, countdown, announcements, banner, sales notificatio
 Requires at least: 5.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.1.15
+Stable tag: 1.1.17
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -181,6 +181,18 @@ Contribute to [Wisemattic’s translations](https://translate.wordpress.org/proj
 Or rate us on [WordPress](https://wordpress.org/plugins/wisecampaign/#reviews) 🙂
 
 == Changelog ==
+= v1.1.17 =
+- Security Fix: Added robust authorization checks (`manage_options`) across all 22 REST API endpoints to prevent unauthorized settings modification.
+- Fixed: Resolved CSS isolation issues by implementing scoped `:where()` resets, preventing plugin styles from bleeding into themes while allowing full control over editor UI.
+- UI: Fixed Stock Bar and Banner editor buttons appearing with heavy borders and invisible text colors.
+- Pro Compatibility: Fixed "Discount Manager" and "License" submenus not showing in the sidebar due to slug mismatch.
+- Compatibility: Ensured full compatibility with latest WordPress versions by refining admin menu registration.
+
+= v1.1.16 =
+- Enhanced: Improved CSS architecture for React-based editor modules (Stock Bar and Banner v2).
+- Fixed: Minor UI alignment and responsive layout issues in the admin dashboard.
+- Performance: Optimized plugin-wide asset loading for faster admin performance.
+
 = v1.1.15 =
 - Added "Click-to-Copy" functionality for coupon codes with dual notifications (tooltip and toast).
 - Enhanced layout with increased horizontal padding for a premium, spacious appearance.

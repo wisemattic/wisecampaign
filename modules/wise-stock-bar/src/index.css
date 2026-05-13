@@ -14,6 +14,38 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scoped Reset to replace missing Tailwind Preflight without bleeding
+   Using :where() to keep specificity low so Tailwind utilities can override these defaults */
+:where(#wise-stock-bar-app) *,
+:where(#wise-stock-bar-app) *::before,
+:where(#wise-stock-bar-app) *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+:where(#wise-stock-bar-app) button,
+:where(#wise-stock-bar-app) [type='button'],
+:where(#wise-stock-bar-app) [type='reset'],
+:where(#wise-stock-bar-app) [type='submit'] {
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+    text-transform: none;
+    -webkit-appearance: button;
+}
+
+:where(#wise-stock-bar-app) input,
+:where(#wise-stock-bar-app) select,
+:where(#wise-stock-bar-app) textarea {
+    font-family: inherit;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
 /* Custom scrollbar scoped to stock bar widget */
 #wise-stock-bar-app ::-webkit-scrollbar {
     width: 6px;

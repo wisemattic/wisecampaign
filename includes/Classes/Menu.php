@@ -40,7 +40,9 @@ class Menu
             'callback' => function () {
             return ['enabled' => get_option('wisecampaign_plugin_enabled') == '1'];
         },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/setting', [
@@ -50,7 +52,9 @@ class Menu
             update_option('wisecampaign_plugin_enabled', $enabled ? '1' : '0');
             return ['enabled' => $enabled];
         },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
@@ -58,7 +62,9 @@ class Menu
             'callback' => function () {
             return ['selected_banner' => get_option('wisecampaign_selected_banner')];
         },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route('wisecampaign-plugin-theme/v1', '/setting', [
@@ -68,7 +74,9 @@ class Menu
             update_option('wisecampaign_selected_banner', $selected_banner ? $selected_banner : 'default');
             return ['selected_banner' => $selected_banner];
         },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route('wise-campaign-plugin/v1', '/plugin-version', [
@@ -76,7 +84,9 @@ class Menu
             'callback' => function () {
             return new WP_REST_Response(['is_pro_version' => Register::getInstance()->get_pro_status()], 200);
         },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
     }
 

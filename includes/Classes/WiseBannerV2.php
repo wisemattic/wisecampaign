@@ -111,13 +111,17 @@ class WiseBannerV2
             'callback' => function () {
                 return rest_ensure_response(get_option('wc-wisebanner-v2-active', []));
             },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/banner-v2', [
             'methods' => 'POST',
             'callback' => [$this, 'save_banner_settings'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/banner-v2/settings', [
@@ -125,25 +129,33 @@ class WiseBannerV2
             'callback' => function () {
                 return rest_ensure_response(get_option('wc-wisebanner-v2-setting', []));
             },
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/banner-v2/settings', [
             'methods' => 'POST',
             'callback' => [$this, 'update_display_settings'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/banner-v2/pages', [
             'methods' => 'GET',
             'callback' => [$this, 'get_pages'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/banner-v2/license', [
             'methods' => 'GET',
             'callback' => [$this, 'get_license_status'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
     }
 

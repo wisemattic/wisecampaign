@@ -187,37 +187,49 @@ class StockBar
         register_rest_route($namespace, '/stockbar-status', [
             'methods' => 'POST',
             'callback' => [$this, 'update_status'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/stockbars', [
             'methods' => 'GET',
             'callback' => [$this, 'get_initialized_stockbars'],
-            'permission_callback' => '__return_true',
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
         ]);
 
         register_rest_route($namespace, '/stockbars', [
             'methods' => 'POST',
             'callback' => [$this, 'save_stockbar_design'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/stockbars/setting', [
             'methods' => 'POST',
             'callback' => [$this, 'update_stockbar_setting'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
         register_rest_route($namespace, '/stockbars/setting', [
             'methods' => 'GET',
             'callback' => [$this, 'get_stockbar_setting'],
-            'permission_callback' => '__return_true',
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
         ]);
 
         register_rest_route($namespace, '/stockbars/set-active', [
             'methods' => 'POST',
             'callback' => [$this, 'set_active_stockbar_endpoint'],
-            'permission_callback' => '__return_true'
+                        'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
     }
 

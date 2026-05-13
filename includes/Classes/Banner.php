@@ -49,7 +49,9 @@ class Banner
         foreach ($routes as $route) {
             register_rest_route('wise-campaign-plugin/v1', $route['route'], [
                 'methods' => $route['methods'], 'callback' => [$this, $route['callback']],
-                'permission_callback' => '__return_true',
+                'permission_callback' => function () {
+                    return current_user_can('manage_options');
+                },
             ]);
         }
     }
