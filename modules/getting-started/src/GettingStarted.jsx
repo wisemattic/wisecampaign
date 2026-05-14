@@ -93,10 +93,10 @@ const GettingStarted = () => {
                             color: "from-violet-500 to-purple-600"
                         },
                         {
-                            title: "Ready to Scale",
-                            desc: "Built to handle high traffic and complex rules.",
-                            icon: "⚡",
-                            color: "from-cyan-500 to-blue-600"
+                            title: "WiseVideo",
+                            desc: "High-impact video galleries and product video replacements.",
+                            icon: "🎬",
+                            color: "from-blue-600 to-indigo-700"
                         }
                     ].map((m, idx) => (
                         <div key={idx} className="group relative bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300">
@@ -181,6 +181,66 @@ const GettingStarted = () => {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* PREMIUM SECTION: WISEVIDEO COMMERCE */}
+                <div className="relative mb-32 overflow-hidden">
+                    <div className="absolute inset-0 bg-blue-600/10 rounded-[3.5rem] rotate-1 -skew-y-1" />
+                    <div className="relative bg-white p-12 md:p-20 rounded-[3.5rem] border border-blue-100 shadow-2xl shadow-blue-500/5">
+                        <div className="flex flex-col lg:flex-row-reverse gap-16 items-center">
+                            <div className="lg:w-1/2">
+                                <span className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 text-xs font-black uppercase tracking-widest rounded-full mb-6 border border-blue-100">
+                                    Premium Capability
+                                </span>
+                                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">
+                                    WiseVideo <span className="text-blue-600">Commerce</span> Engine
+                                </h2>
+                                <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10">
+                                    Revolutionize your product presentation with high-performance video integration. Convert visitors into buyers with immersive visual storytelling.
+                                </p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+                                    {[
+                                        { title: "Product Video Gallery", desc: "Mix videos seamlessly with your product images.", icon: "🎥" },
+                                        { title: "Carousel Reels", desc: "Engaging scrollable video carousels for products.", icon: "🎡" },
+                                        { title: "Shoppable video Reels", desc: "Let customers buy directly from the video.", icon: "🛒" },
+                                        { title: "Video Hotspots", desc: "Interactive points within videos for more info.", icon: "📍" },
+                                        { title: "WooCommerce Sync", desc: "Perfectly synced with your WC product data.", icon: "🔄" },
+                                        { title: "Video Analytics", desc: "Track views and conversion performance.", icon: "📈" }
+                                    ].map((f, i) => (
+                                        <div key={i} className="flex gap-4 items-start">
+                                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl shrink-0">
+                                                {f.icon}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-800 mb-1">{f.title}</h4>
+                                                <p className="text-slate-500 text-xs leading-relaxed">{f.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" className="inline-flex items-center gap-2 text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-xl shadow-blue-200">
+                                    Get WiseVideo Pro
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                </a>
+                            </div>
+
+                            <div className="lg:w-1/2 relative">
+                                <div className="rounded-3xl overflow-hidden border-8 border-slate-50 shadow-2xl relative group bg-white">
+                                    <img
+                                        src={(window.wiseModuleData?.pluginUrl || '') + 'assets/images/wise-video-preview.png'}
+                                        alt="WiseVideo Commerce Preview"
+                                        className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                                        onError={(e) => {
+                                            e.target.src = 'https://placehold.co/800x600/6366f1/ffffff?text=WiseVideo+Commerce+Preview';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                </div>
+                                {/* Decorative elements */}
+                                <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-500/10 blur-2xl rounded-full" />
+                                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full" />
                             </div>
                         </div>
                     </div>

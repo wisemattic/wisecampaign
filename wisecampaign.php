@@ -108,6 +108,7 @@ if (WISECAMPAIGN_HAS_WC) {
     require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
     require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
     require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/Features/WiseVideoCommerce.php';
 }
 
 // Import classes
@@ -188,6 +189,12 @@ class Wisecampaign
             'menu_slug' => 'wisecampaign_getting_started'
         ]);
 
+        $module_manager->register_module('wise-video-commerce', [
+            'name' => 'WiseVideo Commerce',
+            'menu_slug' => 'wise_video_commerce',
+            'dev_port' => 5174
+        ]);
+
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
             WISECAMPAIGN\Classes\SalesNotification::getInstance();
@@ -195,6 +202,10 @@ class Wisecampaign
         }
 
         WiseBannerV2::getInstance();
+
+        if (WISECAMPAIGN_HAS_WC) {
+            \WISECAMPAIGN\Features\WiseVideoCommerce::getInstance();
+        }
     }
 
     private function register_hooks()

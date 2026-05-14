@@ -130,7 +130,17 @@ class Menu
             'StockBar',
             'manage_options',
             'wise_stock_bar',
-        [$this, 'wise_stock_bar_page']
+            [$this, 'wise_stock_bar_page']
+        );
+
+        // WiseVideo Commerce (Modular)
+        add_submenu_page(
+            'wisecampaign_getting_started',
+            'WiseVideo Commerce',
+            'WiseVideo Commerce',
+            'manage_options',
+            'wise_video_commerce',
+            [$this, 'wise_video_commerce_page']
         );
     }
 
@@ -172,6 +182,46 @@ class Menu
         </style>
         <div id="wise-stock-bar-app"></div>
         <?php
+    }
+
+    /**
+     * Render the WiseVideo Commerce modular React app
+     */
+    public function wise_video_commerce_page()
+    {
+        ?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-video-commerce-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-video-commerce-app"></div>
+<?php
     }
  
     /**

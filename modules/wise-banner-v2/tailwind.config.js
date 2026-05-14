@@ -4,6 +4,7 @@ export default {
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
+    important: '#wise-banner-v2-app',
     // Disable Tailwind Preflight (base reset) to prevent overriding the WordPress theme styles
     corePlugins: {
         preflight: false,

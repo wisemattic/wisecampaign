@@ -1,0 +1,151 @@
+.wisecampaign-product-video-gallery {
+    width: 100%;
+    margin: 20px 0;
+    max-width: 100%;
+}
+
+.wisecampaign-main-video video {
+    width: 100%;
+    display: block;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.wisecampaign-video-thumbnails {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.wisecampaign-video-thumbnails::-webkit-scrollbar {
+    height: 4px;
+}
+
+.wisecampaign-video-thumbnails::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.video-thumb {
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.video-thumb:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+}
+
+.video-thumb.active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Grid Layout */
+.wisecampaign-grid-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    overflow-x: visible !important;
+}
+.wisecampaign-grid-2 .video-thumb {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1/1 !important;
+}
+
+/* Stacked Layout */
+.wisecampaign-stacked {
+    flex-direction: column !important;
+    overflow-x: visible !important;
+}
+.wisecampaign-stacked .video-thumb {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16/9 !important;
+}
+
+/* Mobile Cart Overlay */
+.wisecampaign-mobile-cart-overlay {
+    z-index: 9999 !important;
+    display: flex !important;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto !important;
+}
+
+@media (min-width: 768px) {
+    .wisecampaign-mobile-cart-overlay {
+        display: none !important;
+    }
+}
+
+.wisecampaign-mobile-cart-overlay button {
+    transition: all 0.2s ease;
+}
+
+.wisecampaign-mobile-cart-overlay button:active {
+    transform: scale(0.95);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Lightbox Modal */
+.wisecampaign-video-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 100000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.wisecampaign-video-lightbox.active {
+    display: flex;
+}
+
+.wisecampaign-lightbox-content {
+    position: relative;
+    width: 90%;
+    max-width: 450px;
+    aspect-ratio: 9/16;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wisecampaign-video-lightbox.active .wisecampaign-lightbox-content {
+    transform: scale(1);
+}
+
+.wisecampaign-lightbox-content video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wisecampaign-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.wisecampaign-lightbox-close:hover {
+    background: rgba(255,255,255,0.3);
+    transform: rotate(90deg);
+}

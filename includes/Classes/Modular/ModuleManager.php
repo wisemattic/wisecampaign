@@ -19,7 +19,7 @@ class ModuleManager
     {
         $this->plugin_path = defined('WISECAMPAIGN_DIR_PATH') ? WISECAMPAIGN_DIR_PATH : plugin_dir_path(dirname(dirname(dirname(dirname(__FILE__)))));
         $plugin_url_full = defined('WISECAMPAIGN_DIR_URL') ? WISECAMPAIGN_DIR_URL : plugin_dir_url(dirname(dirname(dirname(dirname(__FILE__)))));
-        $this->plugin_url = trailingslashit(parse_url($plugin_url_full, PHP_URL_PATH));
+        $this->plugin_url = trailingslashit($plugin_url_full);
 
         // Hook into admin menu and scripts
         add_action('admin_enqueue_scripts', [$this, 'enqueue_module_assets']);
@@ -46,7 +46,8 @@ class ModuleManager
             'menu_slug' => $id,
             'module_path' => 'modules/' . $id,
             'entry_point' => 'src/main.jsx',
-            'handle' => 'wise-' . $id . '-app'
+            'handle' => 'wise-' . $id . '-app',
+            'dev_port' => 5173
         ];
 
         $this->modules[$id] = array_merge($defaults, $config);
@@ -76,7 +77,7 @@ class ModuleManager
             wp_enqueue_media();
 
             $module_dist_path = $this->plugin_path . $module['module_path'] . '/dist/';
-            $module_dist_url = wp_make_link_relative($this->plugin_url . $module['module_path'] . '/dist/');
+            $module_dist_url = $this->plugin_url . $module['module_path'] . '/dist/';
 
             $manifest = $this->get_manifest($module_dist_path);
 
@@ -86,10 +87,9 @@ class ModuleManager
                 // Enqueue CSS
                 if (isset($entry['css'])) {
                     foreach ($entry['css'] as $css_file) {
-                        $css_url = wp_make_link_relative($module_dist_url . $css_file);
                         wp_enqueue_style(
                             $module['handle'] . '-style-' . md5($css_file),
-                            $css_url,
+                            $module_dist_url . $css_file,
                             [],
                             null
                         );
@@ -97,10 +97,9 @@ class ModuleManager
                 }
 
                 // Enqueue JS
-                $js_url = wp_make_link_relative($module_dist_url . $entry['file']);
                 wp_enqueue_script(
                     $module['handle'],
-                    $js_url,
+                    $module_dist_url . $entry['file'],
                     [],
                     null,
                     true
@@ -109,30 +108,29 @@ class ModuleManager
                 // Add module type
                 add_filter('script_loader_tag', function ($tag, $handle, $src) use ($module) {
                     if ($handle === $module['handle']) {
-                        // Force relative path here too
-                        $relative_src = wp_make_link_relative($src);
-                        return '<script type="module" src="' . esc_url($relative_src) . '"></script>';
+                        return '<script type="module" src="' . esc_url($src) . '"></script>';
                     }
                     return $tag;
                 }, 10, 3);
 
             } else {
-                // FALLBACK: Dev mode (Assuming Vite is running on localhost:5173)
+                // FALLBACK: Dev mode
                 if (defined('WP_DEBUG') && WP_DEBUG) {
-                    $dev_url = 'http://localhost:5173/';
+                    $dev_port = isset($module['dev_port']) ? $module['dev_port'] : 5173;
+                    $dev_url = "http://localhost:{$dev_port}/";
 
-                    wp_enqueue_script('vite-client', $dev_url . '@vite/client', [], null, true);
+                    wp_enqueue_script('vite-client-' . $id, $dev_url . '@vite/client', [], null, true);
 
                     wp_enqueue_script(
                         $module['handle'] . '-dev',
                         $dev_url . $module['entry_point'],
-                        ['vite-client'],
+                        ['vite-client-' . $id],
                         null,
                         true
                     );
 
-                    add_filter('script_loader_tag', function ($tag, $handle, $src) use ($module) {
-                        if (in_array($handle, [$module['handle'] . '-dev', 'vite-client'])) {
+                    add_filter('script_loader_tag', function ($tag, $handle, $src) use ($module, $id) {
+                        if (in_array($handle, [$module['handle'] . '-dev', 'vite-client-' . $id])) {
                             return '<script type="module" src="' . esc_url($src) . '"></script>';
                         }
                         return $tag;
@@ -162,6 +160,7 @@ class ModuleManager
 
             wp_localize_script($localization_handle, 'wiseModuleData', [
                 'apiUrl' => rest_url('wisecampaign/v1/'),
+                'pluginUrl' => $this->plugin_url,
                 'nonce' => wp_create_nonce('wp_rest'),
                 'moduleId' => $id,
                 'wc' => [

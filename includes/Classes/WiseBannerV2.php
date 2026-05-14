@@ -52,42 +52,82 @@ class WiseBannerV2
 
         if ($should_show) {
             add_action('wp_body_open', [$this, 'render_banner_container']);
+            add_action('wp_footer', [$this, 'render_banner_container'], 1); // Fallback if wp_body_open not supported
         }
     }
 
     public function render_banner_container()
     {
+        static $rendered = false;
+        if ($rendered) return;
+
         $active_config = get_option('wc-wisebanner-v2-active', []);
-        if (empty($active_config))
+        if (empty($active_config) || (isset($active_config['isActive']) && !$active_config['isActive']))
             return;
+
+        // Merge with defaults to ensure all fields exist
+        $defaults = $this->get_default_config();
+        $active_config = array_merge($defaults, $active_config);
 
         $this->enqueue_module_assets($active_config);
         echo '<div id="wise-banner-v2-app"></div>';
+        $rendered = true;
+    }
+
+    private function get_default_config()
+    {
+        return [
+            'id' => 'holiday-gradient',
+            'name' => 'Holiday Sale Gradient',
+            'bgType' => 'gradient',
+            'bgSolid' => '#0F172A',
+            'bgGradient' => 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+            'bgImage' => '',
+            'headline' => 'Black Friday Mega Sale!',
+            'headlineSize' => '16px',
+            'headlineColor' => '#FFFFFF',
+            'headlineWeight' => '900',
+            'subHeadline' => 'Use code: SAVE50 for 50% off everything',
+            'subHeadlineSize' => '12px',
+            'subHeadlineColor' => '#E2E8F0',
+            'subHeadlineWeight' => '500',
+            'showSubHeadline' => true,
+            'showTimer' => true,
+            'endDate' => '2025-12-31',
+            'endTime' => '23:59',
+            'timerLabel' => 'OFFER ENDS IN:',
+            'timerTextColor' => '#FFFFFF',
+            'timerBgColor' => 'rgba(255, 255, 255, 0.1)',
+            'showCTA' => true,
+            'ctaText' => 'SHOP NOW',
+            'ctaUrl' => 'https://myshop.com/sale',
+            'ctaBg' => '#FCD34D',
+            'ctaTextColor' => '#111827',
+            'ctaRadius' => '12px',
+            'showBogoBadge' => false,
+            'badgeType' => 'text',
+            'badgeImage' => '',
+            'bogoText' => '50% OFF',
+            'badgeBgColor' => '#EF4444',
+            'badgeTextColor' => '#FFFFFF',
+            'badgeRotation' => '-12deg',
+            'timerLabelPosition' => 'left',
+            'daysLabel' => 'D',
+            'hoursLabel' => 'H',
+            'minutesLabel' => 'M',
+            'secondsLabel' => 'S',
+            'enableRecursion' => false,
+            'recurrenceUnit' => 'hours',
+            'showCouponCode' => false,
+            'couponCode' => 'SAVE10',
+            'couponPlacement' => 'bottom',
+            'isActive' => true
+        ];
     }
 
     public function initialize_defaults()
     {
-        $default_config = [
-            'id' => 'holiday-gradient',
-            'name' => 'Holiday Sale Gradient',
-            'layout' => 'Top Bar Sticky',
-            'isActive' => true,
-            'headline' => 'Black Friday Mega Sale!',
-            'subHeadline' => 'Use code: SAVE50 for 50% off everything',
-            'showTimer' => true,
-            'endDate' => '2024-11-30',
-            'endTime' => '23:59',
-            'timerLabel' => 'OFFER ENDS IN:',
-            'showCTA' => true,
-            'ctaText' => 'Shop Now',
-            'ctaUrl' => 'https://myshop.com/sale',
-            'ctaBg' => '#FCD34D',
-            'ctaTextColor' => '#111827',
-            'bgType' => 'gradient',
-            'bgGradient' => 'linear-gradient(90deg, #3B82F6 0%, #2563EB 100%)',
-            'bgSolid' => '#0F172A',
-            'bgImage' => ''
-        ];
+        $default_config = $this->get_default_config();
 
         if (get_option('wc-wisebanner-v2-active') === false) {
             update_option('wc-wisebanner-v2-active', $default_config);
@@ -109,9 +149,10 @@ class WiseBannerV2
         register_rest_route($namespace, '/banner-v2', [
             'methods' => 'GET',
             'callback' => function () {
-                return rest_ensure_response(get_option('wc-wisebanner-v2-active', []));
+                $config = get_option('wc-wisebanner-v2-active', []);
+                return rest_ensure_response(array_merge($this->get_default_config(), $config));
             },
-                        'permission_callback' => function () {
+            'permission_callback' => function () {
                 return current_user_can('manage_options');
             }
         ]);
@@ -213,6 +254,10 @@ class WiseBannerV2
         $dist_url = WISECAMPAIGN_DIR_URL . 'modules/wise-banner-v2/dist/';
 
         $manifest_path = $dist_path . '.vite/manifest.json';
+        if (!file_exists($manifest_path)) {
+            $manifest_path = $dist_path . 'manifest.json';
+        }
+
         if (!file_exists($manifest_path))
             return;
 
@@ -222,13 +267,13 @@ class WiseBannerV2
         if (isset($manifest[$entry_point])) {
             $entry = $manifest[$entry_point];
 
-            wp_enqueue_script('wise-banner-v2-frontend', $dist_url . $entry['file'], ['wp-element'], null, true);
-
             if (isset($entry['css'])) {
                 foreach ($entry['css'] as $css_file) {
-                    wp_enqueue_style('wise-banner-v2-style-' . md5($css_file), $dist_url . $css_file);
+                    wp_enqueue_style('wise-banner-v2-style-' . md5($css_file), $dist_url . $css_file, [], null);
                 }
             }
+
+            wp_enqueue_script('wise-banner-v2-frontend', $dist_url . $entry['file'], [], null, true);
 
             add_filter('script_loader_tag', function ($tag, $handle, $src) {
                 if ($handle === 'wise-banner-v2-frontend') {
