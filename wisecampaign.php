@@ -109,6 +109,7 @@ if (WISECAMPAIGN_HAS_WC) {
     require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
     require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
     require_once plugin_dir_path(__FILE__) . 'includes/Features/WiseVideoCommerce.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/WiseProductTable.php';
 }
 
 // Import classes
@@ -195,10 +196,17 @@ class Wisecampaign
             'dev_port' => 5174
         ]);
 
+        $module_manager->register_module('wise-product-table', [
+            'name' => 'Wise Product Table',
+            'menu_slug' => 'wise_product_table',
+            'dev_port' => 5175
+        ]);
+
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
             WISECAMPAIGN\Classes\SalesNotification::getInstance();
             WISECAMPAIGN\Features\WiseCart::getInstance();
+            \WISECAMPAIGN\Features\WiseProductTable::getInstance();
         }
 
         WiseBannerV2::getInstance();
