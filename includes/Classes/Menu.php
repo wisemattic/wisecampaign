@@ -220,6 +220,23 @@ class Menu
                 margin: 0;
             }
 
+            /* Prevent overlapping with the native WordPress admin bar */
+            .admin-bar #wise-video-commerce-app {
+                margin-top: 32px !important;
+            }
+            .admin-bar #wise-video-commerce-app > div {
+                height: calc(100vh - 32px) !important;
+            }
+
+            @media screen and (max-width: 782px) {
+                .admin-bar #wise-video-commerce-app {
+                    margin-top: 46px !important;
+                }
+                .admin-bar #wise-video-commerce-app > div {
+                    height: calc(100vh - 46px) !important;
+                }
+            }
+
             #wpfooter {
                 display: none;
             }

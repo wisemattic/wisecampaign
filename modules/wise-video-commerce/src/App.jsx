@@ -52,6 +52,7 @@ function App() {
     const [titleColor, setTitleColor] = useState('#000000');
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState(null); // { message, type: 'success'|'error' }
+    const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
 
     useEffect(() => {
         fetchSettings();
@@ -145,6 +146,42 @@ function App() {
 
     return (
         <React.Fragment>
+            {/* License Activation Modal */}
+            {isLicenseModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div 
+                        className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-8 text-center">
+                            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md shadow-blue-100/50">
+                                <Video size={30} />
+                            </div>
+                            
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight">Pro License Required</h2>
+                            
+                            <p className="text-sm text-slate-500 mt-3 leading-relaxed">
+                                WiseVideo Commerce is a premium feature. You must have the <strong>wiseCampaign Pro</strong> plugin installed and an active license key to enable this widget.
+                            </p>
+                            
+                            <div className="mt-8 flex flex-col gap-3">
+                                <a 
+                                    href={window.wiseModuleData?.pro?.licensePageUrl || 'admin.php?page=wisecampaign_plugin_license'}
+                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm text-center shadow-lg shadow-blue-100 hover:shadow-xl transition-all"
+                                >
+                                    Activate License Key
+                                </a>
+                                <button 
+                                    onClick={() => setIsLicenseModalOpen(false)}
+                                    className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-sm transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Feature Selection Modal */}
             {isFeatureModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -257,6 +294,17 @@ function App() {
                         </button>
                     </div>
                     <div className="flex items-center gap-3 ml-4">
+                        {toast && (
+                            <span 
+                                className="animate-in fade-in slide-in-from-right-4 duration-300 text-xs font-bold mr-2 flex items-center gap-1.5"
+                                style={{ 
+                                    color: toast.type === 'success' ? '#10B981' : '#EF4444',
+                                }}
+                            >
+                                {toast.type === 'success' ? <CheckCircle2 size={14} /> : <RotateCw size={14} className="rotate-45" />}
+                                {toast.message}
+                            </span>
+                        )}
                         <button className="text-slate-500 font-bold text-sm hover:text-slate-700">Discard</button>
                         <button 
                             onClick={handleSave}
@@ -291,6 +339,11 @@ function App() {
                                     checked={isEnabled} 
                                     onChange={(e) => {
                                         const newVal = e.target.checked;
+                                        const isLicenseActive = window.wiseModuleData?.pro?.isLicenseActive;
+                                        if (newVal && !isLicenseActive) {
+                                            setIsLicenseModalOpen(true);
+                                            return;
+                                        }
                                         setIsEnabled(newVal);
                                         isEnabledRef.current = newVal;
                                     }} 
@@ -305,30 +358,41 @@ function App() {
                             <div className="flex items-center justify-between mb-3">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Feature</h4>
                                 <button 
-                                    onClick={() => setIsFeatureModalOpen(true)}
-                                    className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:text-emerald-700 transition-colors"
+                                    disabled={!isEnabled}
+                                    onClick={() => isEnabled && setIsFeatureModalOpen(true)}
+                                    className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isEnabled ? 'text-emerald-600 hover:text-emerald-700 cursor-pointer' : 'text-slate-300 cursor-not-allowed'}`}
                                 >
                                     Change Feature
                                 </button>
                             </div>
                             <div 
-                                onClick={() => setIsFeatureModalOpen(true)}
-                                className="p-3 bg-white border border-slate-100 rounded-xl flex items-center gap-3 shadow-sm group cursor-pointer hover:border-emerald-200 transition-all"
+                                onClick={() => isEnabled && setIsFeatureModalOpen(true)}
+                                className={`p-3 border rounded-xl flex items-center gap-3 transition-all ${
+                                    isEnabled 
+                                        ? 'bg-white border-slate-100 shadow-sm group cursor-pointer hover:border-emerald-200' 
+                                        : 'bg-slate-50 border-slate-200 cursor-not-allowed opacity-60'
+                                }`}
                             >
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${activeFeature === 'gallery' ? 'bg-blue-50 text-blue-500' : 'bg-emerald-50 text-emerald-500'}`}>
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                                    isEnabled 
+                                        ? (activeFeature === 'gallery' ? 'bg-blue-50 text-blue-500' : 'bg-emerald-50 text-emerald-500')
+                                        : 'bg-slate-200 text-slate-400'
+                                }`}>
                                     {activeFeature === 'gallery' ? <Layout size={20} /> : <Video size={20} />}
                                 </div>
                                 <div className="text-left flex-1">
-                                    <h5 className="text-xs font-black text-[#0F172A]">
+                                    <h5 className={`text-xs font-black ${isEnabled ? 'text-[#0F172A]' : 'text-slate-400'}`}>
                                         {activeFeature === 'gallery' ? 'Product gallery videos' : 'Product Reels'}
                                     </h5>
                                     <p className="text-[10px] text-slate-400 font-bold">
                                         {activeFeature === 'gallery' ? 'Style: Shoppable' : 'Embedded UGC Videos'}
                                     </p>
                                 </div>
-                                <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <RotateCw size={14} />
-                                </div>
+                                {isEnabled && (
+                                    <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <RotateCw size={14} />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -570,7 +634,7 @@ function App() {
                 <main className="flex-1 bg-[#F1F5F9] p-12 overflow-y-auto flex items-start justify-center">
                     <div className={`${device === 'mobile' ? 'w-[375px]' : 'w-full max-w-[1000px]'} transition-all duration-500`}>
                         {/* Browser Mockup */}
-                        <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200">
+                        <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 relative">
                             {/* Browser Bar */}
                             <div className="bg-slate-50 px-6 py-3 flex items-center gap-4 border-b border-slate-100">
                                 <div className="flex gap-1.5 shrink-0">
@@ -781,6 +845,21 @@ function App() {
                                         ))}
                                     </div>
                                 </div>
+                                
+                                {/* Preview Disabled Overlay */}
+                                {!isEnabled && (
+                                    <div className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 transition-all duration-300">
+                                        <div className="bg-white/95 p-8 rounded-3xl shadow-2xl max-w-sm border border-slate-100 animate-in zoom-in duration-300">
+                                            <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                <Video size={32} />
+                                            </div>
+                                            <h3 className="text-base font-black text-slate-900 uppercase tracking-wider mb-2">Preview Disabled</h3>
+                                            <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                                                Activate the widget status in the sidebar to enable the live preview mode.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -788,31 +867,7 @@ function App() {
             </div>
         </div>
 
-        {/* Toast Notification */}
-        {toast && (
-            <div
-                style={{
-                    position: 'fixed',
-                    top: '24px',
-                    right: '24px',
-                    zIndex: 9999,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '12px 20px',
-                    borderRadius: '12px',
-                    backgroundColor: toast.type === 'success' ? '#10b981' : '#ef4444',
-                    color: '#ffffff',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-                    animation: 'fadeIn 0.3s ease'
-                }}
-            >
-                <span>{toast.type === 'success' ? '✓' : '✕'}</span>
-                <span>{toast.message}</span>
-            </div>
-        )}
+
         </React.Fragment>
     );
 }

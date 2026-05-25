@@ -21,7 +21,13 @@ class WiseVideoCommerce {
         add_action('save_post_product', [$this, 'save_product_video_meta']);
 
         $settings = $this->get_settings();
-        $is_active = isset($settings['status']) && $settings['status'] === 'active';
+        
+        $is_license_active = false;
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+        
+        $is_active = isset($settings['status']) && $settings['status'] === 'active' && $is_license_active;
 
         if ($is_active) {
             add_action('woocommerce_before_single_product', [$this, 'init_product_hooks'], 1);
@@ -124,6 +130,18 @@ class WiseVideoCommerce {
 
     public function update_settings_callback($request) {
         $params = $request->get_json_params();
+        
+        $is_license_active = false;
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+
+        if (isset($params['status']) && $params['status'] === 'active' && !$is_license_active) {
+            return new \WP_REST_Response([
+                'message' => 'Cannot activate widget: An active Pro license is required.'
+            ], 403);
+        }
+
         $settings = $this->get_settings();
         
         // Merge new settings with existing ones

@@ -421,6 +421,7 @@ export default function App() {
   const [isActive, setIsActive] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState({ name: 'Default Table', style: 'MINIMAL' });
   const [activeTab, setActiveTab] = useState('tables'); // 'tables' | 'design' | 'advanced'
+  const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(false);
 
   // --- Saved Table Active Selection (Connected to dynamic live filters!) ---
   const [selectedSavedTable, setSelectedSavedTable] = useState('Shop Pages');
@@ -828,8 +829,35 @@ export default function App() {
   // Copy code utility
   const copyShortcodeToClipboard = (shortcode, tableName) => {
     if (!shortcode) return;
-    navigator.clipboard.writeText(shortcode);
-    triggerToast(`Copied [${tableName}] shortcode to clipboard! 📋`);
+    
+    const fallbackCopy = () => {
+      const textArea = document.createElement("textarea");
+      textArea.value = shortcode;
+      textArea.style.position = "fixed"; 
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        triggerToast(`Copied [${tableName}] shortcode to clipboard! 📋`);
+      } catch (err) {
+        console.error('Fallback copy failed', err);
+        triggerToast('Failed to copy shortcode ⚠️', 'warning');
+      }
+      document.body.removeChild(textArea);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shortcode)
+        .then(() => {
+          triggerToast(`Copied [${tableName}] shortcode to clipboard! 📋`);
+        })
+        .catch(() => {
+          fallbackCopy();
+        });
+    } else {
+      fallbackCopy();
+    }
   };
 
   // Preview filtering, sorting & pagination logic
@@ -1885,6 +1913,43 @@ export default function App() {
   return (
     <div className="h-[calc(100vh-32px)] bg-slate-50 flex flex-col font-sans select-none antialiased overflow-hidden">
       
+      {/* License Activation Modal */}
+      {isLicenseModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div 
+            className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-blue-50 text-blue-650 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md shadow-blue-100/50">
+                <TableProperties size={30} />
+              </div>
+              
+              <h2 className="text-xl font-black text-slate-900 tracking-tight">Pro License Required</h2>
+              
+              <p className="text-sm text-slate-500 mt-3 leading-relaxed font-semibold">
+                Wise Product Table is a premium feature. You must have the <strong>wiseCampaign Pro</strong> plugin installed and an active license key to enable this widget.
+              </p>
+              
+              <div className="mt-8 flex flex-col gap-3">
+                <a 
+                  href={window.wiseModuleData?.pro?.licensePageUrl || 'admin.php?page=wisecampaign_plugin_license'}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-sm text-center shadow-lg shadow-blue-100 hover:shadow-xl transition-all"
+                >
+                  Activate License Key
+                </a>
+                <button 
+                  onClick={() => setIsLicenseModalOpen(false)}
+                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-sm transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Real-time Dynamic Custom CSS Injected instantly into the Preview frame! */}
       <style>{`
         ${advCustomCss}
@@ -1966,7 +2031,15 @@ export default function App() {
               {/* Animated Switch */}
               <button
                 type="button"
-                onClick={() => setIsActive(!isActive)}
+                onClick={() => {
+                  const newVal = !isActive;
+                  const isLicenseActive = window.wiseModuleData?.pro?.isLicenseActive;
+                  if (newVal && !isLicenseActive) {
+                    setIsLicenseModalOpen(true);
+                    return;
+                  }
+                  setIsActive(newVal);
+                }}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none shadow-inner ${isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
               >
                 <span className="sr-only">Toggle Module Status</span>
@@ -1986,8 +2059,13 @@ export default function App() {
             ].map(tab => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-3 text-[10px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all border-b-2 ${activeTab === tab.key ? 'border-slate-900 text-slate-900 bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-slate-700'}`}
+                disabled={!isActive}
+                onClick={() => isActive && setActiveTab(tab.key)}
+                className={`flex-1 py-3 text-[10px] font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all border-b-2 ${
+                  isActive
+                    ? (activeTab === tab.key ? 'border-slate-900 text-slate-900 bg-slate-50/50' : 'border-transparent text-slate-400 hover:text-slate-700')
+                    : 'border-transparent text-slate-300 cursor-not-allowed'
+                }`}
               >
                 {tab.icon} {tab.label}
               </button>
@@ -1996,9 +2074,35 @@ export default function App() {
 
           {/* Left panel Tab content */}
           <div className="flex-1 overflow-y-auto px-4 py-5 scrollbar-thin">
-            
-            {/* 1. PRODUCT TABLES TAB */}
-            {activeTab === 'tables' && (
+            {!isActive ? (
+              <div className="py-20 flex flex-col items-center justify-center text-center px-4 space-y-4 animate-in fade-in duration-300">
+                <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-350 shadow-inner">
+                  <TableProperties size={32} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-[#0F172A] uppercase tracking-wider">Module Hidden</h4>
+                  <p className="text-xs text-slate-450 font-bold max-w-[200px] mx-auto mt-2 leading-relaxed">
+                    The configuration panel is hidden because the module is deactivated.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {
+                    const isLicenseActive = window.wiseModuleData?.pro?.isLicenseActive;
+                    if (!isLicenseActive) {
+                      setIsLicenseModalOpen(true);
+                      return;
+                    }
+                    setIsActive(true);
+                  }}
+                  className="px-6 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all active:scale-95"
+                >
+                  Activate Now
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* 1. PRODUCT TABLES TAB */}
+                {activeTab === 'tables' && (
               <div className="space-y-4">
                 
                 {/* Info Note banner */}
@@ -2047,12 +2151,13 @@ export default function App() {
                       <div className="mt-3 flex items-center justify-between border-t border-slate-100/10 pt-2.5 gap-2">
                         {/* Copy Code badge */}
                         <div 
+                          title="Click to copy shortcode"
                           onClick={(e) => {
                             e.stopPropagation();
                             const sc = table.shortcode || '[product_table id="1"]';
                             copyShortcodeToClipboard(sc, table.name);
                           }}
-                          className={`px-2 py-1 rounded-lg text-[9px] font-bold font-mono transition-all flex items-center gap-1 hover:brightness-110 active:scale-95 ${selectedSavedTable === table.name ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-600'}`}
+                          className={`cursor-pointer px-2.5 py-1.5 rounded-lg text-[9px] font-bold font-mono transition-all flex items-center gap-1.5 hover:scale-[1.03] active:scale-95 border ${selectedSavedTable === table.name ? 'bg-white/10 text-white border-white/20 hover:bg-white/15' : 'bg-slate-50 text-slate-650 border-slate-100 hover:bg-slate-100'}`}
                         >
                           <Copy className="w-3 h-3" /> {table.shortcode || '[product_table id="1"]'}
                         </div>
@@ -2782,6 +2887,8 @@ export default function App() {
                 </div>
 
               </div>
+            )}
+            </>
             )}
           </div>
         </aside>

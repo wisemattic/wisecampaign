@@ -78,6 +78,18 @@ class WiseProductTable {
 
     public function update_settings_callback($request) {
         $params = $request->get_json_params();
+        
+        $is_license_active = false;
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+
+        if (isset($params['isActive']) && $params['isActive'] === true && !$is_license_active) {
+            return new \WP_REST_Response([
+                'message' => 'Cannot activate widget: An active Pro license is required.'
+            ], 403);
+        }
+
         $settings = $this->get_settings();
         
         foreach ($params as $key => $value) {
@@ -330,7 +342,12 @@ class WiseProductTable {
         $settings = $this->get_settings();
         $is_module_active = isset($settings['isActive']) ? $settings['isActive'] : false;
 
-        if (!$is_module_active) {
+        $is_license_active = false;
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+
+        if (!$is_module_active || !$is_license_active) {
             return '';
         }
 

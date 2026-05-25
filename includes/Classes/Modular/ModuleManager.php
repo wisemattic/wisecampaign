@@ -158,6 +158,14 @@ class ModuleManager
                 'activate-plugin_woocommerce/woocommerce.php'
             );
 
+            $is_pro_active = is_plugin_active('wisecampaign-pro/wisecampaign-pro.php');
+            $is_pro_installed = file_exists(WP_PLUGIN_DIR . '/wisecampaign-pro/wisecampaign-pro.php');
+            $is_license_active = false;
+
+            if ($is_pro_active && class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+                $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+            }
+
             wp_localize_script($localization_handle, 'wiseModuleData', [
                 'apiUrl' => rest_url('wisecampaign/v1/'),
                 'pluginUrl' => $this->plugin_url,
@@ -168,6 +176,12 @@ class ModuleManager
                     'isInstalled' => $is_wc_installed,
                     'installUrl' => html_entity_decode($wc_install_url),
                     'activateUrl' => html_entity_decode($wc_activate_url)
+                ],
+                'pro' => [
+                    'isInstalled' => $is_pro_installed,
+                    'isActive' => $is_pro_active,
+                    'isLicenseActive' => $is_license_active,
+                    'licensePageUrl' => admin_url('admin.php?page=wisecampaign_plugin_license')
                 ]
             ]);
         }
