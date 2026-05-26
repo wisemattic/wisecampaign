@@ -26,13 +26,29 @@ class WiseProductTable {
      * Get settings from options
      */
     public function get_settings() {
-        return get_option($this->option_name, [
+        $settings = get_option($this->option_name, [
             'isActive' => false,
             'selectedSavedTable' => 'Shop Pages',
             'activeTemplate' => [ 'name' => 'Default Table', 'style' => 'MINIMAL' ],
             'designState' => [],
             'advSettings' => []
         ]);
+
+        $is_license_active = false;
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            $is_license_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+
+        if (!$is_license_active) {
+            if (isset($settings['isActive']) && $settings['isActive'] === true) {
+                $settings['isActive'] = false;
+                update_option($this->option_name, $settings);
+            } else {
+                $settings['isActive'] = false;
+            }
+        }
+
+        return $settings;
     }
 
     /**
