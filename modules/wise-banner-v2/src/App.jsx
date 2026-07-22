@@ -237,9 +237,11 @@ function App() {
     const fetchSettings = async () => {
         try {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
+            const nonce = window.wiseModuleData?.nonce;
+            const headers = nonce ? { 'X-WP-Nonce': nonce } : {};
 
             // Fetch Banner Design
-            const resBanner = await fetch(`${baseUrl}banner-v2`);
+            const resBanner = await fetch(`${baseUrl}banner-v2`, { headers });
             const bannerData = await resBanner.json();
             if (bannerData && bannerData.id) {
                 setConfig(bannerData);
@@ -247,19 +249,19 @@ function App() {
             }
 
             // Fetch Display Settings
-            const resSettings = await fetch(`${baseUrl}banner-v2/settings`);
+            const resSettings = await fetch(`${baseUrl}banner-v2/settings`, { headers });
             const settings = await resSettings.json();
             if (settings) {
                 setDisplaySettings(prev => ({ ...prev, ...settings }));
             }
 
             // Fetch License Status
-            const resLicense = await fetch(`${baseUrl}banner-v2/license`);
+            const resLicense = await fetch(`${baseUrl}banner-v2/license`, { headers });
             const licenseData = await resLicense.json();
             if (licenseData && licenseData.valid) {
                 setIsPro(true);
                 // Fetch Available Pages if Pro
-                const resPages = await fetch(`${baseUrl}banner-v2/pages`);
+                const resPages = await fetch(`${baseUrl}banner-v2/pages`, { headers });
                 const pagesData = await resPages.json();
                 if (Array.isArray(pagesData)) {
                     setAvailablePages(pagesData);

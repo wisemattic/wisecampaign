@@ -200,9 +200,11 @@ function App() {
     const fetchSettings = async () => {
         try {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
+            const nonce = window.wiseModuleData?.nonce;
+            const headers = nonce ? { 'X-WP-Nonce': nonce } : {};
 
             // Fetch Stockbars (designs)
-            const resBars = await fetch(`${baseUrl}stockbars`);
+            const resBars = await fetch(`${baseUrl}stockbars`, { headers });
             const stockbars = await resBars.json();
 
             // Find active one
@@ -225,14 +227,14 @@ function App() {
             }
 
             // Fetch Display Settings
-            const resSettings = await fetch(`${baseUrl}stockbars/setting`);
+            const resSettings = await fetch(`${baseUrl}stockbars/setting`, { headers });
             const settings = await resSettings.json();
             if (settings) {
                 setDisplaySettings(settings);
             }
 
             // Fetch Status
-            const resStatus = await fetch(`${baseUrl}stockbar-status`);
+            const resStatus = await fetch(`${baseUrl}stockbar-status`, { headers });
             const statusData = await resStatus.json();
             if (statusData) {
                 setIsEnabled(statusData.stockBarEnabled !== false);
