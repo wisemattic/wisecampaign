@@ -51,8 +51,20 @@ class WiseBannerV2
         }
 
         if ($should_show) {
-            add_action('wp_body_open', [$this, 'render_banner_container']);
-            add_action('wp_footer', [$this, 'render_banner_container'], 1); // Fallback if wp_body_open not supported
+            $is_pro_active = false;
+            if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+                $is_pro_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+            }
+
+            $position = ($is_pro_active && isset($config['position'])) ? $config['position'] : 'top';
+            $is_sticky = ($is_pro_active && isset($config['isSticky'])) ? (bool)$config['isSticky'] : false;
+
+            if ($position === 'bottom' && !$is_sticky) {
+                add_action('wp_footer', [$this, 'render_banner_container'], 5);
+            } else {
+                add_action('wp_body_open', [$this, 'render_banner_container']);
+                add_action('wp_footer', [$this, 'render_banner_container'], 1); // Fallback if wp_body_open not supported
+            }
         }
     }
 
@@ -121,6 +133,9 @@ class WiseBannerV2
             'showCouponCode' => false,
             'couponCode' => 'SAVE10',
             'couponPlacement' => 'bottom',
+            'position' => 'top',
+            'isSticky' => false,
+            'hideBranding' => false,
             'isActive' => true
         ];
     }
@@ -282,9 +297,15 @@ class WiseBannerV2
                 return $tag;
             }, 10, 3);
 
+            $is_pro_active = false;
+            if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+                $is_pro_active = \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+            }
+
             wp_localize_script('wise-banner-v2-frontend', 'wiseBannerData', [
                 'isStorefront' => true,
-                'config' => $config
+                'config' => $config,
+                'isPro' => $is_pro_active
             ]);
         }
     }

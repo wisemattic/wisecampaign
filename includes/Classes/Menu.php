@@ -407,7 +407,16 @@ class Menu
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
 
-        return is_plugin_active('wisecampaign-pro/wisecampaign-pro.php');
+        $is_pro_installed = is_plugin_active('wisecampaign-pro/wisecampaign-pro.php');
+        if (!$is_pro_installed) {
+            return false;
+        }
+
+        if (class_exists('\WISECAMPAIGNPRO\Classes\ProPluginLicense')) {
+            return \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
+        }
+
+        return false;
     }
 
     /**

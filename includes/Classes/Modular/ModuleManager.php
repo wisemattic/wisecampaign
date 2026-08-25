@@ -179,7 +179,7 @@ class ModuleManager
                 ],
                 'pro' => [
                     'isInstalled' => $is_pro_installed,
-                    'isActive' => $is_pro_active,
+                    'isActive' => $is_pro_active && $is_license_active,
                     'isLicenseActive' => $is_license_active,
                     'licensePageUrl' => admin_url('admin.php?page=wisecampaign_plugin_license')
                 ]

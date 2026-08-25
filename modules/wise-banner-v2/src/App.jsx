@@ -27,7 +27,9 @@ import {
     Calendar,
     ArrowRight,
     Link as LinkIcon,
-    Power
+    Power,
+    Crown,
+    Sparkles
 } from 'lucide-react';
 
 const TEMPLATES = [
@@ -195,6 +197,8 @@ function App() {
         showCouponCode: false,
         couponCode: 'SAVE10',
         couponPlacement: 'bottom',
+        position: 'top',
+        isSticky: false,
         isActive: true
     });
 
@@ -204,13 +208,15 @@ function App() {
         selectedPages: []
     });
 
-    const [isPro, setIsPro] = useState(false);
+    const [isPro, setIsPro] = useState(window.wiseBannerData?.isPro || false);
     const [availablePages, setAvailablePages] = useState([]);
 
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
+    const [showProModal, setShowProModal] = useState(false);
+    const [proModalReason, setProModalReason] = useState('');
     const [globalToast, setGlobalToast] = useState(null);
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
@@ -229,6 +235,9 @@ function App() {
             if (window.wiseBannerData?.config) {
                 setConfig(window.wiseBannerData.config);
                 setSelectedTemplateId(window.wiseBannerData.config.id || 'holiday-gradient');
+            }
+            if (window.wiseBannerData?.isPro !== undefined) {
+                setIsPro(!!window.wiseBannerData.isPro);
             }
             setIsLoading(false);
         }
@@ -663,6 +672,19 @@ function App() {
                         </a>
                     )}
                 </div>
+
+                {(!isPro || !config.hideBranding) && (
+                    <a
+                        href="https://wisemattic.com/wisecampaign"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute right-3 bottom-0.5 sm:right-6 sm:bottom-0.5 text-[7.5px] font-medium opacity-75 hover:opacity-100 transition-opacity no-underline shrink-0 whitespace-nowrap flex items-center gap-1 z-[100]"
+                        style={{ color: config.headlineColor }}
+                    >
+                        <span>Made with</span>
+                        <span className="font-bold underline">wiseCampaign</span>
+                    </a>
+                )}
             </div>
         );
     };
@@ -692,16 +714,62 @@ function App() {
     };
 
     if (isStorefront) {
+        const isSticky = isPro && config.isSticky;
+        const isBottom = isPro && config.position === 'bottom';
+
+        let positionClasses = 'relative w-full z-[100]';
+        if (isSticky) {
+            positionClasses = isBottom
+                ? 'fixed bottom-0 left-0 right-0 z-[99999] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]'
+                : 'fixed top-0 left-0 right-0 z-[99999] shadow-[0_4px_20px_rgba(0,0,0,0.15)]';
+        }
+
         return (
-            <>
+            <div className={positionClasses}>
                 <BannerContent />
                 {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
-            </>
+            </div>
         );
     }
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
+            {/* Pro Upgrade Modal */}
+            {showProModal && (
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in p-8 flex flex-col items-center text-center border border-slate-100">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center mb-6 shadow-lg shadow-amber-200" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                            <Crown size={32} />
+                        </div>
+                        <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
+                            Unlock Pro Feature
+                        </h2>
+                        <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
+                            {proModalReason || 'Removing the "Made with wiseCampaign" branding requires a wiseCampaign Pro license.'}
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => setShowProModal(false)}
+                                className="flex-1 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all active:scale-95 border border-slate-200/60"
+                            >
+                                Cancel
+                            </button>
+                            <a
+                                href="https://wisemattic.com/wisecampaign/pricing"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setShowProModal(false)}
+                                className="flex-1 px-5 py-3 bg-amber-500 hover:bg-amber-600 font-bold text-sm rounded-xl shadow-lg shadow-amber-200 transition-all active:scale-95 flex items-center justify-center gap-2 no-underline"
+                                style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}
+                            >
+                                <span className="font-bold" style={{ color: '#FFFFFF' }}>Upgrade Now</span>
+                                <Sparkles size={16} style={{ color: '#FFFFFF' }} />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Status Confirmation Modal */}
             {showStatusConfirm && (
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
@@ -1737,6 +1805,110 @@ function App() {
                                             </div>
                                         )}
                                     </div>
+
+                                    <div className="space-y-3 pt-6 border-t border-slate-100">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Position</h3>
+                                        <p className="text-[10px] text-slate-400 font-medium -mt-1">
+                                            Select whether the banner displays at the top or bottom of your store.
+                                        </p>
+                                        <div className="bg-slate-100/80 p-1 rounded-xl flex items-center gap-1 border border-slate-200/50">
+                                            <button
+                                                type="button"
+                                                onClick={() => setConfig(prev => ({ ...prev, position: 'top' }))}
+                                                className={`flex-1 py-2.5 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${config.position !== 'bottom' ? 'bg-white shadow-sm text-[#0F172A] border border-slate-200/40' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Top
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (!isPro) {
+                                                        setProModalReason('Setting the banner position to Bottom requires a wiseCampaign Pro license.');
+                                                        setShowProModal(true);
+                                                        return;
+                                                    }
+                                                    setConfig(prev => ({ ...prev, position: 'bottom' }));
+                                                }}
+                                                className={`flex-1 py-2.5 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 relative cursor-pointer ${config.position === 'bottom' && isPro ? 'bg-white shadow-sm text-[#0F172A] border border-slate-200/40' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                <span>Bottom</span>
+                                                {!isPro && (
+                                                    <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white rounded shadow-sm" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                        PRO
+                                                    </span>
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        <div
+                                            onClick={() => {
+                                                if (!isPro) {
+                                                    setProModalReason('Enabling sticky / floating banner placement requires a wiseCampaign Pro license.');
+                                                    setShowProModal(true);
+                                                    return;
+                                                }
+                                                setConfig(prev => ({ ...prev, isSticky: !prev.isSticky }));
+                                            }}
+                                            className="flex items-center justify-between p-3.5 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm mt-3"
+                                        >
+                                            <div className="flex flex-col pr-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">
+                                                        Sticky (Floating) Banner
+                                                    </span>
+                                                    {!isPro && (
+                                                        <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white rounded shadow-sm" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                            PRO
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                    Keep banner fixed while scrolling
+                                                </span>
+                                            </div>
+                                            <div
+                                                className={`w-10 h-5 rounded-full transition-all relative shrink-0 ${config.isSticky && isPro ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.isSticky && isPro ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 pt-6 border-t border-slate-100">
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Branding Settings</h3>
+                                        <div
+                                            onClick={() => {
+                                                if (!isPro) {
+                                                    setProModalReason('Removing the "Made with wiseCampaign" branding requires a wiseCampaign Pro license.');
+                                                    setShowProModal(true);
+                                                    return;
+                                                }
+                                                setConfig(prev => ({ ...prev, hideBranding: !prev.hideBranding }));
+                                            }}
+                                            className="flex items-center justify-between p-4 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm"
+                                        >
+                                            <div className="flex flex-col pr-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">
+                                                        Hide "Made with wiseCampaign"
+                                                    </span>
+                                                    {!isPro && (
+                                                        <span className="px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-500 text-white rounded shadow-sm" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                            PRO
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                    Remove branding badge from banner
+                                                </span>
+                                            </div>
+                                            <div
+                                                className={`w-10 h-5 rounded-full transition-all relative shrink-0 ${config.hideBranding && isPro ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.hideBranding && isPro ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -1754,18 +1926,18 @@ function App() {
                                 >
                                     <X size={18} />
                                 </button>
-                                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                    <Power size={32} />
+                                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                                    <AlertCircle size={32} />
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-slate-800 tracking-tight">Feature Disabled</h3>
-                                    <p className="text-sm font-medium text-slate-500 mt-1">This banner will not be visible on your website frontend until activated.</p>
-                                </div>
+                                <h3 className="text-xl font-black text-[#0F172A] tracking-tight">Banner Disabled</h3>
+                                <p className="text-slate-500 text-xs font-medium leading-relaxed">
+                                    This banner is currently inactive and hidden from storefront visitors.
+                                </p>
                                 <button
                                     onClick={() => setShowStatusConfirm(true)}
-                                    className="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
+                                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95 text-xs"
                                 >
-                                    Activate Now
+                                    Activate Banner Now
                                 </button>
                             </div>
                         </div>
@@ -1787,8 +1959,10 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Banner Preview (LIVE) */}
-                            <BannerContent isMobileMode={device === 'mobile'} />
+                            {/* Top Banner Preview (LIVE) */}
+                            {config.position !== 'bottom' && (
+                                <BannerContent isMobileMode={device === 'mobile'} />
+                            )}
 
                             {/* Page Content Skeleton */}
                             <div className="flex-1 bg-white overflow-y-auto p-12 custom-scrollbar">
@@ -1838,19 +2012,11 @@ function App() {
                                             {/* Product image skeleton */}
                                             <div className="aspect-[4/3] bg-slate-100 rounded-2xl relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                                        <div className="w-6 h-6 rounded-md bg-white/40 animate-pulse" />
-                                                    </div>
-                                                </div>
                                             </div>
-                                            {/* Product title skeleton */}
                                             <div className="space-y-2">
-                                                <div className="h-4 w-3/4 rounded-full bg-slate-100 animate-pulse" />
-                                                <div className="h-4 w-1/2 rounded-full bg-slate-50 animate-pulse" />
+                                                <div className="h-4 w-2/3 rounded-full bg-slate-100 animate-pulse" />
+                                                <div className="h-4 w-1/3 rounded-full bg-slate-100 animate-pulse" />
                                             </div>
-                                            {/* Product price skeleton */}
-                                            <div className="h-4 w-1/3 rounded-full bg-slate-100 animate-pulse" />
                                         </div>
                                     ))}
                                 </div>
@@ -1870,6 +2036,11 @@ function App() {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Bottom Banner Preview (LIVE) */}
+                            {config.position === 'bottom' && (
+                                <BannerContent isMobileMode={device === 'mobile'} />
+                            )}
                         </div>
                     </div>
 

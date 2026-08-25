@@ -1,6 +1,7 @@
 import React from "react";
 
 const GettingStarted = () => {
+    const isPro = window.wiseModuleData?.pro?.isLicenseActive || false;
     return (
         <div className="wisecampaign-tw bg-slate-50 min-h-screen">
             {/* Background Decorations */}
@@ -124,10 +125,17 @@ const GettingStarted = () => {
                                 <p className="text-slate-400 text-lg font-medium leading-relaxed mb-10">
                                     Mix and match pricing logic, reward loyal customers, and drive faster checkouts – all without writing a single line of code.
                                 </p>
-                                <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" className="inline-flex items-center gap-2 text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 hover:-translate-y-1 transition-all">
-                                    Upgrade to Pro
-                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                </a>
+                                {isPro ? (
+                                    <a href="admin.php?page=wisecampaign_discount_manager" className="inline-flex items-center gap-2 text-white bg-emerald-600 px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 hover:-translate-y-1 transition-all">
+                                        Manage Discounts
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </a>
+                                ) : (
+                                    <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 hover:-translate-y-1 transition-all">
+                                        Upgrade to Pro
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </a>
+                                )}
                             </div>
 
                             <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
@@ -220,10 +228,17 @@ const GettingStarted = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" className="inline-flex items-center gap-2 text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-xl shadow-blue-200">
-                                    Get WiseVideo Pro
-                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-                                </a>
+                                {isPro ? (
+                                    <a href="admin.php?page=wise_video_commerce" className="inline-flex items-center gap-2 text-white bg-emerald-600 px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 hover:-translate-y-1 transition-all shadow-xl shadow-emerald-200">
+                                        Launch WiseVideo
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </a>
+                                ) : (
+                                    <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-white bg-blue-600 px-8 py-4 rounded-2xl font-bold hover:bg-blue-700 hover:-translate-y-1 transition-all shadow-xl shadow-blue-200">
+                                        Get WiseVideo Pro
+                                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                                    </a>
+                                )}
                             </div>
 
                             <div className="lg:w-1/2 relative">
