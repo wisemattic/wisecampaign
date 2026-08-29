@@ -64,8 +64,9 @@ class WiseCart
     {
         return [
             'wisecart_options_title' => ['id' => 'wisecart_options_title', 'title' => __('wiseCart Options', 'wisecampaign'), 'type' => 'title', 'desc' => __('The following options control the appearance and behavior of the wiseCart feature.', 'wisecampaign')],
-            'wc_enable_wisecart' => ['id' => 'wc_enable_wisecart', 'title' => __('Enable wiseCart', 'wisecampaign'), 'desc' => __('Enable the side cart on your site.', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
+            'wc_enable_wisecart' => ['id' => 'wc_enable_wisecart', 'title' => __('Enable wiseCart', 'wisecampaign'), 'desc' => __('Enable the side cart on your site.', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'no'],
             'wc_auto_open_cart' => ['id' => 'wc_auto_open_cart', 'title' => __('Auto open', 'wisecampaign'), 'desc' => __('Open after adding a product to the cart', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
+
             'wc_direct_checkout' => ['id' => 'wc_direct_checkout', 'title' => __('Direct checkout', 'wisecampaign'), 'desc' => __('Skip the cart and show the checkout immediately', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'no'],
             'wisecart_contents_title' => ['id' => 'wisecart_contents_title', 'title' => __('Cart Contents', 'wisecampaign'), 'type' => 'title'],
             'wc_show_product_images' => ['id' => 'wc_show_product_images', 'title' => __('Product Images', 'wisecampaign'), 'desc' => __('Show product images', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],

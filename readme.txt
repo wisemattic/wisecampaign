@@ -1,14 +1,15 @@
 === wiseCampaign – WooCommerce Flash Sale, Countdown Timer, Discount Rules & Sales Notification ===
 Contributors: wisemattic, mehadi13
 Tags: woocommerce discount, flash sale, countdown timer, sales notification, dynamic pricing
-Requires at least: 5.4
-Tested up to: 6.7
+Requires at least: 5.8
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.1.19
+Stable tag: 1.2.0
 WC requires at least: 4.0
-WC tested up to: 9.6
+WC tested up to: 9.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+
 
 Boost WooCommerce sales with high-converting flash sale banners, countdown timers, direct checkout, stock progress bars, and dynamic discounts.
 
@@ -174,7 +175,19 @@ Appsero SDK *does not gather any data by default* and will not transmit informat
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v1.2.0 =
+- Added: wiseBanner Background Effects (Pro) - 6 dynamic background animations (Snowflakes, Confetti, Fire Embers, Light Sweep/Aurora, Floating Orbs, Dot Matrix) with opacity control.
+- Added: wiseBanner CTA Button Animations (Pro) - 6 attention-grabbing animations (Pulse, Wobble/Shake, Bounce, Heartbeat, Shimmer Glow, Radiant Glow).
+- Added: wiseBanner Promotional Badge full positioning controls (Horizontal: Left/Right, Vertical: Top/Middle/Bottom) with smart responsive spacing.
+- Added: Sales Notification 4 new Pro templates (Frosted Glass, Minimalist Micro, Gradient Accent, Dark Mode Neo).
+- Added: Sales Notification Simulated Orders generator with realistic relative time tags (e.g. 15 min ago, 2 hours ago, 22 hours ago, 2 days ago).
+- Added: Sales Notification Whitelabel option to hide branding link in Pro version.
+- Fixed: wiseBanner storefront header overflow fix - dynamically adjust body top offset and WordPress admin bar spacing.
+- Fixed: wiseCart disabled by default on first plugin installation.
+- Compatibility: Tested and verified compatibility with WordPress 6.8 and WooCommerce 9.8.
+
 = v1.1.19 =
+
 - Added: Banner Position controls (Top and Bottom placement) for wiseBanner v2.
 - Added: Sticky (Floating) vs. Non-Sticky mode for Top and Bottom banner positions.
 - Improved: Enhanced wiseBanner editor UI with real-time live preview matching selected banner position.

@@ -95,7 +95,10 @@ class WiseBannerV2
             'bgSolid' => '#0F172A',
             'bgGradient' => 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
             'bgImage' => '',
+            'bgEffect' => 'none',
+            'bgEffectOpacity' => 60,
             'headline' => 'Black Friday Mega Sale!',
+
             'headlineSize' => '16px',
             'headlineColor' => '#FFFFFF',
             'headlineWeight' => '900',
@@ -116,14 +119,20 @@ class WiseBannerV2
             'ctaBg' => '#FCD34D',
             'ctaTextColor' => '#111827',
             'ctaRadius' => '12px',
+            'ctaAnimation' => 'none',
             'showBogoBadge' => false,
+
             'badgeType' => 'text',
             'badgeImage' => '',
             'bogoText' => '50% OFF',
             'badgeBgColor' => '#EF4444',
             'badgeTextColor' => '#FFFFFF',
             'badgeRotation' => '-12deg',
+            'badgePosition' => 'left',
+            'badgeVerticalPosition' => 'middle',
             'timerLabelPosition' => 'left',
+
+
             'daysLabel' => 'D',
             'hoursLabel' => 'H',
             'minutesLabel' => 'M',

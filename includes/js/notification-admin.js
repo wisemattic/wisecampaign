@@ -19,6 +19,14 @@ jQuery(document).ready(function ($) {
         const selectedTemplate = form.find('input[name*="[template]"]:checked').val();
         preview.attr('data-template', selectedTemplate);
 
+        // Update branding watermark visibility
+        const hideBranding = form.find('#wisecampaign-toggle-hide_branding').is(':checked');
+        if (hideBranding) {
+            preview.find('.brand-credit').hide();
+        } else {
+            preview.find('.brand-credit').show();
+        }
+
         // Truncate product name if necessary
         const productNameElem = preview.find('.product-name');
         let productName = productNameElem.text();
@@ -29,6 +37,7 @@ jQuery(document).ready(function ($) {
         }
         productNameElem.text(productName);
     }
+
 
     const templatePresets = {
         'template_1': {
@@ -44,6 +53,34 @@ jQuery(document).ready(function ($) {
             'border_width': 0,
             'border_radius': 100,
             'image_radius': 50
+        },
+        'template_3': {
+            'background_color': '#FFFFFF',
+            'border_color': '#E2E8F0',
+            'border_width': 1,
+            'border_radius': 16,
+            'image_radius': 12
+        },
+        'template_4': {
+            'background_color': '#FFFFFF',
+            'border_color': '#E2E8F0',
+            'border_width': 1,
+            'border_radius': 8,
+            'image_radius': 6
+        },
+        'template_5': {
+            'background_color': '#FFFFFF',
+            'border_color': '#776EFF',
+            'border_width': 0,
+            'border_radius': 12,
+            'image_radius': 8
+        },
+        'template_6': {
+            'background_color': '#0F172A',
+            'border_color': '#334155',
+            'border_width': 1,
+            'border_radius': 14,
+            'image_radius': 10
         }
     };
 
@@ -105,6 +142,10 @@ jQuery(document).ready(function ($) {
     // Template Selection
     $('.template-card').on('click', function () {
         const card = $(this);
+        if (card.hasClass('pro-locked')) {
+            alert('This template is available in wiseCampaign PRO. Please upgrade to unlock all premium templates!');
+            return;
+        }
         const templateId = card.data('template');
         const presets = templatePresets[templateId];
 
@@ -132,19 +173,58 @@ jQuery(document).ready(function ($) {
         updatePreview();
     });
 
+
     // Conditional field for Order Source
     function toggleOrderSourceFields() {
         const source = $('#wisecampaign_order_source_select').val();
         const $selectOrdersField = $('.wisecampaign-field-group').has('#wisecampaign-selected-orders-select');
+        const $virtualNamesField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-names');
+        const $virtualLocationsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-locations');
+        const $virtualModeField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-mode');
+        const $virtualSelectProductsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-select');
 
         if (source === 'selected_orders') {
             $selectOrdersField.show();
+            $virtualNamesField.hide();
+            $virtualLocationsField.hide();
+            $virtualModeField.hide();
+            $virtualSelectProductsField.hide();
+        } else if (source === 'virtual_orders') {
+            $selectOrdersField.hide();
+            $virtualNamesField.show();
+            $virtualLocationsField.show();
+            $virtualModeField.show();
+
+            if ($('#wisecampaign-virtual-products-mode').val() === 'selected_products') {
+                $virtualSelectProductsField.show();
+            } else {
+                $virtualSelectProductsField.hide();
+            }
         } else {
             $selectOrdersField.hide();
+            $virtualNamesField.hide();
+            $virtualLocationsField.hide();
+            $virtualModeField.hide();
+            $virtualSelectProductsField.hide();
         }
     }
     toggleOrderSourceFields(); // Run on page load
-    $('#wisecampaign_order_source_select').on('change', toggleOrderSourceFields);
+    $('#wisecampaign_order_source_select, #wisecampaign-virtual-products-mode').on('change', toggleOrderSourceFields);
+
+    // Live preview update for Virtual Orders inputs
+    $('#wisecampaign-virtual-names').on('input', function () {
+        const names = $(this).val().split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+        if (names.length > 0) {
+            preview.find('.buyer-name').text(names[0]);
+        }
+    });
+
+    $('#wisecampaign-virtual-locations').on('input', function () {
+        const locations = $(this).val().split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+        if (locations.length > 0) {
+            preview.find('.location').text(locations[0]);
+        }
+    });
 
     // Conditional field for Visibility
     function toggleVisibilityFields() {
@@ -178,6 +258,7 @@ jQuery(document).ready(function ($) {
         change: function (event, ui) {
             updatePreview();
         },
+
         clear: function () {
             updatePreview();
         }
@@ -210,7 +291,9 @@ jQuery(document).ready(function ($) {
         const newStatus = isChecked ? '1' : '0';
         const $feedback = $('#wisecampaign-status-feedback');
 
+        $('#wisecampaign-hidden-enabled').val(newStatus);
         $feedback.removeClass('show error').text('');
+
 
         // Toggle visibility of all content immediately for better UX
         toggleAllSalesNotificationContent();
@@ -337,7 +420,9 @@ jQuery(document).ready(function ($) {
         // Toggles
         $('#wisecampaign-toggle-enabled').prop('checked', settings.enabled === '1');
         $('#wisecampaign-toggle-random_show').prop('checked', settings.random_show === '1');
+        $('#wisecampaign-toggle-hide_branding').prop('checked', settings.hide_branding === '1');
         $('#wisecampaign-toggle-loop').prop('checked', (typeof settings.loop === 'undefined' || settings.loop === '1'));
+
 
         // Selects
         form.find('[name*="[template]"][value="' + settings.template + '"]').prop('checked', true);
@@ -346,9 +431,16 @@ jQuery(document).ready(function ($) {
         form.find('[name*="[source]"]').val(settings.source).trigger('change');
         form.find('[name*="[visibility]"]').val(settings.visibility).trigger('change');
 
+        // Virtual Orders (PRO)
+        if (settings.virtual_names) $('#wisecampaign-virtual-names').val(settings.virtual_names);
+        if (settings.virtual_locations) $('#wisecampaign-virtual-locations').val(settings.virtual_locations);
+        if (settings.virtual_products_mode) $('#wisecampaign-virtual-products-mode').val(settings.virtual_products_mode);
+        if (settings.virtual_selected_products) $('#wisecampaign-virtual-products-select').val(settings.virtual_selected_products);
+
         // Multi-selects
         $('#wisecampaign-selected-orders-select').val(settings.selected_orders || []);
         $('#wisecampaign-specific-pages-select').val(settings.specific_pages || []);
+
 
         // Colors
         form.find('[name*="[background_color]"]').wpColorPicker('color', settings.background_color);

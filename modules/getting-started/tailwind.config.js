@@ -8,5 +8,5 @@ export default {
       extend: {},
     },
     plugins: [],
-    important: '.wisecampaign-tw', // Scoping Tailwinds to avoid conflicts in admin area
+    important: '#getting-started-app', // Scoping Tailwind to #getting-started-app container
   }

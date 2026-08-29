@@ -159,7 +159,10 @@ function App() {
         bgSolid: '#0F172A',
         bgGradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
         bgImage: '',
+        bgEffect: 'none',
+        bgEffectOpacity: 60,
         headline: 'Black Friday Mega Sale!',
+
         headlineSize: '16px',
         headlineColor: '#FFFFFF',
         headlineWeight: '900',
@@ -180,14 +183,20 @@ function App() {
         ctaBg: '#FCD34D',
         ctaTextColor: '#111827',
         ctaRadius: '12px',
+        ctaAnimation: 'none',
         showBogoBadge: false,
+
         badgeType: 'text',
         badgeImage: '',
         bogoText: '50% OFF',
         badgeBgColor: '#EF4444',
         badgeTextColor: '#FFFFFF',
         badgeRotation: '-12deg',
+        badgePosition: 'left',
+        badgeVerticalPosition: 'middle',
         timerLabelPosition: 'left',
+
+
         daysLabel: 'D',
         hoursLabel: 'H',
         minutesLabel: 'M',
@@ -218,6 +227,7 @@ function App() {
     const [showProModal, setShowProModal] = useState(false);
     const [proModalReason, setProModalReason] = useState('');
     const [globalToast, setGlobalToast] = useState(null);
+    const bannerContainerRef = React.useRef(null);
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
 
@@ -242,6 +252,53 @@ function App() {
             setIsLoading(false);
         }
     }, []);
+
+    // Dynamically adjust webpage body padding & placement to prevent header overflow
+    useEffect(() => {
+        if (!isStorefront) return;
+
+        const isSticky = isPro && config.isSticky;
+        const isBottom = isPro && config.position === 'bottom';
+
+        // Auto move #wise-banner-v2-app to top of body if needed
+        const rootElement = document.getElementById('wise-banner-v2-app');
+        if (rootElement) {
+            if (isBottom) {
+                if (rootElement.parentElement !== document.body || document.body.lastChild !== rootElement) {
+                    document.body.appendChild(rootElement);
+                }
+            } else {
+                if (rootElement.parentElement !== document.body || document.body.firstChild !== rootElement) {
+                    document.body.prepend(rootElement);
+                }
+            }
+        }
+
+        const updateBodyOffset = () => {
+            if (!bannerContainerRef.current) return;
+            const height = bannerContainerRef.current.offsetHeight;
+
+            if (isSticky && !isBottom) {
+                document.body.style.paddingTop = `${height}px`;
+            } else if (isSticky && isBottom) {
+                document.body.style.paddingBottom = `${height}px`;
+            } else {
+                document.body.style.paddingTop = '';
+                document.body.style.paddingBottom = '';
+            }
+        };
+
+        const timer = setTimeout(updateBodyOffset, 50);
+        window.addEventListener('resize', updateBodyOffset);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', updateBodyOffset);
+            document.body.style.paddingTop = '';
+            document.body.style.paddingBottom = '';
+        };
+    }, [isStorefront, isPro, config.isSticky, config.position, config.isActive]);
+
 
     const fetchSettings = async () => {
         try {
@@ -449,6 +506,7 @@ function App() {
         }, [endDate, endTime, enableRecursion, recurrenceAmount, recurrenceUnit]);
 
         const getFlexDirection = () => {
+            if (isMobileMode) return 'flex-col items-center';
             switch (labelPosition) {
                 case 'top': return 'flex-col items-center';
                 case 'bottom': return 'flex-col-reverse items-center';
@@ -459,9 +517,18 @@ function App() {
         };
 
         return (
-            <div className={`flex gap-2 shrink-0 ${getFlexDirection()} ${!isMobileMode ? 'sm:gap-4' : ''}`}>
-                <span className={`text-[7px] font-black tracking-[0.1em] opacity-60 uppercase whitespace-nowrap ${!isMobileMode ? 'sm:text-[9px] sm:tracking-[0.2em]' : ''}`} style={{ color: textColor }}>{label}</span>
-                <div className={`flex gap-1 ${!isMobileMode ? 'sm:gap-2' : ''}`}>
+            <div className={`flex gap-1.5 shrink-0 ${getFlexDirection()} ${!isMobileMode ? 'sm:gap-3' : ''}`}>
+                {label && (
+                    <span
+                        className={`font-black tracking-[0.12em] opacity-70 uppercase whitespace-nowrap ${
+                            isMobileMode ? 'text-[8px]' : 'text-[9px] sm:tracking-[0.2em]'
+                        }`}
+                        style={{ color: textColor }}
+                    >
+                        {label}
+                    </span>
+                )}
+                <div className={`flex items-center gap-1 ${!isMobileMode ? 'sm:gap-1.5' : ''}`}>
                     {[
                         { val: timeLeft.days, label: daysLabel },
                         { val: timeLeft.hrs, label: hoursLabel },
@@ -470,22 +537,176 @@ function App() {
                     ].map((t, idx) => (
                         <React.Fragment key={idx}>
                             <div
-                                className={`flex flex-col items-center backdrop-blur-md rounded-lg px-1.5 py-0.5 min-w-[28px] border border-white/10 shadow-sm ${!isMobileMode ? 'sm:px-2 sm:min-w-[34px]' : ''}`}
+                                className={`flex flex-col items-center backdrop-blur-md rounded-lg shadow-sm border border-white/10 ${
+                                    isMobileMode ? 'px-1.5 py-0.5 min-w-[28px]' : 'px-2 py-1 min-w-[34px]'
+                                }`}
                                 style={{
                                     backgroundColor: bgColor,
                                     color: textColor,
                                     borderColor: `${textColor}22`
                                 }}
                             >
-                                <span className={`text-[10px] font-black drop-shadow-sm leading-tight ${!isMobileMode ? 'sm:text-xs' : ''}`}>{t.val}</span>
-                                <span className={`text-[6px] font-black opacity-50 leading-none mt-0.5 tracking-tighter ${!isMobileMode ? 'sm:text-[7px]' : ''}`}>{t.label}</span>
+                                <span className={`font-black drop-shadow-sm leading-tight ${isMobileMode ? 'text-[11px]' : 'text-xs'}`}>
+                                    {t.val}
+                                </span>
+                                <span className={`font-black opacity-60 leading-none mt-0.5 tracking-tighter ${isMobileMode ? 'text-[7px]' : 'text-[8px]'}`}>
+                                    {t.label}
+                                </span>
                             </div>
-                            {idx < 3 && <span className={`text-[10px] font-black self-center opacity-30 ${!isMobileMode ? 'sm:text-xs' : ''}`} style={{ color: textColor }}>:</span>}
+                            {idx < 3 && (
+                                <span
+                                    className={`font-black self-center opacity-40 ${isMobileMode ? 'text-[10px]' : 'text-xs'}`}
+                                    style={{ color: textColor }}
+                                >
+                                    :
+                                </span>
+                            )}
                         </React.Fragment>
                     ))}
                 </div>
             </div>
         );
+    };
+
+    const BackgroundEffectLayer = ({ effect, opacity = 60 }) => {
+        if (!effect || effect === 'none') return null;
+        const op = opacity / 100;
+
+        if (effect === 'snow') {
+            const snowflakes = [
+                { left: '6%', delay: '0s', duration: '3.5s', size: '6px' },
+                { left: '16%', delay: '1.2s', duration: '4s', size: '8px' },
+                { left: '26%', delay: '0.4s', duration: '3.2s', size: '5px' },
+                { left: '36%', delay: '2s', duration: '4.5s', size: '7px' },
+                { left: '46%', delay: '0.8s', duration: '3.8s', size: '9px' },
+                { left: '56%', delay: '1.6s', duration: '3.4s', size: '6px' },
+                { left: '66%', delay: '0.2s', duration: '4.2s', size: '8px' },
+                { left: '76%', delay: '1.8s', duration: '3.6s', size: '5px' },
+                { left: '86%', delay: '0.6s', duration: '4.8s', size: '7px' },
+                { left: '95%', delay: '1.4s', duration: '3.3s', size: '6px' }
+            ];
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: op }}>
+                    {snowflakes.map((s, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-full bg-white shadow-sm"
+                            style={{
+                                left: s.left,
+                                top: '-10px',
+                                width: s.size,
+                                height: s.size,
+                                animation: `snow-fall ${s.duration} ease-in-out infinite`,
+                                animationDelay: s.delay
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        if (effect === 'embers') {
+            const embers = [
+                { left: '8%', delay: '0s', duration: '2.8s', size: '4px', color: '#F59E0B' },
+                { left: '20%', delay: '1.1s', duration: '3.2s', size: '5px', color: '#EF4444' },
+                { left: '33%', delay: '0.5s', duration: '2.5s', size: '3px', color: '#F97316' },
+                { left: '46%', delay: '1.7s', duration: '3.5s', size: '6px', color: '#FBBF24' },
+                { left: '60%', delay: '0.2s', duration: '2.9s', size: '4px', color: '#EF4444' },
+                { left: '72%', delay: '1.4s', duration: '3.1s', size: '5px', color: '#F59E0B' },
+                { left: '84%', delay: '0.8s', duration: '2.6s', size: '3px', color: '#F97316' },
+                { left: '94%', delay: '1.9s', duration: '3.4s', size: '5px', color: '#EF4444' }
+            ];
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: op }}>
+                    {embers.map((e, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-full shadow-[0_0_8px_currentColor]"
+                            style={{
+                                left: e.left,
+                                bottom: '0px',
+                                width: e.size,
+                                height: e.size,
+                                backgroundColor: e.color,
+                                color: e.color,
+                                animation: `ember-rise ${e.duration} ease-out infinite`,
+                                animationDelay: e.delay
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        if (effect === 'confetti') {
+            const confetti = [
+                { left: '10%', delay: '0s', duration: '3.2s', color: '#EC4899', width: '8px', height: '5px' },
+                { left: '22%', delay: '0.9s', duration: '3.6s', color: '#3B82F6', width: '6px', height: '6px' },
+                { left: '36%', delay: '1.6s', duration: '3.1s', color: '#FACC15', width: '9px', height: '4px' },
+                { left: '50%', delay: '0.3s', duration: '4s', color: '#10B981', width: '7px', height: '5px' },
+                { left: '64%', delay: '1.2s', duration: '3.4s', color: '#8B5CF6', width: '6px', height: '6px' },
+                { left: '78%', delay: '0.6s', duration: '3.7s', color: '#F97316', width: '8px', height: '4px' },
+                { left: '92%', delay: '1.8s', duration: '3.3s', color: '#EC4899', width: '7px', height: '5px' }
+            ];
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: op }}>
+                    {confetti.map((c, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-sm"
+                            style={{
+                                left: c.left,
+                                top: '-10px',
+                                width: c.width,
+                                height: c.height,
+                                backgroundColor: c.color,
+                                animation: `confetti-drift ${c.duration} ease-in-out infinite`,
+                                animationDelay: c.delay
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        if (effect === 'aurora') {
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: op }}>
+                    <div
+                        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent blur-lg"
+                        style={{
+                            animation: 'aurora-sweep 6s ease-in-out infinite'
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        if (effect === 'orbs') {
+            return (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" style={{ opacity: op }}>
+                    <div
+                        className="absolute -top-6 left-1/4 w-32 h-32 rounded-full bg-white/25 blur-xl"
+                        style={{ animation: 'orb-drift 4s ease-in-out infinite' }}
+                    />
+                    <div
+                        className="absolute -bottom-6 right-1/4 w-36 h-36 rounded-full bg-amber-300/20 blur-xl"
+                        style={{ animation: 'orb-drift 5s ease-in-out infinite 1.5s' }}
+                    />
+                </div>
+            );
+        }
+
+        if (effect === 'grid') {
+            return (
+                <div
+                    className="absolute inset-0 effect-grid-pattern pointer-events-none z-0"
+                    style={{ opacity: op }}
+                />
+            );
+        }
+
+        return null;
     };
 
     const BannerContent = ({ isMobileMode = false }) => {
@@ -542,9 +763,30 @@ function App() {
             return 'items-center';
         };
 
+        const badgePosition = config.badgePosition || 'left';
+        const isBadgeRight = badgePosition === 'right';
+        const badgeVPos = config.badgeVerticalPosition || 'middle';
+
+        let vPosClass = 'top-1/2 -translate-y-1/2';
+        if (badgeVPos === 'top') {
+            vPosClass = isMobileMode ? 'top-1' : 'top-1.5 sm:top-2';
+        } else if (badgeVPos === 'bottom') {
+            vPosClass = isMobileMode ? 'bottom-1' : 'bottom-1.5 sm:bottom-2';
+        }
+
+        const hPosClass = isBadgeRight
+            ? (isMobileMode ? 'right-2' : 'right-3 sm:right-5')
+            : (isMobileMode ? 'left-2' : 'left-3 sm:left-5');
+
+        const badgePositionClass = `${hPosClass} ${vPosClass}`;
+
         return (
             <div
-                className={`w-full py-4 px-6 flex flex-col items-center justify-between gap-4 relative transition-all duration-300 ${!isMobileMode ? 'sm:py-5 sm:px-12 md:px-32 md:flex-row' : ''}`}
+                className={`w-full relative overflow-hidden transition-all duration-300 ${
+                    isMobileMode
+                        ? 'py-3 px-4 flex flex-col items-center text-center gap-2.5'
+                        : 'py-3.5 px-6 sm:px-8 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4'
+                }`}
                 style={{
                     backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
                     backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
@@ -552,27 +794,36 @@ function App() {
                     backgroundPosition: 'center'
                 }}
             >
+                <BackgroundEffectLayer
+                    effect={isPro ? config.bgEffect : 'none'}
+                    opacity={config.bgEffectOpacity !== undefined ? config.bgEffectOpacity : 60}
+                />
+
                 {config.showBogoBadge && (
-                    <div className="absolute left-1 top-2 z-[10000] animate-bounce-subtle pointer-events-none">
+                    <div className={`absolute z-[10000] animate-bounce-subtle pointer-events-none ${badgePositionClass}`}>
                         <div className="relative group">
                             {config.badgeType === 'image' && config.badgeImage ? (
                                 <img
                                     src={config.badgeImage}
                                     alt="Badge"
-                                    className={`w-16 object-contain drop-shadow-xl hover:scale-105 transition-transform ${!isMobileMode ? 'sm:w-20' : ''}`}
+                                    className={`object-contain drop-shadow-xl hover:scale-105 transition-transform ${isMobileMode ? 'w-10' : 'w-14 sm:w-16'}`}
                                 />
                             ) : (
                                 <>
                                     <div
-                                        className="absolute inset-0 rounded-full blur-[8px] opacity-40 group-hover:opacity-60 transition-opacity"
+                                        className="absolute inset-0 rounded-full blur-[6px] opacity-40 group-hover:opacity-60 transition-opacity"
                                         style={{ backgroundColor: config.badgeBgColor }}
                                     />
                                     <div
-                                        className={`relative font-black text-[10px] px-3 py-1.5 rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter ${!isMobileMode ? 'sm:text-xs sm:px-4 sm:py-2' : ''}`}
+                                        className={`relative font-black rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter ${
+                                            isMobileMode
+                                                ? 'text-[8px] px-2 py-0.5'
+                                                : 'text-[10px] px-2.5 py-1 sm:text-xs sm:px-3.5 sm:py-1.5'
+                                        }`}
                                         style={{
                                             backgroundColor: config.badgeBgColor,
                                             color: config.badgeTextColor,
-                                            transform: `rotate(${config.badgeRotation || '-12deg'})`
+                                            transform: `rotate(${config.badgeRotation || (isBadgeRight ? '12deg' : '-12deg')})`
                                         }}
                                     >
                                         {config.bogoText}
@@ -583,13 +834,17 @@ function App() {
                     </div>
                 )}
 
-                <div className={`flex flex-1 w-full gap-3 ${getCouponLayout()} ${getCouponAlign()} ${!isMobileMode && getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}>
-                    <div className={`flex flex-col text-center ${!isMobileMode ? 'md:text-left md:w-auto' : 'w-full'}`}>
+                <div className={`flex ${config.showBogoBadge && (config.badgePosition || 'left') === 'left' ? (isMobileMode ? 'pl-8' : 'pl-14 sm:pl-20') : ''} ${isMobileMode ? 'flex-col items-center text-center gap-1.5 w-full' : `flex-1 w-full gap-3.5 ${getCouponLayout()} ${getCouponAlign()} ${getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}`}>
+                    <div className={`flex flex-col ${isMobileMode ? 'text-center w-full px-2' : 'md:text-left md:w-auto w-full'}`}>
+
+
                         <span
-                            className={`tracking-tight drop-shadow-sm line-clamp-2 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
+                            className={`tracking-tight drop-shadow-sm ${isMobileMode ? 'whitespace-normal leading-snug' : 'whitespace-nowrap'}`}
                             style={{
                                 color: config.headlineColor,
-                                fontSize: `clamp(14px, 4vw, ${config.headlineSize})`,
+                                fontSize: isMobileMode
+                                    ? `clamp(13px, 4vw, 17px)`
+                                    : `clamp(14px, 2.5vw, ${config.headlineSize})`,
                                 fontWeight: config.headlineWeight
                             }}
                         >
@@ -597,10 +852,12 @@ function App() {
                         </span>
                         {config.showSubHeadline && (
                             <span
-                                className={`font-bold tracking-tight mt-0.5 line-clamp-2 opacity-90 ${!isMobileMode ? 'md:line-clamp-1' : ''}`}
+                                className={`font-medium tracking-tight mt-0.5 opacity-90 ${isMobileMode ? 'whitespace-normal text-xs leading-tight' : 'whitespace-nowrap'}`}
                                 style={{
                                     color: config.subHeadlineColor,
-                                    fontSize: `clamp(11px, 3vw, ${config.subHeadlineSize})`,
+                                    fontSize: isMobileMode
+                                        ? `clamp(10px, 3vw, 12px)`
+                                        : `clamp(11px, 1.8vw, ${config.subHeadlineSize})`,
                                     fontWeight: config.subHeadlineWeight
                                 }}
                             >
@@ -624,21 +881,24 @@ function App() {
                             )}
 
                             <div
-                                className="px-3 py-1 rounded-lg border-2 border-dashed flex items-center gap-1.5 transition-all duration-300 group-hover:bg-opacity-20"
+                                className={`rounded-lg border-2 border-dashed flex items-center gap-1.5 transition-all duration-300 group-hover:bg-opacity-20 ${
+                                    isMobileMode ? 'px-2.5 py-0.5' : 'px-3 py-1'
+                                }`}
                                 style={{
                                     borderColor: copied ? '#22c55e' : `${config.headlineColor}44`,
                                     backgroundColor: copied ? '#22c55e22' : `${config.headlineColor}11`,
                                     color: copied ? '#16a34a' : config.headlineColor
                                 }}
                             >
-                                <span className={`text-[10px] uppercase font-black tracking-widest opacity-50`}>CODE:</span>
-                                <span className={`text-xs font-black tracking-tight`}>{config.couponCode}</span>
+                                <span className="text-[9px] uppercase font-black tracking-widest opacity-60">CODE:</span>
+                                <span className="text-xs font-black tracking-tight">{config.couponCode}</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className={`flex flex-wrap items-center justify-center gap-4 w-full ${!isMobileMode ? 'md:justify-end sm:gap-8 md:gap-10 md:w-auto' : ''}`}>
+                <div className={`flex items-center justify-center ${config.showBogoBadge && (config.badgePosition || 'left') === 'right' ? (isMobileMode ? 'pr-8' : 'pr-14 sm:pr-20') : ''} ${isMobileMode ? 'flex-col gap-2 w-full mt-1' : 'flex-wrap gap-4 w-full md:justify-end sm:gap-6 md:gap-8 md:w-auto shrink-0'}`}>
+
                     {config.showTimer && (
                         <CountdownTimer
                             endDate={config.endDate}
@@ -657,28 +917,48 @@ function App() {
                         />
                     )}
 
-                    {config.showCTA && (
-                        <a
-                            href={config.ctaUrl}
-                            className={`px-4 py-2 text-[10px] font-black shadow-xl flex items-center gap-2 group cursor-pointer transition-all hover:brightness-105 active:scale-95 shrink-0 no-underline whitespace-nowrap ${!isMobileMode ? 'sm:px-6 sm:py-2.5 sm:text-xs' : ''}`}
-                            style={{
-                                backgroundColor: config.ctaBg,
-                                color: config.ctaTextColor,
-                                borderRadius: config.ctaRadius
-                            }}
-                        >
-                            {config.ctaText}
-                            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-                        </a>
-                    )}
+                    {config.showCTA && (() => {
+                        const buttonAnim = isPro && config.ctaAnimation ? config.ctaAnimation : 'none';
+                        let animClass = '';
+                        if (buttonAnim === 'pulse') animClass = 'animate-pulse-subtle';
+                        else if (buttonAnim === 'shake') animClass = 'animate-shake-subtle';
+                        else if (buttonAnim === 'bounce') animClass = 'animate-bounce-btn';
+                        else if (buttonAnim === 'heartbeat') animClass = 'animate-heartbeat';
+                        else if (buttonAnim === 'glow') animClass = 'animate-glow-pulse';
+                        else if (buttonAnim === 'shimmer') animClass = 'relative overflow-hidden after:absolute after:inset-0 after:-translate-x-full after:animate-[shimmer_2s_infinite] after:bg-gradient-to-r after:from-transparent after:via-white/40 after:to-transparent';
+
+                        return (
+                            <a
+                                href={config.ctaUrl}
+                                className={`font-black shadow-xl flex items-center justify-center gap-1.5 group cursor-pointer transition-all hover:brightness-105 active:scale-95 no-underline whitespace-nowrap ${animClass} ${
+                                    isMobileMode
+                                        ? 'w-full py-2 px-4 text-xs'
+                                        : 'px-4 py-2 text-[10px] sm:px-5 sm:py-2 sm:text-xs shrink-0'
+                                }`}
+                                style={{
+                                    backgroundColor: config.ctaBg,
+                                    color: config.ctaTextColor,
+                                    borderRadius: config.ctaRadius
+                                }}
+                            >
+                                <span>{config.ctaText}</span>
+                                <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                            </a>
+                        );
+                    })()}
                 </div>
+
 
                 {(!isPro || !config.hideBranding) && (
                     <a
                         href="https://wisemattic.com/wisecampaign"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="absolute right-3 bottom-0.5 sm:right-6 sm:bottom-0.5 text-[7.5px] font-medium opacity-75 hover:opacity-100 transition-opacity no-underline shrink-0 whitespace-nowrap flex items-center gap-1 z-[100]"
+                        className={`text-[7.5px] font-medium opacity-75 hover:opacity-100 transition-opacity no-underline shrink-0 whitespace-nowrap flex items-center gap-0.5 z-[100] ${
+                            isMobileMode
+                                ? 'mt-1 self-center'
+                                : 'absolute right-3 bottom-0.5 sm:right-6 sm:bottom-0.5'
+                        }`}
                         style={{ color: config.headlineColor }}
                     >
                         <span>Made with</span>
@@ -717,20 +997,30 @@ function App() {
         const isSticky = isPro && config.isSticky;
         const isBottom = isPro && config.position === 'bottom';
 
-        let positionClasses = 'relative w-full z-[100]';
+        let positionClasses = 'relative w-full z-[99990]';
+        let customStyle = {};
+
         if (isSticky) {
             positionClasses = isBottom
                 ? 'fixed bottom-0 left-0 right-0 z-[99999] shadow-[0_-4px_20px_rgba(0,0,0,0.15)]'
                 : 'fixed top-0 left-0 right-0 z-[99999] shadow-[0_4px_20px_rgba(0,0,0,0.15)]';
+
+            // Check if WordPress admin bar is present
+            const adminBar = typeof document !== 'undefined' ? document.getElementById('wpadminbar') : null;
+            if (adminBar && !isBottom) {
+                const adminBarHeight = adminBar.offsetHeight || 32;
+                customStyle.top = `${adminBarHeight}px`;
+            }
         }
 
         return (
-            <div className={positionClasses}>
+            <div ref={bannerContainerRef} className={positionClasses} style={customStyle}>
                 <BannerContent />
                 {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
             </div>
         );
     }
+
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
@@ -1297,10 +1587,52 @@ function App() {
                                                         </div>
                                                     </div>
                                                 )}
+                                                {/* Badge Horizontal Position */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Horizontal Position</label>
+                                                    <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
+                                                        {[
+                                                            { id: 'left', name: 'Left' },
+                                                            { id: 'right', name: 'Right' }
+                                                        ].map((pos) => (
+                                                            <button
+                                                                key={pos.id}
+                                                                type="button"
+                                                                onClick={() => setConfig(prev => ({ ...prev, badgePosition: pos.id }))}
+                                                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${(config.badgePosition || 'left') === pos.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                            >
+                                                                {pos.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Badge Vertical Position */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Vertical Position</label>
+                                                    <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
+                                                        {[
+                                                            { id: 'top', name: 'Top' },
+                                                            { id: 'middle', name: 'Middle' },
+                                                            { id: 'bottom', name: 'Bottom' }
+                                                        ].map((pos) => (
+                                                            <button
+                                                                key={pos.id}
+                                                                type="button"
+                                                                onClick={() => setConfig(prev => ({ ...prev, badgeVerticalPosition: pos.id }))}
+                                                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all capitalize ${(config.badgeVerticalPosition || 'middle') === pos.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
+                                                            >
+                                                                {pos.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                         <div className="h-[1px] bg-slate-50" />
                                     </section>
+
+
 
                                     {/* Banner Background */}
                                     <section className="space-y-6">
@@ -1443,8 +1775,80 @@ function App() {
                                                 </div>
                                             </div>
                                         )}
+                                        {/* Background Effects (PRO) */}
+                                        <div className="space-y-2 pt-3 border-t border-slate-100">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs font-bold text-slate-600">Background Effect</span>
+                                                    {!isPro && (
+                                                        <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white rounded shadow-sm" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                            PRO
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-1.5">
+                                                {[
+                                                    { id: 'none', label: 'None', icon: '🚫' },
+                                                    { id: 'snow', label: 'Snowflakes', icon: '❄️' },
+                                                    { id: 'confetti', label: 'Confetti', icon: '🎉' },
+                                                    { id: 'embers', label: 'Fire Embers', icon: '🔥' },
+                                                    { id: 'aurora', label: 'Light Sweep', icon: '✨' },
+                                                    { id: 'orbs', label: 'Floating Orbs', icon: '🫧' },
+                                                    { id: 'grid', label: 'Dot Matrix', icon: '📐' }
+                                                ].map((eff) => (
+                                                    <button
+                                                        key={eff.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (eff.id !== 'none' && !isPro) {
+                                                                setProModalReason('Dynamic background effects require a wiseCampaign Pro license.');
+                                                                setShowProModal(true);
+                                                                return;
+                                                            }
+                                                            setConfig(prev => ({ ...prev, bgEffect: eff.id }));
+                                                        }}
+                                                        className={`py-2 px-2.5 text-xs font-bold rounded-lg border transition-all flex items-center justify-between text-left cursor-pointer ${
+                                                            (config.bgEffect || 'none') === eff.id
+                                                                ? 'border-blue-600 bg-blue-50/50 text-blue-600 shadow-sm font-black'
+                                                                : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <span className="text-sm">{eff.icon}</span>
+                                                            <span className="truncate">{eff.label}</span>
+                                                        </div>
+                                                        {eff.id !== 'none' && !isPro && (
+                                                            <span className="text-[7px] font-black uppercase tracking-wider bg-amber-100 text-amber-600 px-1 py-0.5 rounded ml-1">
+                                                                PRO
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* Effect Intensity Slider */}
+                                            {config.bgEffect && config.bgEffect !== 'none' && (
+                                                <div className="flex items-center justify-between p-2 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors group mt-2">
+                                                    <span className="text-xs font-bold text-slate-600">Effect Intensity</span>
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="range"
+                                                            min="10"
+                                                            max="100"
+                                                            value={config.bgEffectOpacity !== undefined ? parseInt(config.bgEffectOpacity) : 60}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, bgEffectOpacity: parseInt(e.target.value) }))}
+                                                            className="w-28 accent-blue-600"
+                                                        />
+                                                        <span className="text-[10px] font-mono font-bold text-slate-400 w-8">{config.bgEffectOpacity || 60}%</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <div className="h-[1px] bg-slate-50" />
                                     </section>
+
 
                                     {/* Typography Design */}
                                     <section className="space-y-2">
@@ -1650,8 +2054,59 @@ function App() {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Button Animation (PRO) */}
+                                            <div className="space-y-2 pt-2 border-t border-slate-100">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-xs font-bold text-slate-600">Button Animation</span>
+                                                        {!isPro && (
+                                                            <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white rounded shadow-sm" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                                PRO
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-1.5">
+                                                    {[
+                                                        { id: 'none', label: 'None' },
+                                                        { id: 'pulse', label: 'Pulse' },
+                                                        { id: 'shake', label: 'Wobble' },
+                                                        { id: 'bounce', label: 'Bounce' },
+                                                        { id: 'heartbeat', label: 'Heartbeat' },
+                                                        { id: 'shimmer', label: 'Shimmer Glow' },
+                                                        { id: 'glow', label: 'Radiant Glow' }
+                                                    ].map((anim) => (
+                                                        <button
+                                                            key={anim.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (anim.id !== 'none' && !isPro) {
+                                                                    setProModalReason('Eye-catching button animations require a wiseCampaign Pro license.');
+                                                                    setShowProModal(true);
+                                                                    return;
+                                                                }
+                                                                setConfig(prev => ({ ...prev, ctaAnimation: anim.id }));
+                                                            }}
+                                                            className={`py-2 px-2.5 text-xs font-bold rounded-lg border transition-all flex items-center justify-between text-left cursor-pointer ${
+                                                                (config.ctaAnimation || 'none') === anim.id
+                                                                    ? 'border-blue-600 bg-blue-50/50 text-blue-600 shadow-sm font-black'
+                                                                    : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'
+                                                            }`}
+                                                        >
+                                                            <span className="truncate">{anim.label}</span>
+                                                            {anim.id !== 'none' && !isPro && (
+                                                                <span className="text-[7px] font-black uppercase tracking-wider bg-amber-100 text-amber-600 px-1 py-0.5 rounded ml-1">
+                                                                    PRO
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </section>
                                     )}
+
 
                                     {/* Badge Styling */}
                                     {config.showBogoBadge && config.badgeType === 'text' && (
@@ -1943,110 +2398,202 @@ function App() {
                         </div>
                     )}
 
-                    {/* Mock Browser Frame */}
-                    <div className="flex-1 flex justify-center items-start p-24 pt-4">
-                        <div className={`w-full transition-all duration-700 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-200 overflow-hidden flex flex-col ${device === 'mobile' ? 'max-w-[375px]' : 'max-w-6xl'}`}>
-                            {/* Browser Address Bar */}
-                            <div className="bg-[#F8FAFC] px-6 py-2 border-b border-slate-200 flex items-center gap-4 shrink-0">
-                                <div className="flex gap-2">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></div>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+                    {/* Mock Browser / Phone Frame */}
+                    <div className="flex-1 flex justify-center items-start p-6 sm:p-8 pt-4 overflow-x-auto custom-scrollbar">
+                        {device === 'mobile' ? (
+                            /* Mobile Phone Shell */
+                            <div className="w-[375px] max-w-full bg-slate-900 rounded-[44px] p-3 shadow-[0_25px_60px_rgba(0,0,0,0.3)] border-4 border-slate-800 flex flex-col transition-all duration-500 my-2">
+                                {/* Top Dynamic Island & Status Bar */}
+                                <div className="px-5 pt-1 pb-2 flex items-center justify-between text-white text-[11px] font-semibold select-none">
+                                    <span>9:41</span>
+                                    <div className="w-20 h-4 bg-black rounded-full shadow-inner flex items-center justify-center">
+                                        <div className="w-2 h-2 rounded-full bg-slate-800 ml-auto mr-1.5" />
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[10px] opacity-80">
+                                        <span>5G</span>
+                                        <span>100%</span>
+                                    </div>
                                 </div>
-                                <div className="flex-1 max-w-4xl mx-auto bg-white h-7 rounded-lg flex items-center px-4 gap-3 border border-slate-200/60 shadow-sm">
-                                    <Search size={12} className="text-slate-300" />
-                                    <span className="text-[11px] font-medium text-slate-500 tracking-tight">mysite.com/home</span>
+
+                                {/* Phone Inner Screen */}
+                                <div className="bg-white rounded-[32px] overflow-hidden flex flex-col flex-1 shadow-inner">
+                                    {/* Mobile Browser Address Bar */}
+                                    <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-200 flex items-center justify-between gap-2">
+                                        <div className="flex-1 bg-white h-6 rounded-full flex items-center px-3 gap-2 border border-slate-200 shadow-sm text-[10px] text-slate-600 font-medium justify-center">
+                                            <Search size={10} className="text-slate-400" />
+                                            <span>mysite.com</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Top Banner (LIVE) */}
+                                    {config.position !== 'bottom' && (
+                                        <BannerContent isMobileMode={true} />
+                                    )}
+
+                                    {/* Mobile Storefront Skeleton */}
+                                    <div className="flex-1 bg-white p-4 space-y-4 overflow-y-auto max-h-[460px] custom-scrollbar">
+                                        {/* Mobile Nav Header */}
+                                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                                            <div className="w-5 h-3 flex flex-col justify-between">
+                                                <span className="w-full h-0.5 bg-slate-800 rounded-full" />
+                                                <span className="w-full h-0.5 bg-slate-800 rounded-full" />
+                                                <span className="w-3/4 h-0.5 bg-slate-800 rounded-full" />
+                                            </div>
+                                            <div className="w-7 h-7 rounded-full bg-slate-900" />
+                                            <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center">
+                                                <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                                            </div>
+                                        </div>
+
+                                        {/* Mobile Hero Banner */}
+                                        <div className="aspect-[16/9] bg-gradient-to-br from-slate-200 to-slate-100 rounded-2xl relative overflow-hidden flex flex-col justify-end p-3 animate-pulse">
+                                            <div className="w-2/3 h-3 bg-white/80 rounded-full mb-1.5" />
+                                            <div className="w-1/2 h-2.5 bg-white/60 rounded-full" />
+                                        </div>
+
+                                        {/* Horizontal Category Pills */}
+                                        <div className="flex gap-2 overflow-hidden py-1">
+                                            <div className="w-16 h-5 rounded-full bg-slate-900 shrink-0" />
+                                            <div className="w-14 h-5 rounded-full bg-slate-100 shrink-0" />
+                                            <div className="w-16 h-5 rounded-full bg-slate-100 shrink-0" />
+                                            <div className="w-14 h-5 rounded-full bg-slate-100 shrink-0" />
+                                        </div>
+
+                                        {/* Mobile 2-Column Product Grid */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[1, 2, 3, 4].map(i => (
+                                                <div key={i} className="space-y-2">
+                                                    <div className="aspect-square bg-slate-100 rounded-xl relative overflow-hidden">
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <div className="h-2.5 w-3/4 rounded-full bg-slate-100 animate-pulse" />
+                                                        <div className="h-2 w-1/2 rounded-full bg-slate-100 animate-pulse" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Banner (LIVE) */}
+                                    {config.position === 'bottom' && (
+                                        <BannerContent isMobileMode={true} />
+                                    )}
+
+                                    {/* Home Indicator Bar */}
+                                    <div className="py-2 bg-white flex justify-center border-t border-slate-50">
+                                        <div className="w-28 h-1 bg-slate-300 rounded-full" />
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Top Banner Preview (LIVE) */}
-                            {config.position !== 'bottom' && (
-                                <BannerContent isMobileMode={device === 'mobile'} />
-                            )}
-
-                            {/* Page Content Skeleton */}
-                            <div className="flex-1 bg-white overflow-y-auto p-12 custom-scrollbar">
-                                {/* Navigation Skeleton */}
-                                <div className="flex items-center justify-between mb-16">
-                                    <div className="w-10 h-10 rounded-full bg-slate-900" />
-                                    <div className="flex gap-10">
-                                        <div className="w-16 h-3 rounded-full bg-slate-100" />
-                                        <div className="w-16 h-3 rounded-full bg-slate-100" />
-                                        <div className="w-16 h-3 rounded-full bg-slate-100" />
+                        ) : (
+                            /* Desktop Browser Shell (80% scale) */
+                            <div
+                                className="w-full max-w-[1240px] transition-all duration-500 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-200 overflow-hidden flex flex-col"
+                                style={{ zoom: 0.8 }}
+                            >
+                                {/* Browser Address Bar */}
+                                <div className="bg-[#F8FAFC] px-6 py-2.5 border-b border-slate-200 flex items-center gap-4 shrink-0">
+                                    <div className="flex gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#FFBD2E]"></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
                                     </div>
-                                    <div className="w-20 h-8 rounded-full bg-slate-100" />
-                                </div>
-
-                                {/* Hero Area - All skeletons, no images */}
-                                <div className="flex items-center gap-16 mb-24">
-                                    <div className="flex-1 space-y-8">
-                                        <div className="w-24 h-4 rounded-full bg-blue-100" />
-                                        <div className="space-y-4">
-                                            <div className="w-full h-12 rounded-2xl bg-slate-100" />
-                                            <div className="w-3/4 h-12 rounded-2xl bg-slate-100" />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div className="w-2/3 h-4 rounded-full bg-slate-50" />
-                                            <div className="w-1/2 h-4 rounded-full bg-slate-50" />
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <div className="w-32 h-12 rounded-2xl bg-slate-900" />
-                                            <div className="w-32 h-12 rounded-2xl border border-slate-200" />
-                                        </div>
-                                    </div>
-                                    {/* Hero image replaced with skeleton */}
-                                    <div className="w-[450px] aspect-[4/3] rounded-3xl overflow-hidden bg-slate-100 relative">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                                <div className="w-8 h-8 rounded-lg bg-white/40 animate-pulse" />
-                                            </div>
-                                        </div>
+                                    <div className="flex-1 max-w-3xl mx-auto bg-white h-7 rounded-lg flex items-center px-4 gap-3 border border-slate-200/60 shadow-sm">
+                                        <Search size={12} className="text-slate-300" />
+                                        <span className="text-[11px] font-medium text-slate-500 tracking-tight">mysite.com/home</span>
                                     </div>
                                 </div>
 
-                                {/* Product Grid - All skeletons, no images */}
-                                <div className="grid grid-cols-3 gap-10">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="space-y-4">
-                                            {/* Product image skeleton */}
-                                            <div className="aspect-[4/3] bg-slate-100 rounded-2xl relative overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
+                                {/* Top Banner Preview (LIVE) */}
+                                {config.position !== 'bottom' && (
+                                    <BannerContent isMobileMode={false} />
+                                )}
+
+                                {/* Page Content Skeleton */}
+                                <div className="flex-1 bg-white overflow-y-auto p-10 custom-scrollbar">
+                                    {/* Navigation Skeleton */}
+                                    <div className="flex items-center justify-between mb-12">
+                                        <div className="w-10 h-10 rounded-full bg-slate-900" />
+                                        <div className="flex gap-10">
+                                            <div className="w-16 h-3 rounded-full bg-slate-100" />
+                                            <div className="w-16 h-3 rounded-full bg-slate-100" />
+                                            <div className="w-16 h-3 rounded-full bg-slate-100" />
+                                        </div>
+                                        <div className="w-20 h-8 rounded-full bg-slate-100" />
+                                    </div>
+
+                                    {/* Hero Area - All skeletons, no images */}
+                                    <div className="flex items-center gap-12 mb-16">
+                                        <div className="flex-1 space-y-6">
+                                            <div className="w-24 h-4 rounded-full bg-blue-100" />
+                                            <div className="space-y-3">
+                                                <div className="w-full h-10 rounded-2xl bg-slate-100" />
+                                                <div className="w-3/4 h-10 rounded-2xl bg-slate-100" />
                                             </div>
                                             <div className="space-y-2">
-                                                <div className="h-4 w-2/3 rounded-full bg-slate-100 animate-pulse" />
-                                                <div className="h-4 w-1/3 rounded-full bg-slate-100 animate-pulse" />
+                                                <div className="w-2/3 h-3.5 rounded-full bg-slate-50" />
+                                                <div className="w-1/2 h-3.5 rounded-full bg-slate-50" />
+                                            </div>
+                                            <div className="flex gap-4 pt-2">
+                                                <div className="w-28 h-10 rounded-2xl bg-slate-900" />
+                                                <div className="w-28 h-10 rounded-2xl border border-slate-200" />
                                             </div>
                                         </div>
-                                    ))}
+                                        {/* Hero image replaced with skeleton */}
+                                        <div className="w-[420px] aspect-[4/3] rounded-3xl overflow-hidden bg-slate-100 relative shrink-0">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                                    <div className="w-8 h-8 rounded-lg bg-white/40 animate-pulse" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Product Grid - All skeletons */}
+                                    <div className="grid grid-cols-3 gap-8">
+                                        {[1, 2, 3].map(i => (
+                                            <div key={i} className="space-y-3">
+                                                {/* Product image skeleton */}
+                                                <div className="aspect-[4/3] bg-slate-100 rounded-2xl relative overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-100 animate-pulse" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="h-3.5 w-2/3 rounded-full bg-slate-100 animate-pulse" />
+                                                    <div className="h-3.5 w-1/3 rounded-full bg-slate-100 animate-pulse" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Second row of products */}
+                                    <div className="grid grid-cols-3 gap-8 mt-8">
+                                        {[4, 5, 6].map(i => (
+                                            <div key={i} className="space-y-3 opacity-75">
+                                                <div className="aspect-[4/3] bg-slate-50 rounded-2xl relative overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-50 animate-pulse" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="h-3.5 w-2/3 rounded-full bg-slate-50 animate-pulse" />
+                                                    <div className="h-3.5 w-1/3 rounded-full bg-slate-50 animate-pulse" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {/* Add a second row of products for more realism */}
-                                <div className="grid grid-cols-3 gap-10 mt-10">
-                                    {[4, 5, 6].map(i => (
-                                        <div key={i} className="space-y-4 opacity-75">
-                                            <div className="aspect-[4/3] bg-slate-50 rounded-2xl relative overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-50 animate-pulse" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <div className="h-4 w-2/3 rounded-full bg-slate-50 animate-pulse" />
-                                                <div className="h-4 w-1/3 rounded-full bg-slate-50 animate-pulse" />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                {/* Bottom Banner Preview (LIVE) */}
+                                {config.position === 'bottom' && (
+                                    <BannerContent isMobileMode={false} />
+                                )}
                             </div>
-
-                            {/* Bottom Banner Preview (LIVE) */}
-                            {config.position === 'bottom' && (
-                                <BannerContent isMobileMode={device === 'mobile'} />
-                            )}
-                        </div>
+                        )}
                     </div>
 
-                    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] pointer-events-none opacity-40">
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] pointer-events-none opacity-40">
                         <span className="w-8 h-[2px] bg-slate-300" />
-                        Previewing desktop version at 100% scale
+                        Previewing {device === 'mobile' ? 'mobile' : 'desktop'} version at {device === 'mobile' ? '100%' : '80%'} scale
                         <span className="w-8 h-[2px] bg-slate-300" />
                     </div>
                 </main>
