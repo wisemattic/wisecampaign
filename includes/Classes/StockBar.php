@@ -15,36 +15,39 @@ class StockBar
 
     public function __construct()
     {
-
         // Register REST routes
         add_action('rest_api_init', [$this, 'stockbar_register_rest_routes']);
-        $this->load_on_page();
 
-
+        // Load frontend hooks only when appropriate
+        add_action('wp', [$this, 'load_on_page']);
     }
 
     public function load_on_page()
     {
+        // Don't load on admin or if WooCommerce functions aren't available
+        if (is_admin() || !function_exists('is_product')) {
+            return;
+        }
 
-        $defaultStatus = ['stockBarEnabled' => false];
+        $defaultStatus = ['stockBarEnabled' => true]; // Default to true if not set for testing
         $status = get_option('wc-stockbar-status', $defaultStatus);
-        if ($status['stockBarEnabled'] == false) {
+        if (isset($status['stockBarEnabled']) && $status['stockBarEnabled'] == false) {
             return;
         }
 
         $setting = get_option('wc-stockbar-setting', []);
 
         // Ensure keys exist before accessing
-        $displayOnProductPage = isset($setting['displayOnProductPage']) ? filter_var($setting['displayOnProductPage'], FILTER_VALIDATE_BOOLEAN) : false;
+        $displayOnProductPage = isset($setting['displayOnProductPage']) ? filter_var($setting['displayOnProductPage'], FILTER_VALIDATE_BOOLEAN) : true;
         $displayOnShopPage = isset($setting['displayOnShopPage']) ? filter_var($setting['displayOnShopPage'], FILTER_VALIDATE_BOOLEAN) : false;
 
         // Display stock bar on **Product Page**
-        if ($displayOnProductPage) {
+        if ($displayOnProductPage && is_product()) {
             add_action('woocommerce_before_add_to_cart_button', [$this, 'cspe_custom_content'], 20);
         }
 
         // Display stock bar on **Shop Page**
-        if ($displayOnShopPage) {
+        if ($displayOnShopPage && (is_shop() || is_product_category())) {
             add_action('woocommerce_after_shop_loop_item_title', [$this, 'cspe_custom_content'], 15);
         }
     }
@@ -54,60 +57,114 @@ class StockBar
      */
     public function initialize_stockbar_defaults()
     {
-        $defaults = [
-            'wc-stockbar-1' => [
-                'type' => 'solid',
-                'progressBgColor' => '#d2d2d2',
-                'progressColor' => '#198038',
-                'isActive' => true
+        $default_config = [
+            'linear' => [
+                'progressBarColor' => '#EC4899',
+                'stockBarBg' => '#FFFFFF',
+                'textColor' => '#111827',
+                'borderColor' => '#F1F5F9',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Hurry! Selling fast!",
+                'icon' => "Flame",
+                'subText' => "items left"
             ],
-            'wc-stockbar-2' => [
-                'type' => 'gradient',
-                'progressBgColor' => '#d2d2d2',
-                'progressStartColor' => '#ffc83a',
-                'progressEndColor' => '#fe4070',
-                'isActive' => false
+            'pulse' => [
+                'progressBarColor' => '#EF4444',
+                'stockBarBg' => '#FEF2F2',
+                'textColor' => '#991B1B',
+                'borderColor' => '#FEE2E2',
+                'fontSize' => '13px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Extremely Limited Stock!",
+                'icon' => "AlertCircle",
+                'subText' => "Only 12 items remaining"
+            ],
+            'minimal' => [
+                'progressBarColor' => '#3B82F6',
+                'stockBarBg' => '#F8FAFC',
+                'textColor' => '#1E293B',
+                'borderColor' => '#E2E8F0',
+                'fontSize' => '11px',
+                'fontWeight' => 'Medium',
+                'mainText' => "Popular Product",
+                'icon' => "TrendingUp",
+                'subText' => "Pieces available"
+            ],
+            'countdown' => [
+                'progressBarColor' => '#F59E0B',
+                'stockBarBg' => '#FFFBEB',
+                'textColor' => '#92400E',
+                'borderColor' => '#FEF3C7',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Flash Sale Ends In",
+                'icon' => "Clock",
+                'subText' => "left",
+                'labelPosition' => "top",
+                'timerExpiry' => ""
+            ],
+            'badge' => [
+                'progressBarColor' => '#10B981',
+                'stockBarBg' => '#F0FDF4',
+                'textColor' => '#065F46',
+                'borderColor' => '#DCFCE7',
+                'fontSize' => '12px',
+                'fontWeight' => 'Bold',
+                'mainText' => "Limited Stock",
+                'icon' => "Package",
+                'subText' => "left"
             ]
         ];
 
-        // Log to confirm method execution
-        error_log("Initializing stock bar defaults...");
+        $defaults = [
+            'wc-stockbar-1' => array_merge($default_config, [
+                'id' => 'linear',
+                'name' => 'High Demand Flow',
+                'isActive' => true
+            ]),
+            'wc-stockbar-2' => array_merge($default_config, [
+                'id' => 'pulse',
+                'name' => 'Urgent Alert',
+                'isActive' => false
+            ])
+        ];
 
         // Save each default stock bar design
         foreach ($defaults as $key => $settings) {
             if (get_option($key) === false) {
                 update_option($key, $settings);
-                error_log("Setting default for $key: " . json_encode($settings));
             }
+        }
+
+        if (get_option('activeWiseStockbarId') === false) {
+            update_option('activeWiseStockbarId', 'wc-stockbar-1');
         }
 
         $default_setting = [
             'displayOnShopPage' => false,
-            'displayOnProductPage' => false
+            'displayOnProductPage' => true
         ];
         // Only set default if the option doesn't exist yet
         if (get_option('wc-stockbar-setting') === false) {
             update_option('wc-stockbar-setting', $default_setting);
         }
-
-
     }
 
     function get_status()
     {
-        $defaultStatus = ['stockBarEnabled' => false];
+        $defaultStatus = ['stockBarEnabled' => true];
         $status = get_option('wc-stockbar-status', $defaultStatus);
         return rest_ensure_response($status);
     }
 
     function update_status(WP_REST_Request $request)
     {
-
         if ($request->has_param('stockBarEnabled')) {
             update_option('wc-stockbar-status', ['stockBarEnabled' => rest_sanitize_boolean($request['stockBarEnabled'])]);
         }
 
-        $defaultStatus = ['stockBarEnabled' => false];
+        $defaultStatus = ['stockBarEnabled' => true];
         $status = get_option('wc-stockbar-status', $defaultStatus);
         return rest_ensure_response($status);
     }
@@ -118,58 +175,61 @@ class StockBar
      */
     public function stockbar_register_rest_routes()
     {
+        $namespace = 'wisecampaign/v1';
 
         // Endpoint to get initialized stock bar designs
-        register_rest_route('wise-campaign-plugin/v1', '/stockbar-status', [
+        register_rest_route($namespace, '/stockbar-status', [
             'methods' => 'GET',
             'callback' => [$this, 'get_status'],
+            'permission_callback' => '__return_true'
         ]);
 
-        // Endpoint to get initialized stock bar designs
-        register_rest_route('wise-campaign-plugin/v1', '/stockbar-status', [
+        register_rest_route($namespace, '/stockbar-status', [
             'methods' => 'POST',
             'callback' => [$this, 'update_status'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
-        // Endpoint to get initialized stock bar designs
-        register_rest_route('wise-campaign-plugin/v1', '/stockbars', [
+        register_rest_route($namespace, '/stockbars', [
             'methods' => 'GET',
             'callback' => [$this, 'get_initialized_stockbars'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
         ]);
 
-        // Endpoint to update stock bar design
-        register_rest_route('wise-campaign-plugin/v1', '/stockbars', [
+        register_rest_route($namespace, '/stockbars', [
             'methods' => 'POST',
             'callback' => [$this, 'save_stockbar_design'],
-            // 'permission_callback' => function () {
-            //     return current_user_can('manage_options'); // Restrict access to admins
-            // },
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
-        // Endpoint to update stock bar settings
-        register_rest_route('wise-campaign-plugin/v1', '/stockbars/setting', [
+        register_rest_route($namespace, '/stockbars/setting', [
             'methods' => 'POST',
             'callback' => [$this, 'update_stockbar_setting'],
-            // 'permission_callback' => function () {
-            //     return current_user_can('manage_options'); // Restrict access to admins
-            // },
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
 
-        // Endpoint to update stock bar settings
-        register_rest_route('wise-campaign-plugin/v1', '/stockbars/setting', [
+        register_rest_route($namespace, '/stockbars/setting', [
             'methods' => 'GET',
-            'callback' => [$this, 'get_stockbar_setting']
+            'callback' => [$this, 'get_stockbar_setting'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            },
         ]);
 
-        // Add new endpoint for setting active stock bar
-        register_rest_route('wise-campaign-plugin/v1', '/stockbars/set-active', [
+        register_rest_route($namespace, '/stockbars/set-active', [
             'methods' => 'POST',
             'callback' => [$this, 'set_active_stockbar_endpoint'],
-        ]);
-
-        register_rest_route('wise-campaign-plugin/v1', '/pro-status', [
-            'methods' => 'GET',
-            'callback' => [$this, 'get_pro_status'],
+            'permission_callback' => function () {
+                return current_user_can('manage_options');
+            }
         ]);
     }
 
@@ -188,14 +248,6 @@ class StockBar
         // Update active stock bar
         $this->set_active_stockbar($stockbar_id);
 
-        // Update isActive status for all stock bars
-        $stockbar_ids = ['wc-stockbar-1', 'wc-stockbar-2'];
-        foreach ($stockbar_ids as $id) {
-            $stockbar = get_option($id, []);
-            $stockbar['isActive'] = ($id === $stockbar_id);
-            update_option($id, $stockbar);
-        }
-
         return rest_ensure_response([
             'success' => true,
             'message' => 'Active stock bar updated successfully'
@@ -213,12 +265,15 @@ class StockBar
         ];
 
         $stockbars = [];
+        $active_id = $this->get_active_stockbar();
 
-        // Retrieve each stock bar from the database and add to the array
         foreach ($defaults as $key) {
             $stockbar = get_option($key, []);
-            // Add id to the stock bar settings
-            $stockbar['id'] = $key;
+            if (empty($stockbar))
+                continue;
+
+            $stockbar['db_id'] = $key;
+            $stockbar['isActive'] = ($key === $active_id);
             $stockbars[] = $stockbar;
         }
 
@@ -230,88 +285,57 @@ class StockBar
      */
     public function save_stockbar_design(WP_REST_Request $request)
     {
-        $settings = $request->get_json_params();
-        $design_id = $settings['id'] ?? '';
+        try {
+            $settings = $request->get_json_params();
+            if (!is_array($settings)) {
+                return rest_ensure_response(['success' => false, 'message' => 'Invalid JSON data']);
+            }
 
-        if (!$design_id) {
-            return rest_ensure_response(['success' => false, 'message' => 'ID not specified']);
-        }
+            $design_id = $settings['db_id'] ?? $settings['id'] ?? '';
 
-        $stockbar = get_option($design_id);
-        if (!$stockbar) {
-            return rest_ensure_response(['success' => false, 'message' => 'Stock bar design not found']);
-        }
+            if (!$design_id) {
+                return rest_ensure_response(['success' => false, 'message' => 'ID not specified']);
+            }
 
-        // Common properties
-        $common_properties = [
-            'type' => 'sanitize_text_field',
-            'progressBgColor' => 'sanitize_hex_color',
-            'backgroundColor' => 'sanitize_hex_color',
-            'textColor' => 'sanitize_hex_color',
-            'borderColor' => 'sanitize_hex_color',
-            'isActive' => null
-        ];
+            $stockbar = get_option($design_id, []);
+            if (!is_array($stockbar)) {
+                $stockbar = [];
+            }
 
-        foreach ($common_properties as $prop => $sanitize_callback) {
-            if (isset($settings[$prop])) {
-                if ($sanitize_callback) {
-                    $stockbar[$prop] = $sanitize_callback($settings[$prop]);
-                } else {
-                    $stockbar[$prop] = $settings[$prop];
+            // Update fields from request
+            $fields_to_save = [
+                'id',
+                'progressBarColor',
+                'progressBg',
+                'stockBarBg',
+                'textColor',
+                'borderColor',
+                'fontSize',
+                'fontWeight',
+                'content',
+                'linear',
+                'pulse',
+                'minimal',
+                'countdown',
+                'badge'
+            ];
+
+            foreach ($fields_to_save as $field) {
+                if (isset($settings[$field])) {
+                    $stockbar[$field] = $settings[$field];
                 }
             }
-        }
 
-        // Handle isActive separately
-        if (isset($settings['isActive']) && $settings['isActive']) {
-            $this->set_active_stockbar($design_id);
-        }
+            update_option($design_id, $stockbar);
 
-        // Type-specific properties
-        if ($settings['type'] === 'solid' && isset($settings['progressColor'])) {
-            $stockbar['progressColor'] = sanitize_hex_color($settings['progressColor']);
-        }
-
-        if ($settings['type'] === 'gradient') {
-            if (isset($settings['progressStartColor'])) {
-                $stockbar['progressStartColor'] = sanitize_hex_color($settings['progressStartColor']);
-            }
-            if (isset($settings['progressEndColor'])) {
-                $stockbar['progressEndColor'] = sanitize_hex_color($settings['progressEndColor']);
-            }
-        }
-
-        update_option($design_id, $stockbar);
-        return rest_ensure_response(['success' => true, 'message' => 'Stock bar settings updated successfully']);
-    }
-
-    public function get_pro_status()
-    {
-        // For demonstration, we'll assume the pro version is always active.
-        // In a real scenario, you would check the actual license status.
-        $is_pro_active = false;
-        $has_pro_installed = is_plugin_active('wisecampaign-pro/wisecampaign-pro.php'); // Replace with actual check
-
-        if ($has_pro_installed) {
-            $url = home_url('/wp-json/wise-campaign-plugin/v1/license-status');
-
-            $response = wp_remote_get($url, ['timeout' => 20]);
-
-            if (is_wp_error($response)) {
-                $is_pro_active = false;
+            if (isset($settings['isActive']) && $settings['isActive']) {
+                $this->set_active_stockbar($design_id);
             }
 
-            $data = json_decode(wp_remote_retrieve_body($response), true);
-
-            if (isset($data['status']) && $data['status'] === 'active') {
-                $is_pro_active = true;
-            }
+            return rest_ensure_response(['success' => true, 'message' => 'Stock bar settings updated successfully', 'data' => $stockbar]);
+        } catch (\Throwable $e) {
+            return new \WP_Error('server_error', $e->getMessage(), ['status' => 500]);
         }
-
-
-        return rest_ensure_response([
-            'isProActive' => $is_pro_active
-        ]);
     }
 
     /**
@@ -319,23 +343,30 @@ class StockBar
      */
     public function update_stockbar_setting(WP_REST_Request $request)
     {
-        // Retrieve the current settings
-        $settings = get_option('wc-stockbar-setting', []);
+        try {
+            $settings = get_option('wc-stockbar-setting', []);
+            if (!is_array($settings)) {
+                $settings = [];
+            }
+            $params = $request->get_json_params();
+            if (!is_array($params)) {
+                return rest_ensure_response(['success' => false, 'message' => 'Invalid JSON data']);
+            }
 
-        // Check if the 'displayOnShopPage' is provided in the request and sanitize it
-        if (isset($request['displayOnShopPage'])) {
-            $settings['displayOnShopPage'] = rest_sanitize_boolean($request['displayOnShopPage']);
+            if (isset($params['displayOnShopPage'])) {
+                $settings['displayOnShopPage'] = wp_validate_boolean($params['displayOnShopPage']);
+            }
+
+            if (isset($params['displayOnProductPage'])) {
+                $settings['displayOnProductPage'] = wp_validate_boolean($params['displayOnProductPage']);
+            }
+
+            update_option('wc-stockbar-setting', $settings);
+
+            return rest_ensure_response(['success' => true, 'message' => 'Stock bar display settings updated successfully', 'settings' => $settings]);
+        } catch (\Throwable $e) {
+            return new \WP_Error('server_error', $e->getMessage(), ['status' => 500]);
         }
-
-        // Check if the 'displayOnProductPage' is provided in the request and sanitize it
-        if (isset($request['displayOnProductPage'])) {
-            $settings['displayOnProductPage'] = rest_sanitize_boolean($request['displayOnProductPage']);
-        }
-
-        // Save the updated settings
-        update_option('wc-stockbar-setting', $settings);
-
-        return rest_ensure_response(['success' => true, 'message' => 'Stock bar settings updated successfully']);
     }
 
     public function set_active_stockbar($stockbarId)
@@ -345,85 +376,106 @@ class StockBar
 
     public function get_active_stockbar()
     {
-        return get_option('activeWiseStockbarId', null);
+        return get_option('activeWiseStockbarId', 'wc-stockbar-1');
     }
-
 
     /**
      * Retrieve stock bars setting.
      */
     public function get_stockbar_setting(WP_REST_Request $request)
     {
-        // Retrieve the settings from the database
-        $settings = get_option('wc-stockbar-setting', []);
-
-        // Return the settings as a response
+        $settings = get_option('wc-stockbar-setting', [
+            'displayOnShopPage' => false,
+            'displayOnProductPage' => true
+        ]);
         return rest_ensure_response($settings);
     }
 
     /**
-     * Display stock bar on product page
+     * Display stock bar on storefront
      */
     public function cspe_custom_content()
     {
-
         global $product;
 
-        // Check if stock management is enabled and stock quantity is available
+        if (!$product)
+            return;
+
+        // Check if stock management is enabled
         if ($product->managing_stock() && $product->get_stock_quantity() !== null) {
 
-            $active_stock_bar_id = $this->get_active_stockbar();
-            $stockbar = get_option($active_stock_bar_id, []);
+            $active_id = $this->get_active_stockbar();
+            $config = get_option($active_id, []);
 
-            $total_sold = $product->get_total_sales();
-            $stock_quantity = $product->get_stock_quantity();
+            if (empty($config))
+                return;
 
-            // Enqueue React script globally to avoid issues with conditional loading
+            $total_sold = (int) $product->get_total_sales();
+            $stock_quantity = (int) $product->get_stock_quantity();
+
             $this->enqueue_react_stockbar_script(
-                $stockbar,
+                $config,
                 $total_sold,
                 $stock_quantity
             );
 
             // Output React container
-            echo '<div id="wise-stockbar-container">Hi this is from php</div>';
+            echo '<div id="wise-stock-bar-app" class="wise-stock-bar-storefront"></div>';
         }
     }
 
 
-    public function enqueue_react_stockbar_script(
-        $stockbar,
-        $total_sold,
-        $stock_quantity
-    ) {
-        wp_enqueue_script(
-            'wise-pro-stockbar-script',
-            WISECAMPAIGN_DIR_URL . 'stock-bar-dist/assets/js/index.js',
-            ['wp-element'],
-            '1.0.0',
-            true
-        );
+    public function enqueue_react_stockbar_script($config, $total_sold, $stock_quantity)
+    {
+        $dist_path = WISECAMPAIGN_DIR_PATH . 'modules/wise-stock-bar/dist/';
+        $dist_url = WISECAMPAIGN_DIR_URL . 'modules/wise-stock-bar/dist/';
 
-        wp_enqueue_style('wise-pro-stockbar-react-style', WISECAMPAIGN_DIR_URL . 'stock-bar-dist/assets/css/index.css');
+        $entry_js = '';
+        $entry_css = '';
+
+        // Read manifest to get correct hashed filenames
+        $manifest_path = $dist_path . '.vite/manifest.json';
+        if (file_exists($manifest_path)) {
+            $manifest = json_decode(file_get_contents($manifest_path), true);
+            if (isset($manifest['src/main.jsx'])) {
+                $entry_js = $dist_url . $manifest['src/main.jsx']['file'];
+                if (isset($manifest['src/main.jsx']['css'][0])) {
+                    $entry_css = $dist_url . $manifest['src/main.jsx']['css'][0];
+                }
+            }
+        }
+
+        if (!$entry_js) {
+            // Fallback to dev if manifest not found - though in production we should have it
+            return;
+        }
+
+        wp_enqueue_script('wise-stock-bar-frontend', $entry_js, ['wp-element'], '1.0.0', true);
+        if ($entry_css) {
+            wp_enqueue_style('wise-stock-bar-frontend-style', $entry_css);
+        }
+
+        // Add module type to script
+        add_filter('script_loader_tag', function ($tag, $handle, $src) {
+            if ($handle === 'wise-stock-bar-frontend') {
+                return '<script type="module" src="' . esc_url($src) . '"></script>';
+            }
+            return $tag;
+        }, 10, 3);
 
         wp_localize_script(
-            'wise-pro-stockbar-script',
+            'wise-stock-bar-frontend',
             'wiseStockbarData',
             [
-                'stockbar' => [
-                    'type' => $stockbar['type'] ?? 'solid',
-                    'progressBgColor' => $stockbar['progressBgColor'] ?? '#d2d2d2',
-                    'progressColor' => $stockbar['progressColor'] ?? '#198038',
-                    'progressStartColor' => $stockbar['progressStartColor'] ?? '#ffc83a',
-                    'progressEndColor' => $stockbar['progressEndColor'] ?? '#fe4070',
-                    'backgroundColor' => $stockbar['backgroundColor'] ?? '#ffffff',
-                    'textColor' => $stockbar['textColor'] ?? '#000000',
-                    'borderColor' => $stockbar['borderColor'] ?? '#e5e7eb',
-                    'isActive' => $stockbar['isActive'] ?? false,
+                'isStorefront' => true,
+                'config' => $config,
+                'stockInfo' => [
+                    'totalSold' => $total_sold,
+                    'availableItems' => $stock_quantity,
+                    'totalItems' => $total_sold + $stock_quantity,
+                    'percentage' => ($total_sold + $stock_quantity) > 0 ? ($total_sold / ($total_sold + $stock_quantity)) * 100 : 0
                 ],
-                'progressValue' => ($total_sold / ($total_sold + $stock_quantity)) * 100,
-                'totalSold' => $total_sold,
-                'availableItems' => $stock_quantity
+                'nonce' => wp_create_nonce('wp_rest')
             ]
         );
     }

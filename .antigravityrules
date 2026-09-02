@@ -1,0 +1,74 @@
+# WiseCampaign Premium Design System (WPDS) v2.0
+
+## 💎 Core Philosophy
+Every interface must feel **premium, data-driven, and hyper-modern**. Avoid "default" looks. Use high-contrast typography, subtle glassmorphism, and intentional whitespace to create a luxury SaaS feel.
+
+## 🎨 Design Tokens
+
+### 1. Typography (Inter / System Sans)
+High-impact typography is the foundation of our design.
+- **Font Scale**:
+  - `Nano`: `text-[10px]` (Micro-labels, unit indicators, status dots)
+  - `XS`: `text-[11px]` (Sub-labels, metadata, small badges) - **All caps with 0.05em tracking**
+  - `S`: `text-[13px]` (Secondary text, supporting labels)
+  - `M`: `text-[14px]` (Primary body text, default UI text)
+  - `L`: `text-[16px]` (Headlines, prominent labels)
+  - `XL`: `text-[20px]` (Section headings)
+  - `2XL`: `text-[24px]` (Module titles)
+  - `3XL`: `text-[32px]` (Hero values)
+- **Weights**:
+  - `Normal`: `font-normal` (400)
+  - `Medium`: `font-medium` (500)
+  - `SemiBold`: `font-semibold` (600) - Use for most primary UI elements
+  - `Bold`: `font-bold` (700)
+  - `Black`: `font-black` (900) - Use for branding and high-urgency headlines
+
+### 2. Spacing & Layout Structure
+- **Consistency**: Use 4px increments (Tailwind scale).
+- **Gaps**: `gap-2` (8px), `gap-4` (16px), `gap-6` (24px), `gap-8` (32px).
+- **Sidebars**: Fixed width `W-[380px]`.
+- **Canvas Padding**: `p-10` or `p-12` for preview areas to allow the component to breathe.
+- **Radius Strategy**:
+  - `Small`: `rounded-lg` (8px) - Inner elements
+  - `Standard`: `rounded-xl` (12px) - Buttons, inputs
+  - `Large`: `rounded-2xl` (16px) - Cards, sidebar sections
+  - `XLarge`: `rounded-[24px]` - Main containers, modals
+  - `Full`: `rounded-full` - For pills and toggles
+
+### 3. Color & Surface System
+- **Backgrounds**:
+  - Dashboard: `bg-[#F8FAFC]` (Slate-50)
+  - Layer 1 (Cards): `bg-white`
+  - Layer 2 (Inputs): `bg-slate-50` bordering on `bg-white`
+- **Borders**:
+  - Subtle: `border-slate-100` (Inner line separators)
+  - Default: `border-slate-200` (Main structural borders)
+  - Active: `border-blue-500`
+- **Tones**:
+  - Primary (Heading): `text-[#0F172A]` (Slate-900)
+  - Secondary (Body): `text-[#475569]` (Slate-600)
+  - Muted (Labels): `text-[#94A3B8]` (Slate-400) - **Always use font-black/bold for micro-labels**
+  - Brand: `bg-blue-600` / `text-blue-600`
+  - Warning: `bg-amber-500`
+  - Danger: `bg-rose-500`
+
+## 🛠 Component Standards
+
+### 1. Buttons (Premium Style)
+- **Primary**: `bg-[#0F172A]`, `text-white`, `h-[42px]`, `px-6`, `rounded-xl`, `text-[13px]`, `font-bold`, `hover:bg-slate-800`, `active:scale-95`, `transition-all`.
+- **Secondary**: `bg-white`, `border border-slate-200`, `h-[42px]`, `px-4`, `rounded-xl`, `text-[11px]`, `font-black`, `text-slate-600`, `uppercase`, `tracking-tight`.
+
+### 2. Inputs & Controls
+- **Form Fields**: `h-[44px]`, `bg-white`, `border-slate-200`, `rounded-xl`, `px-4`, `text-[13px]`, `font-semibold`.
+- **Labels**: `text-[10px]`, `font-black`, `text-slate-400`, `uppercase`, `tracking-[0.05em]`, `mb-2`, `pl-1`.
+- **Toggles**: `w-11`, `h-6`, `rounded-full`, `bg-slate-200`, `transition-all`, `active:bg-blue-600`.
+
+### 3. Navigation
+- **Tabs**: `bg-slate-100/80` container, `p-1`, `rounded-xl`.
+- **Tab Item**: `py-2`, `px-4`, `text-[11px]`, `font-black`, `uppercase`, `tracking-wider`. Active: `bg-white`, `text-[#0F172A]`, `shadow-sm`.
+
+## 📱 Preview & Interaction
+- **Mock Browser**: Must include address bar, window controls, and subtle shadows.
+- **Glassmorphism**: Use `backdrop-blur-md` for floating elements or overlay badges.
+- **Micro-animations**: Use `transition-all duration-300` for all hovers and state changes.
+- **Empty States**: Use shimmers and skeletons during load.

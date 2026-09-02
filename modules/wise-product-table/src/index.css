@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Scoped tailwind styles to prevent bleeding into WordPress admin */
+@tailwind components;
+
+#wise-product-table-app {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scoped Reset to replace missing Tailwind Preflight without bleeding */
+:where(#wise-product-table-app) *,
+:where(#wise-product-table-app) *::before,
+:where(#wise-product-table-app) *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+:where(#wise-product-table-app) button,
+:where(#wise-product-table-app) [type='button'],
+:where(#wise-product-table-app) [type='reset'],
+:where(#wise-product-table-app) [type='submit'] {
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+    text-transform: none;
+    -webkit-appearance: button;
+}
+
+:where(#wise-product-table-app) input,
+:where(#wise-product-table-app) select,
+:where(#wise-product-table-app) textarea {
+    font-family: inherit;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
+/* Custom scrollbars */
+#wise-product-table-app ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+#wise-product-table-app ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#wise-product-table-app ::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+#wise-product-table-app ::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+@tailwind utilities;

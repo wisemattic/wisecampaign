@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* NOTE: @tailwind base (Preflight) is intentionally excluded here.
+   It resets global browser styles and bleeds into the theme's design.
+   Only utilities and components are used to avoid CSS conflicts. */
+@tailwind components;
+@tailwind utilities;
+
+#wise-banner-v2-app {
+    --wise-purple: 139, 92, 246;
+    --wise-dark: 30, 27, 75;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: block;
+    width: 100%;
+    clear: both;
+}
+
+/* Scoped Reset to replace missing Tailwind Preflight without bleeding
+   Using :where() to keep specificity low so Tailwind utilities can override these defaults */
+:where(#wise-banner-v2-app) *,
+:where(#wise-banner-v2-app) *::before,
+:where(#wise-banner-v2-app) *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+:where(#wise-banner-v2-app) button,
+:where(#wise-banner-v2-app) [type='button'],
+:where(#wise-banner-v2-app) [type='reset'],
+:where(#wise-banner-v2-app) [type='submit'] {
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+    text-transform: none;
+    -webkit-appearance: button;
+}
+
+:where(#wise-banner-v2-app) input,
+:where(#wise-banner-v2-app) select,
+:where(#wise-banner-v2-app) textarea {
+    font-family: inherit;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
+/* Custom scrollbar scoped to banner widget */
+#wise-banner-v2-app ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+#wise-banner-v2-app ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#wise-banner-v2-app ::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+#wise-banner-v2-app ::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+.shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes bounce-subtle {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-12deg);
+    }
+
+    50% {
+        transform: translateY(-4px) rotate(-12deg);
+    }
+}
+
+.animate-bounce-subtle {
+    animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+/* Button Keyframe Animations */
+@keyframes pulse-subtle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes shake-subtle {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(-3deg) scale(1.02); }
+    30% { transform: rotate(3deg) scale(1.02); }
+    45% { transform: rotate(-2deg); }
+    60% { transform: rotate(2deg); }
+    75% { transform: rotate(0deg); }
+}
+
+@keyframes bounce-btn {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.08); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.08); }
+    70% { transform: scale(1); }
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 16px 4px rgba(245, 158, 11, 0.7);
+    }
+}
+
+.animate-pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-shake-subtle {
+    animation: shake-subtle 3s ease-in-out infinite;
+}
+
+.animate-bounce-btn {
+    animation: bounce-btn 2s ease-in-out infinite;
+}
+
+.animate-heartbeat {
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Background Effects Keyframes */
+@keyframes snow-fall {
+    0% {
+        transform: translateY(-20px) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.9;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(120px) translateX(25px);
+        opacity: 0;
+    }
+}
+
+@keyframes ember-rise {
+    0% {
+        transform: translateY(20px) scale(0.6);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-90px) scale(1.2);
+        opacity: 0;
+    }
+}
+
+@keyframes confetti-drift {
+    0% {
+        transform: translateY(-20px) rotate(0deg) scale(0.8);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(120px) rotate(360deg) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes aurora-sweep {
+    0% {
+        transform: translateX(-100%) skewX(-20deg);
+    }
+    50%, 100% {
+        transform: translateX(250%) skewX(-20deg);
+    }
+}
+
+@keyframes orb-drift {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-12px) scale(1.15);
+    }
+}
+
+.effect-grid-pattern {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px);
+    background-size: 16px 16px;
+}

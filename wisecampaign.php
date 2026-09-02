@@ -1,13 +1,17 @@
 <?php
 
 use WISECAMPAIGN\Classes\SalesNotification;
+
 /*
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           1.1.10
- * Requires at least: 5.4
+ * Version:           1.2.0
+ * Requires at least: 5.8
  * Requires PHP:      7.4
+ * Tested up to:      6.8
+ * WC requires at least: 4.0
+ * WC tested up to:   9.8
  * Author:            Wisemattic
  * Author URI:        https://wisemattic.com/
  * License:           GPL v2 or later
@@ -16,79 +20,149 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Domain Path:       /languages
  */
 
-// Prevent direct access to the script
+// Prevent direct access
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly.
+    exit;
 }
+
+if (!defined('WISECAMPAIGN_VERSION')) {
+    define('WISECAMPAIGN_VERSION', '1.2.0');
+}
+
+
+// Ensure plugin helper functions are available.
+if (!function_exists('is_plugin_active')) {
+    include_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
+if (!function_exists('wisecampaign_is_wc_active')) {
+    /**
+     * Determine whether WooCommerce is active.
+     *
+     * @return bool
+     */
+    function wisecampaign_is_wc_active()
+    {
+        if (class_exists('WooCommerce')) {
+            return true;
+        }
+
+        if (function_exists('is_plugin_active') && is_plugin_active('woocommerce/woocommerce.php')) {
+            return true;
+        }
+
+        if (is_multisite()) {
+            $network_plugins = get_site_option('active_sitewide_plugins', []);
+            if (isset($network_plugins['woocommerce/woocommerce.php'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (!defined('WISECAMPAIGN_HAS_WC')) {
+    define('WISECAMPAIGN_HAS_WC', wisecampaign_is_wc_active());
+}
+
+// if (!WISECAMPAIGN_HAS_WC) {
+//     add_action('admin_notices', 'wisecampaign_render_wc_missing_notice');
+//}
+
+/**
+ * ------------------------------------------------------------------
+ *  WooCommerce Compatibility Declarations for WC 10.3.5+
+ * ------------------------------------------------------------------
+ *  Declares compatibility with:
+ *  - HPOS (custom_order_tables)
+ *  - Cart & Checkout Blocks
+ *  - Product Block Editor
+ */
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+
+        // HPOS compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            __FILE__,
+            true
+        );
+
+        // Cart & Checkout Blocks compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'cart_checkout_blocks',
+            __FILE__,
+            true
+        );
+
+        // Product Blocks compatibility
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'product_block_editor',
+            __FILE__,
+            true
+        );
+    }
+});
+
 
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
-require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
 
+if (WISECAMPAIGN_HAS_WC) {
+    require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/Features/WiseVideoCommerce.php';
+    require_once plugin_dir_path(__FILE__) . 'includes/features/WiseProductTable.php';
+}
 
-// Import classes from the WISECAMPAIGN namespace
+// Import classes
 use WISECAMPAIGN\Classes\Banner;
 use WISECAMPAIGN\Classes\Menu;
 use WISECAMPAIGN\Classes\Register;
 use WISECAMPAIGN\Classes\StockBar;
+use WISECAMPAIGN\Classes\WiseBannerV2;
 
 /**
  * Main class for the WiseCampaign plugin
  */
 class Wisecampaign
 {
-    // Singleton instance
-    private static $instance;
 
-    // Plugin directory path and URL
+    private static $instance;
     private static $plugin_dir_path;
     private static $plugin_dir_url;
 
-    /**
-     * Get the singleton instance of the Wisecampaign class
-     *
-     * @return Wisecampaign
-     */
     public static function get_instance()
     {
         if (!isset(self::$instance)) {
             self::$instance = new self();
             self::$instance->init();
-
         }
         return self::$instance;
     }
 
-    /**
-     * Initialize the plugin
-     */
     private function init()
     {
         $this->include_require_files();
         $this->register_classes();
         $this->register_hooks();
         $this->appsero_init_tracker_wisecampaign();
+
         add_action('plugins_loaded', function () {
-            // Trigger a custom action for other plugins to hook into
             do_action('plugin_a_loaded');
         });
     }
 
     public function appsero_init_tracker_wisecampaign()
     {
-
         $client = new Appsero\Client('78f49ac6-4577-4712-b9b4-2dc7a67a07f2', 'wiseCampaign', __FILE__);
 
         // Active insights
         $client->insights()->init();
-
     }
 
-    /**
-     * Include required files and set directory paths
-     */
     private function include_require_files()
     {
         self::$plugin_dir_path = plugin_dir_path(__FILE__);
@@ -98,32 +172,84 @@ class Wisecampaign
         define('WISECAMPAIGN_DIR_URL', self::$plugin_dir_url);
     }
 
-    /**
-     * Register necessary classes for the plugin
-     */
     private function register_classes()
     {
         Menu::getInstance();
         Register::getInstance();
         Banner::getInstance();
-        StockBar::getInstance();
-        WISECAMPAIGN\Classes\SalesNotification::getInstance();
-        WISECAMPAIGN\Features\WiseCart::getInstance();
+
+        // Initialize Modular System
+        $module_manager = \WISECAMPAIGN\Classes\Modular\ModuleManager::get_instance();
+        $module_manager->register_module('wise-stock-bar', [
+            'name' => 'wiseStockBar',
+            'menu_slug' => 'wise_stock_bar'
+        ]);
+
+        $module_manager->register_module('wise-banner-v2', [
+            'name' => 'wiseBannerV2',
+            'menu_slug' => 'wise_banner_v2'
+        ]);
+
+        $module_manager->register_module('getting-started', [
+            'name' => 'Getting Started',
+            'menu_slug' => 'wisecampaign_getting_started'
+        ]);
+
+        $module_manager->register_module('wise-video-commerce', [
+            'name' => 'WiseVideo Commerce',
+            'menu_slug' => 'wise_video_commerce',
+            'dev_port' => 5174
+        ]);
+
+        $module_manager->register_module('wise-product-table', [
+            'name' => 'Wise Product Table',
+            'menu_slug' => 'wise_product_table',
+            'dev_port' => 5175
+        ]);
+
+        if (WISECAMPAIGN_HAS_WC) {
+            StockBar::getInstance();
+            WISECAMPAIGN\Classes\SalesNotification::getInstance();
+            WISECAMPAIGN\Features\WiseCart::getInstance();
+            \WISECAMPAIGN\Features\WiseProductTable::getInstance();
+        }
+
+        WiseBannerV2::getInstance();
+
+        if (WISECAMPAIGN_HAS_WC) {
+            \WISECAMPAIGN\Features\WiseVideoCommerce::getInstance();
+        }
+    }
+
+    private function register_hooks()
+    {
+        $this->on_activation();
+        // register_activation_hook(__FILE__, [$this, 'on_activation']);
+        register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
+        register_uninstall_hook(__FILE__, ['Wisecampaign', 'uninstall']);
     }
 
     /**
-     * Register hooks for plugin activation and other actions
+     * Runs during plugin activation.
+     *
+     * @return void
      */
-    private function register_hooks()
+    public function on_activation()
     {
-        register_activation_hook(__FILE__, [$this, 'wise_campaign_create_banner_table']);
-        register_deactivation_hook(__FILE__, [$this, 'wise_campaign_deactivate']);
-        register_uninstall_hook(__FILE__, [$this, 'uninstall']);
+        // if (!WISECAMPAIGN_HAS_WC) {
+        //     deactivate_plugins(plugin_basename(__FILE__));
+        //     wp_die(
+        //         esc_html__('wiseCampaign requires WooCommerce to be installed and active before it can be enabled.', 'wisecampaign'),
+        //         esc_html__('Missing dependency', 'wisecampaign'),
+        //         ['back_link' => true]
+        //     );
+        // }
+
+        $this->wise_campaign_create_banner_table();
     }
 
     public static function uninstall()
     {
-
         require_once plugin_dir_path(__FILE__) . 'uninstall.php';
     }
 
@@ -132,17 +258,12 @@ class Wisecampaign
         global $wpdb;
         $table_name = $wpdb->prefix . 'wc_banners';
 
-        $json_file = site_url('wp-content/plugins/wisecampaign/includes/Database/banners.json');
-
+        $json_file = WISECAMPAIGN_DIR_PATH . 'includes/Database/banners.json';
         $banners = [];
-        $json_data = wp_remote_get($json_file);
 
-        if (is_wp_error($json_data)) {
-            $error_message = $json_data->get_error_message();
-            echo "Something went wrong: " . esc_html($error_message);
-        } else {
-            $body = wp_remote_retrieve_body($json_data);
-            $banners = json_decode($body, true);
+        if (file_exists($json_file)) {
+            $body = file_get_contents($json_file);
+            $banners = json_decode($body, true) ?: [];
         }
 
         foreach ($banners as $banner) {
@@ -154,15 +275,15 @@ class Wisecampaign
         }
     }
 
-    /**
-     * Create the banner table in the database on plugin activation
-     */
     public function wise_campaign_create_banner_table()
     {
         Banner::getInstance()->create_banner_table();
+        // if (WISECAMPAIGN_HAS_WC) {
         StockBar::getInstance()->initialize_stockbar_defaults();
+        WiseBannerV2::getInstance()->initialize_defaults();
+        // }
     }
 }
 
-// Initialize the plugin
+// Initialize plugin
 Wisecampaign::get_instance();
