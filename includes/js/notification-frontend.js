@@ -80,7 +80,8 @@
       >
         <img 
           src="${notification.product_image}" 
-          alt="${notification.product_name}"
+          alt="${notification.image_type === 'avatar' ? notification.buyer : notification.product_name}"
+          class="${notification.image_type ? 'is-' + notification.image_type : ''}"
           style="border-radius: ${settings.image_radius}px;" 
         >
         <div class="notification-content">

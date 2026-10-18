@@ -1054,3 +1054,148 @@
         max-width: 100%;
     }
 }
+/* --- Virtual orders: notification image --- */
+.wisecampaign-image-type-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.wisecampaign-image-type-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.wisecampaign-image-type-option:hover {
+    border-color: #cbd5e1;
+}
+.wisecampaign-image-type-option.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+.wisecampaign-image-type-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.wisecampaign-image-type-visual {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.wisecampaign-image-type-visual .dashicons {
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+}
+.wisecampaign-image-type-visual img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .18);
+}
+.wisecampaign-image-type-visual img + img {
+    margin-left: -10px;
+}
+.wisecampaign-image-type-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.wisecampaign-image-type-text strong {
+    font-size: 13px;
+    color: #0f172a;
+}
+.wisecampaign-image-type-text small {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.35;
+}
+
+.wisecampaign-image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.wisecampaign-image-gallery-item,
+.wisecampaign-image-gallery-add {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 10px;
+}
+.wisecampaign-image-gallery-item {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    cursor: grab;
+}
+.wisecampaign-image-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 9px;
+    display: block;
+}
+.wisecampaign-image-gallery-item.ui-sortable-helper {
+    cursor: grabbing;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .2);
+}
+.wisecampaign-image-gallery-remove {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, .4);
+}
+.wisecampaign-image-gallery-add {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 1.5px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+}
+.wisecampaign-image-gallery-add:hover {
+    border-color: #2563eb;
+    color: #2563eb;
+}
+.wisecampaign-image-gallery-add .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Uploaded photos/logos are shown whole rather than cropped. */
+#wisecampaign-notification-preview img.is-custom {
+    object-fit: contain;
+    background: #fff;
+}

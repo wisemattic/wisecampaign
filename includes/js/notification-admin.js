@@ -182,6 +182,8 @@ jQuery(document).ready(function ($) {
         const $virtualLocationsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-locations');
         const $virtualModeField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-mode');
         const $virtualSelectProductsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-select');
+        const $imageTypeField = $('.wisecampaign-field-virtual-image-type');
+        const $customImagesField = $('.wisecampaign-field-virtual-custom-images');
 
         if (source === 'selected_orders') {
             $selectOrdersField.show();
@@ -189,11 +191,15 @@ jQuery(document).ready(function ($) {
             $virtualLocationsField.hide();
             $virtualModeField.hide();
             $virtualSelectProductsField.hide();
+            $imageTypeField.hide();
+            $customImagesField.hide();
         } else if (source === 'virtual_orders') {
             $selectOrdersField.hide();
             $virtualNamesField.show();
             $virtualLocationsField.show();
             $virtualModeField.show();
+            $imageTypeField.show();
+            $customImagesField.toggle(getImageType() === 'product');
 
             if ($('#wisecampaign-virtual-products-mode').val() === 'selected_products') {
                 $virtualSelectProductsField.show();
@@ -206,16 +212,122 @@ jQuery(document).ready(function ($) {
             $virtualLocationsField.hide();
             $virtualModeField.hide();
             $virtualSelectProductsField.hide();
+            $imageTypeField.hide();
+            $customImagesField.hide();
         }
     }
+
+    // --- Virtual orders: notification image (product photo / buyer avatar) ---
+    const avatars = (window.wiseCampaignAdmin && wiseCampaignAdmin.avatars) || [];
+    const $gallery = $('#wisecampaign-virtual-images');
+
+    function getImageType() {
+        return form.find('input[name*="[virtual_image_type]"]:checked').val() || 'product';
+    }
+
+    // Must match SalesNotification::get_avatar_for_name() (djb2 over code points).
+    function avatarForName(name) {
+        if (!avatars.length) return '';
+        let hash = 5381;
+        for (const ch of String(name)) {
+            hash = ((hash * 33) + ch.codePointAt(0)) >>> 0;
+        }
+        return avatars[hash % avatars.length];
+    }
+
+    function updatePreviewImage() {
+        const $img = preview.find('img').first();
+        let src = wiseCampaignAdmin.sample_product_image;
+        let type = 'product';
+
+        if ($('#wisecampaign_order_source_select').val() === 'virtual_orders') {
+            if (getImageType() === 'buyer' && avatars.length) {
+                src = avatarForName(preview.find('.buyer-name').text().trim());
+                type = 'avatar';
+            } else {
+                const $first = $gallery.find('.wisecampaign-image-gallery-item').first();
+                if ($first.length) {
+                    src = $first.data('url');
+                    type = 'custom';
+                }
+            }
+        }
+        if (src) {
+            $img.attr('src', src);
+        }
+        $img.removeClass('is-avatar is-custom is-product').addClass('is-' + type);
+    }
+
+    form.on('change', 'input[name*="[virtual_image_type]"]', function () {
+        form.find('.wisecampaign-image-type-option').removeClass('selected');
+        $(this).closest('.wisecampaign-image-type-option').addClass('selected');
+        toggleOrderSourceFields();
+        updatePreviewImage();
+    });
+
+    function addGalleryImage(attachment) {
+        if ($gallery.find('.wisecampaign-image-gallery-item[data-id="' + attachment.id + '"]').length) {
+            return;
+        }
+        const sizes = attachment.sizes || {};
+        const thumb = (sizes.thumbnail || sizes.medium || sizes.full || { url: attachment.url }).url;
+        const large = (sizes.medium || sizes.full || { url: attachment.url }).url;
+        const $item = $('<div class="wisecampaign-image-gallery-item"></div>').attr({ 'data-id': attachment.id, 'data-url': large });
+        $item.append($('<img alt="">').attr('src', thumb));
+        $item.append($('<button type="button" class="wisecampaign-image-gallery-remove">&times;</button>').attr('aria-label', wiseCampaignAdmin.i18n.remove_image));
+        $item.append($('<input type="hidden">').attr('name', 'wisecampaign_sales_notification_settings[virtual_custom_images][]').val(attachment.id));
+        $item.insertBefore($gallery.find('.wisecampaign-image-gallery-add'));
+    }
+
+    let mediaFrame = null;
+    $('#wisecampaign-add-virtual-images').on('click', function (e) {
+        e.preventDefault();
+        if (!window.wp || !wp.media) return;
+        if (!mediaFrame) {
+            mediaFrame = wp.media({
+                title: wiseCampaignAdmin.i18n.media_title,
+                button: { text: wiseCampaignAdmin.i18n.media_button },
+                library: { type: 'image' },
+                multiple: true
+            });
+            mediaFrame.on('select', function () {
+                mediaFrame.state().get('selection').each(function (model) {
+                    addGalleryImage(model.toJSON());
+                });
+                updatePreviewImage();
+            });
+        }
+        mediaFrame.open();
+    });
+
+    $gallery.on('click', '.wisecampaign-image-gallery-remove', function (e) {
+        e.preventDefault();
+        $(this).closest('.wisecampaign-image-gallery-item').remove();
+        updatePreviewImage();
+    });
+
+    if ($.fn.sortable) {
+        $gallery.sortable({
+            items: '.wisecampaign-image-gallery-item',
+            tolerance: 'pointer',
+            update: updatePreviewImage
+        });
+    }
+
     toggleOrderSourceFields(); // Run on page load
-    $('#wisecampaign_order_source_select, #wisecampaign-virtual-products-mode').on('change', toggleOrderSourceFields);
+    $('#wisecampaign_order_source_select, #wisecampaign-virtual-products-mode').on('change', function () {
+        toggleOrderSourceFields();
+        updatePreviewImage();
+    });
 
     // Live preview update for Virtual Orders inputs
     $('#wisecampaign-virtual-names').on('input', function () {
         const names = $(this).val().split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
         if (names.length > 0) {
             preview.find('.buyer-name').text(names[0]);
+            if (getImageType() === 'buyer') {
+                updatePreviewImage();
+            }
         }
     });
 

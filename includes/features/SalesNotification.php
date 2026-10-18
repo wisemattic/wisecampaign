@@ -118,7 +118,7 @@ class SalesNotification
                     <main class="wisecampaign-admin-preview">
                         <div class="wisecampaign-live-preview-title"><?php _e('Live Preview', 'wisecampaign'); ?></div>
                         <div id="wisecampaign-notification-preview" class="wisecampaign-notification-popup" data-template="<?php echo esc_attr($settings['template'] ?? 'template_1'); ?>">
-                            <img src="<?php echo esc_url($sample_notification['product_image']); ?>" alt="Product">
+                            <img src="<?php echo esc_url($sample_notification['product_image']); ?>" alt="Product" class="<?php echo esc_attr(!empty($sample_notification['image_type']) ? 'is-' . $sample_notification['image_type'] : ''); ?>">
                             <div class="notification-content">
                                 <div class="notification-body">
                                     <span class="buyer-info">
@@ -209,6 +209,8 @@ class SalesNotification
         add_settings_field('sn_virtual_locations', __('', 'wisecampaign'), [$this, 'field_cb_virtual_locations'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Locations', 'wisecampaign')]);
         add_settings_field('sn_virtual_products_mode', __('', 'wisecampaign'), [$this, 'field_cb_virtual_products_mode'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Products to Promote', 'wisecampaign')]);
         add_settings_field('sn_virtual_selected_products', __('', 'wisecampaign'), [$this, 'field_cb_virtual_selected_products'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Select Products', 'wisecampaign')]);
+        add_settings_field('sn_virtual_image_type', __('', 'wisecampaign'), [$this, 'field_cb_virtual_image_type'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Notification Image', 'wisecampaign')]);
+        add_settings_field('sn_virtual_custom_images', __('', 'wisecampaign'), [$this, 'field_cb_virtual_custom_images'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Product Photos / Logos', 'wisecampaign')]);
 
         add_settings_section('wisecampaign_sn_visibility_section', __('Visibility & Timing', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
         add_settings_field('sn_visibility', __('', 'wisecampaign'), [$this, 'field_cb_visibility'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['label_for' => __('Visibility', 'wisecampaign')]);
@@ -656,6 +658,138 @@ class SalesNotification
         <?php
     }
 
+    public function field_cb_virtual_image_type($args)
+    {
+        $value = $this->get_option('virtual_image_type', 'product');
+        $avatars = array_slice($this->get_avatar_urls(), 0, 3);
+        $options = [
+            'product' => [
+                'label' => __('Product Photo', 'wisecampaign'),
+                'desc'  => __('Product images, or your own photos and logos', 'wisecampaign'),
+            ],
+            'buyer' => [
+                'label' => __('Buyer Avatar', 'wisecampaign'),
+                'desc'  => __('Friendly cartoon avatar for each buyer', 'wisecampaign'),
+            ],
+        ];
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-virtual-image-type">
+            <div class="wisecampaign-field-label">
+                <label><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <div class="wisecampaign-image-type-options" role="radiogroup">
+                    <?php foreach ($options as $key => $option) : ?>
+                        <label class="wisecampaign-image-type-option<?php echo $value === $key ? ' selected' : ''; ?>">
+                            <input type="radio" name="<?php echo esc_attr($this->option_name); ?>[virtual_image_type]" value="<?php echo esc_attr($key); ?>" <?php checked($key, $value); ?> />
+                            <span class="wisecampaign-image-type-visual">
+                                <?php if ($key === 'buyer') : ?>
+                                    <?php foreach ($avatars as $avatar) : ?>
+                                        <img src="<?php echo esc_url($avatar); ?>" alt="" />
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <span class="dashicons dashicons-format-image"></span>
+                                <?php endif; ?>
+                            </span>
+                            <span class="wisecampaign-image-type-text">
+                                <strong><?php echo esc_html($option['label']); ?></strong>
+                                <small><?php echo esc_html($option['desc']); ?></small>
+                            </span>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function field_cb_virtual_custom_images($args)
+    {
+        $image_ids = array_filter(array_map('intval', (array) $this->get_option('virtual_custom_images', [])));
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-virtual-custom-images">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-add-virtual-images"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <div class="wisecampaign-image-gallery" id="wisecampaign-virtual-images">
+                    <?php foreach ($image_ids as $image_id) :
+                        $thumb = wp_get_attachment_image_url($image_id, 'thumbnail');
+                        if (!$thumb) {
+                            continue;
+                        }
+                        ?>
+                        <div class="wisecampaign-image-gallery-item" data-id="<?php echo esc_attr($image_id); ?>" data-url="<?php echo esc_url(wp_get_attachment_image_url($image_id, 'medium') ?: $thumb); ?>">
+                            <img src="<?php echo esc_url($thumb); ?>" alt="" />
+                            <button type="button" class="wisecampaign-image-gallery-remove" aria-label="<?php esc_attr_e('Remove image', 'wisecampaign'); ?>">&times;</button>
+                            <input type="hidden" name="<?php echo esc_attr($this->option_name); ?>[virtual_custom_images][]" value="<?php echo esc_attr($image_id); ?>" />
+                        </div>
+                    <?php endforeach; ?>
+                    <button type="button" class="wisecampaign-image-gallery-add" id="wisecampaign-add-virtual-images">
+                        <span class="dashicons dashicons-plus-alt2"></span>
+                        <span><?php esc_html_e('Add Images', 'wisecampaign'); ?></span>
+                    </button>
+                </div>
+                <p class="description"><?php esc_html_e('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to use each product\'s WooCommerce image.', 'wisecampaign'); ?></p>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Bundled cartoon buyer avatars (Open Peeps, CC0).
+     */
+    private function get_avatar_urls()
+    {
+        $files = glob(WISECAMPAIGN_DIR_PATH . 'images/avatars/buyer-*.svg') ?: [];
+        sort($files);
+        return array_map(function ($file) {
+            return WISECAMPAIGN_DIR_URL . 'images/avatars/' . basename($file);
+        }, $files);
+    }
+
+    /**
+     * The same buyer name always gets the same avatar. The admin live preview
+     * (notification-admin.js) uses the same djb2 hash, so keep the two in sync.
+     */
+    private function get_avatar_for_name($name, $avatars)
+    {
+        if (empty($avatars)) {
+            return '';
+        }
+        $hash = 5381;
+        foreach (preg_split('//u', (string) $name, -1, PREG_SPLIT_NO_EMPTY) as $char) {
+            $code = function_exists('mb_ord') ? mb_ord($char, 'UTF-8') : ord($char);
+            $hash = (($hash * 33) + $code) & 0xFFFFFFFF;
+        }
+        return $avatars[$hash % count($avatars)];
+    }
+
+    private function get_custom_image_urls($image_ids)
+    {
+        $urls = [];
+        foreach (array_filter(array_map('intval', (array) $image_ids)) as $image_id) {
+            $url = wp_get_attachment_image_url($image_id, 'medium');
+            if ($url) {
+                $urls[] = $url;
+            }
+        }
+        return $urls;
+    }
+
+    /**
+     * Picks the image for a simulated notification based on the "Notification Image" setting.
+     */
+    private function get_virtual_item_image($index, $buyer, $product_image, $context)
+    {
+        if ($context['type'] === 'buyer' && !empty($context['avatars'])) {
+            return ['url' => $this->get_avatar_for_name($buyer, $context['avatars']), 'type' => 'avatar'];
+        }
+        if (!empty($context['custom'])) {
+            return ['url' => $context['custom'][$index % count($context['custom'])], 'type' => 'custom'];
+        }
+        return ['url' => $product_image, 'type' => 'product'];
+    }
 
     public function admin_enqueue($hook)
     {
@@ -667,12 +801,21 @@ class SalesNotification
         wp_enqueue_style('wisecampaign-notification-admin-css', WISECAMPAIGN_DIR_URL . 'includes/css/notification-admin.css');
         wp_add_inline_style('wisecampaign-notification-admin-css', $this->get_dynamic_admin_css());
         wp_enqueue_script('wp-color-picker');
-        wp_enqueue_script('wisecampaign-notification-admin-js', WISECAMPAIGN_DIR_URL . 'includes/js/notification-admin.js', ['jquery', 'wp-color-picker'], false, true);
+        wp_enqueue_media();
+        wp_enqueue_script('wisecampaign-notification-admin-js', WISECAMPAIGN_DIR_URL . 'includes/js/notification-admin.js', ['jquery', 'wp-color-picker', 'jquery-ui-sortable'], false, true);
+        $sample = $this->get_sample_notification_data();
         wp_localize_script('wisecampaign-notification-admin-js', 'wiseCampaignAdmin', [
             'ajax_url' => admin_url('admin-ajax.php'),
             'toggle_nonce' => wp_create_nonce('wisecampaign_toggle_status_nonce'),
             'save_nonce' => wp_create_nonce('wisecampaign_save_settings_nonce'),
-            'reset_nonce' => wp_create_nonce('wisecampaign_reset_settings_nonce')
+            'reset_nonce' => wp_create_nonce('wisecampaign_reset_settings_nonce'),
+            'avatars' => $this->get_avatar_urls(),
+            'sample_product_image' => $sample['product_photo'] ?? $sample['product_image'],
+            'i18n' => [
+                'media_title' => __('Product Photos / Logos', 'wisecampaign'),
+                'media_button' => __('Use these images', 'wisecampaign'),
+                'remove_image' => __('Remove image', 'wisecampaign'),
+            ],
         ]);
     }
 
@@ -707,6 +850,8 @@ class SalesNotification
             'virtual_locations' => 'textarea',
             'virtual_products_mode' => 'key',
             'virtual_selected_products' => 'array_int',
+            'virtual_image_type' => 'key',
+            'virtual_custom_images' => 'array_int',
             'visibility' => 'key',
             'specific_pages' => 'array_int',
             'loop' => 'bool',
@@ -749,6 +894,14 @@ class SalesNotification
                     break;
             }
         }
+
+        if (!in_array($all_settings['virtual_image_type'] ?? 'product', ['product', 'buyer'], true)) {
+            $all_settings['virtual_image_type'] = 'product';
+        }
+        $all_settings['virtual_custom_images'] = array_values(array_filter(
+            (array) ($all_settings['virtual_custom_images'] ?? []),
+            'wp_attachment_is_image'
+        ));
 
         // PRO feature validation
         if (!$is_pro) {
@@ -947,6 +1100,12 @@ class SalesNotification
             $time_count = count($time_options);
             $total_items = max($name_count, $loc_count, 12);
 
+            $image_context = [
+                'type'    => $settings['virtual_image_type'] ?? 'product',
+                'avatars' => $this->get_avatar_urls(),
+                'custom'  => $this->get_custom_image_urls($settings['virtual_custom_images'] ?? []),
+            ];
+
             if (!empty($products)) {
                 $prod_count = count($products);
                 for ($i = 0; $i < $total_items; $i++) {
@@ -961,11 +1120,15 @@ class SalesNotification
                         $image_url = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
                     }
 
+                    $buyer = $names[$i % $name_count];
+                    $image = $this->get_virtual_item_image($i, $buyer, $image_url, $image_context);
                     $items[] = [
                         'product_name'  => $product->get_name(),
-                        'product_image' => $image_url,
+                        'product_image' => $image['url'],
+                        'product_photo' => $image_url,
+                        'image_type'    => $image['type'],
                         'product_url'   => get_permalink($product->get_id()),
-                        'buyer'         => $names[$i % $name_count],
+                        'buyer'         => $buyer,
                         'time'          => $time_options[$i % $time_count],
                         'location'      => $locations[$i % $loc_count],
                         'is_virtual'    => true,
@@ -983,11 +1146,15 @@ class SalesNotification
                 ];
                 $demo_count = count($demo_items);
                 for ($i = 0; $i < $total_items; $i++) {
+                    $buyer = $names[$i % $name_count];
+                    $image = $this->get_virtual_item_image($i, $buyer, $placeholder, $image_context);
                     $items[] = [
                         'product_name'  => $demo_items[$i % $demo_count],
-                        'product_image' => $placeholder,
+                        'product_image' => $image['url'],
+                        'product_photo' => $placeholder,
+                        'image_type'    => $image['type'],
                         'product_url'   => '#',
-                        'buyer'         => $names[$i % $name_count],
+                        'buyer'         => $buyer,
                         'time'          => $time_options[$i % $time_count],
                         'location'      => $locations[$i % $loc_count],
                         'is_virtual'    => true,
@@ -1067,6 +1234,8 @@ class SalesNotification
             'virtual_locations' => "New York, USA\nLondon, UK\nToronto, Canada\nSydney, Australia\nBerlin, Germany\nParis, France\nLos Angeles, USA\nMadrid, Spain",
             'virtual_products_mode' => 'all_products',
             'virtual_selected_products' => [],
+            'virtual_image_type' => 'product',
+            'virtual_custom_images' => [],
             'visibility' => 'all_pages',
             'specific_pages' => [],
             'loop' => '1',
