@@ -15,7 +15,7 @@ Boost WooCommerce sales with high-converting flash sale banners, countdown timer
 
 == Description ==
 
-Turn your store visitors into buyers with **wiseCampaign**, the all-in-one WooCommerce marketing and conversion booster plugin. Create urgency, run scheduled flash sales, automate dynamic discounts, and reduce cart abandonment—all without writing a single line of code.
+Turn your store visitors into buyers with **wiseCampaign**, the all-in-one WooCommerce marketing and conversion booster plugin. Create urgency, run scheduled flash sales, automate dynamic discounts, and reduce cart abandonment, all without writing a single line of code.
 
 Whether you run Black Friday sales, seasonal promotions, or daily flash deals, wiseCampaign equips your WooCommerce store with battle-tested conversion tools.
 
@@ -57,6 +57,8 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * Targeted display on specific products, shop pages, or sitewide.
 * Template gallery with live previews, including animated Halloween, Black Friday and New Year collections (Pro).
 * Built-in banner analytics: impressions, clicks, click-through rate, coupon copies and dismissals, plus attributed orders and revenue (Pro).
+
+[youtube https://www.youtube.com/watch?v=r0VXORmiFZ0]
 
 ### 2. StockBar – Real-Time Inventory Urgency
 * Visual progress bar displaying remaining stock levels.
