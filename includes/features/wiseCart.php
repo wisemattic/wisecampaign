@@ -19,10 +19,17 @@ class WiseCart
 
     public function __construct()
     {
-        $this->load_options();
         add_action('admin_init', [$this, 'register_admin_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
         add_action('wp_ajax_wisecart_save_settings', [$this, 'ajax_save_settings']);
+
+        // Options use translated labels, so they must load on init (WP 6.7+ warns on earlier translation calls).
+        add_action('init', [$this, 'init_hooks']);
+    }
+
+    public function init_hooks()
+    {
+        $this->load_options();
 
         if ($this->get_option('wc_enable_wisecart') === 'yes') {
             add_action('wp_head', [$this, 'print_dynamic_styles']);
