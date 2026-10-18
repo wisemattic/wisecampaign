@@ -196,6 +196,7 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Fixed: wiseBanner countdown ignored the custom minutes label.
 - Fixed: wiseBanner editor styling for centering, gradients, rings and hover effects.
 - Fixed: Bundled wiseBanner fonts and assets now load correctly from the plugin folder.
+- Fixed: wiseBanner Pro templates could stay locked after activating a license on hosts that let browsers cache REST responses. The editor now always loads fresh settings and license status.
 - Compatibility: Tested with WordPress 7.1 and WooCommerce 11.2.
 
 = v1.2.0 =

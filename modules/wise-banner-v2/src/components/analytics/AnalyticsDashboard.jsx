@@ -139,7 +139,7 @@ const AnalyticsDashboard = ({ apiUrl, nonce, isPro, templates, onUpgrade }) => {
         setIsLoading(true);
         setError('');
         try {
-            const res = await fetch(`${apiUrl}banner-v2/analytics?days=${range}`, { headers });
+            const res = await fetch(`${apiUrl}banner-v2/analytics?days=${range}`, { headers, cache: 'no-store' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             setData(await res.json());
         } catch (err) {

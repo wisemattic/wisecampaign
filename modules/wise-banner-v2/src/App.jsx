@@ -593,7 +593,8 @@ function App() {
         selectedPages: []
     });
 
-    const [isPro, setIsPro] = useState(window.wiseBannerData?.isPro || false);
+    // Storefront gets isPro from wiseBannerData; the admin editor starts from the license state the server checked on page load.
+    const [isPro, setIsPro] = useState(Boolean(window.wiseBannerData?.isPro || window.wiseModuleData?.pro?.isLicenseActive));
     const [availablePages, setAvailablePages] = useState([]);
 
     const [isSaving, setIsSaving] = useState(false);
@@ -734,9 +735,12 @@ function App() {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
             const nonce = window.wiseModuleData?.nonce;
             const headers = nonce ? { 'X-WP-Nonce': nonce } : {};
+            // Some hosts replace WordPress' no-cache headers with "max-age=600", so the
+            // browser would serve stale settings and license status. Always hit the server.
+            const noStore = { headers, cache: 'no-store' };
 
             // Fetch Banner Design
-            const resBanner = await fetch(`${baseUrl}banner-v2`, { headers });
+            const resBanner = await fetch(`${baseUrl}banner-v2`, noStore);
             const bannerData = await resBanner.json();
             if (bannerData && bannerData.id) {
                 setConfig({ ...DEFAULT_CONFIG, ...bannerData });
@@ -744,19 +748,19 @@ function App() {
             }
 
             // Fetch Display Settings
-            const resSettings = await fetch(`${baseUrl}banner-v2/settings`, { headers });
+            const resSettings = await fetch(`${baseUrl}banner-v2/settings`, noStore);
             const settings = await resSettings.json();
             if (settings) {
                 setDisplaySettings(prev => ({ ...prev, ...settings }));
             }
 
             // Fetch License Status
-            const resLicense = await fetch(`${baseUrl}banner-v2/license`, { headers });
+            const resLicense = await fetch(`${baseUrl}banner-v2/license`, noStore);
             const licenseData = await resLicense.json();
             if (licenseData && licenseData.valid) {
                 setIsPro(true);
                 // Fetch Available Pages if Pro
-                const resPages = await fetch(`${baseUrl}banner-v2/pages`, { headers });
+                const resPages = await fetch(`${baseUrl}banner-v2/pages`, noStore);
                 const pagesData = await resPages.json();
                 if (Array.isArray(pagesData)) {
                     setAvailablePages(pagesData);
