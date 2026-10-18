@@ -29,6 +29,12 @@ const GettingStarted = () => {
 
     // Video play state
     const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+    const [videoStart, setVideoStart] = useState(0);
+
+    const playVideo = (start = 0) => {
+        setVideoStart(start);
+        setIsPlayingVideo(true);
+    };
 
     // Default modules config
     const defaultModules = [
@@ -269,7 +275,7 @@ const GettingStarted = () => {
                                         Getting Started Tutorial
                                     </h2>
                                     <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-medium">
-                                        Watch the full walkthrough — 4 min 32 sec
+                                        Watch the full walkthrough — 3 min 32 sec
                                     </p>
                                 </div>
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60">
@@ -282,8 +288,8 @@ const GettingStarted = () => {
                                 {isPlayingVideo ? (
                                     <iframe
                                         className="w-full h-full"
-                                        src="https://www.youtube.com/embed/6iNWZtWO2c4?autoplay=1&list=PLgvLzizk1BA2NZ1M55IOWRMtIZJLntkA6"
-                                        title="How to Create a WordPress Top Bar Banner with Coupon & Countdown Timer (No Coding!)"
+                                        src={`https://www.youtube.com/embed/r0VXORmiFZ0?autoplay=1&rel=0${videoStart ? `&start=${videoStart}` : ''}`}
+                                        title="How to Add a Halloween Top Bar to Your WooCommerce Store | wiseBanner Tutorial"
                                         frameBorder="0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         referrerPolicy="strict-origin-when-cross-origin"
@@ -294,7 +300,7 @@ const GettingStarted = () => {
                                         {/* Play Button */}
                                         <button
                                             type="button"
-                                            onClick={() => setIsPlayingVideo(true)}
+                                            onClick={() => playVideo()}
                                             className="w-13 h-13 sm:w-14 sm:h-14 bg-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all duration-300 group z-10 cursor-pointer"
                                             aria-label="Play tutorial video"
                                         >
@@ -303,16 +309,20 @@ const GettingStarted = () => {
 
                                         {/* Video Title */}
                                         <h3 className="text-white font-bold text-base sm:text-lg mt-3.5 tracking-tight z-10 text-center px-4">
-                                            Transform your store with WiseCampaign
+                                            Create a Halloween top bar with wiseBanner
                                         </h3>
 
                                         {/* Chapter Pills */}
                                         <div className="flex items-center justify-center gap-2 mt-2.5 z-10">
-                                            {["Setup", "Features", "Tips"].map((topic) => (
+                                            {[
+                                                { label: "Install", start: 14 },
+                                                { label: "Templates", start: 68 },
+                                                { label: "Go live", start: 166 }
+                                            ].map(({ label: topic, start }) => (
                                                 <button
                                                     key={topic}
                                                     type="button"
-                                                    onClick={() => setIsPlayingVideo(true)}
+                                                    onClick={() => playVideo(start)}
                                                     className="px-3 py-0.5 text-[11px] font-medium rounded-full bg-white/10 hover:bg-white/20 text-slate-200 border border-white/15 backdrop-blur-sm transition-colors cursor-pointer"
                                                 >
                                                     {topic}
