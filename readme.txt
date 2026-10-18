@@ -2,11 +2,11 @@
 Contributors: wisemattic, mehadi13
 Tags: woocommerce discount, flash sale, countdown timer, sales notification, dynamic pricing
 Requires at least: 5.8
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 WC requires at least: 4.0
-WC tested up to: 9.8
+WC tested up to: 11.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 [youtube https://www.youtube.com/watch?v=crqwrNPTtbA]
 
 = Key Features at a Glance =
-* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, and CTA buttons.
+* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
 * **StockBar (Scarcity Trigger)** – Dynamic stock progress bar on single product pages to create purchase urgency and FOMO.
 * **Direct Checkout** – Skip the cart page and route shoppers directly to checkout to reduce cart drop-offs.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
@@ -55,6 +55,8 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * Built-in urgency countdown timer for limited-time offers.
 * "Click-to-Copy" coupon code functionality with toast feedback.
 * Targeted display on specific products, shop pages, or sitewide.
+* Template gallery with live previews, including animated Halloween, Black Friday and New Year collections (Pro).
+* Built-in banner analytics: impressions, clicks, click-through rate, coupon copies and dismissals, plus attributed orders and revenue (Pro).
 
 ### 2. StockBar – Real-Time Inventory Urgency
 * Visual progress bar displaying remaining stock levels.
@@ -68,6 +70,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 ### 4. Live Sales Notifications – Automated Social Proof
 * Realistic, non-intrusive recent sales alert popups.
 * Highly customizable display timing, positions, and mobile visibility.
+* Simulated orders (Pro) can show product photos, your own uploaded photos and logos, or friendly cartoon buyer avatars.
 
 ### 5. wiseCart – Modern Interactive Mini-Cart
 * Floating side-cart drawer that lets shoppers review items instantly.
@@ -168,6 +171,12 @@ wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic teleme
 
 Appsero SDK *does not gather any data by default* and will not transmit information without your consent. Learn more at [Appsero Privacy Policy](https://appsero.com/privacy-policy/).
 
+wiseBanner analytics are stored only in your own WordPress database as daily totals (impressions, clicks, coupon copies and dismissals per banner template and device type). No IP addresses, personal data or per-visitor records are stored, and nothing is sent to third-party services. When a visitor clicks the banner button, a first-party cookie (`wise_banner_ref`, valid for 7 days) records the banner and the click time so that a resulting WooCommerce order can be attributed to the banner; the cookie is removed once an order is attributed.
+
+= Credits =
+* Buyer avatars: "Open Peeps" by Pablo Stanley, CC0 1.0 (public domain), generated with DiceBear.
+* Fonts bundled with the seasonal banner templates: Luckiest Guy (Apache License 2.0), Anton and Playfair Display (SIL Open Font License 1.1).
+
 ## Join Our Community
 * [Facebook Group](https://www.facebook.com/groups/wisemattic)
 * [YouTube Channel](https://www.youtube.com/@wisemattic/videos)
@@ -175,6 +184,20 @@ Appsero SDK *does not gather any data by default* and will not transmit informat
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v1.3.0 =
+- Added: wiseBanner seasonal template collections (Pro) - Halloween (Haunted Night, Pumpkin Patch, Witching Hour), Black Friday (Gold Rush, Red Alert, Cyber Monday) and New Year (Midnight Fireworks, Golden Countdown, Champagne Toast) with animated scenes, offer badges and countdowns that update their dates every year.
+- Added: wiseBanner template gallery redesign with live previews of every design, category tabs and lazy loading.
+- Added: wiseBanner Analytics dashboard - impressions, unique visitors, clicks, click-through rate, coupon copies and dismissals with a daily trend chart, table view, template comparison and device breakdown. Orders, revenue and conversion funnel in Pro (requires WooCommerce). Privacy-friendly: only daily totals are stored, on your own server.
+- Added: wiseBanner close button so visitors can dismiss the banner for their session.
+- Added: wiseBanner highlighted headline words with their own color, scene picker for seasonal templates, coupon code chip in seasonal templates and a seconds label field.
+- Added: Sales Notification image options for simulated orders (Pro) - product photo, your own uploaded product photos and logos, or cartoon buyer avatars.
+- Added: New Getting Started tutorial video with chapter shortcuts.
+- Fixed: "Translation loading triggered too early" notice from wiseCart when WooCommerce is active, which could break plugin installs and the WooCommerce setup wizard on sites that display debug notices.
+- Fixed: wiseBanner countdown ignored the custom minutes label.
+- Fixed: wiseBanner editor styling for centering, gradients, rings and hover effects.
+- Fixed: Bundled wiseBanner fonts and assets now load correctly from the plugin folder.
+- Compatibility: Tested with WordPress 7.1 and WooCommerce 11.2.
+
 = v1.2.0 =
 - Added: wiseBanner Background Effects (Pro) - 6 dynamic background animations (Snowflakes, Confetti, Fire Embers, Light Sweep/Aurora, Floating Orbs, Dot Matrix) with opacity control.
 - Added: wiseBanner CTA Button Animations (Pro) - 6 attention-grabbing animations (Pulse, Wobble/Shake, Bounce, Heartbeat, Shimmer Glow, Radiant Glow).
@@ -302,3 +325,8 @@ Appsero SDK *does not gather any data by default* and will not transmit informat
 
 = v1.0.0 =
 - Initial release
+
+== Upgrade Notice ==
+
+= 1.3.0 =
+Adds seasonal banner templates, built-in banner analytics, a banner close button and new Sales Notification image options, and fixes a WooCommerce compatibility notice.
