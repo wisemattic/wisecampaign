@@ -704,18 +704,21 @@ function App() {
             }
         }
 
+        // Some themes (e.g. Blockify) ship `body { padding: 0 !important }`, so the offset needs !important too.
+        const setBodyPadding = (side, value) => {
+            if (value) {
+                document.body.style.setProperty(side, value, 'important');
+            } else {
+                document.body.style.removeProperty(side);
+            }
+        };
+
         const updateBodyOffset = () => {
             if (!bannerContainerRef.current) return;
             const height = bannerContainerRef.current.offsetHeight;
 
-            if (isSticky && !isBottom) {
-                document.body.style.paddingTop = `${height}px`;
-            } else if (isSticky && isBottom) {
-                document.body.style.paddingBottom = `${height}px`;
-            } else {
-                document.body.style.paddingTop = '';
-                document.body.style.paddingBottom = '';
-            }
+            setBodyPadding('padding-top', isSticky && !isBottom ? `${height}px` : '');
+            setBodyPadding('padding-bottom', isSticky && isBottom ? `${height}px` : '');
         };
 
         const timer = setTimeout(updateBodyOffset, 50);
@@ -724,8 +727,8 @@ function App() {
         return () => {
             clearTimeout(timer);
             window.removeEventListener('resize', updateBodyOffset);
-            document.body.style.paddingTop = '';
-            document.body.style.paddingBottom = '';
+            setBodyPadding('padding-top', '');
+            setBodyPadding('padding-bottom', '');
         };
     }, [isStorefront, isPro, config.isSticky, config.position, config.isActive, isDismissed]);
 
