@@ -14,6 +14,11 @@ function wise_campaign_plugin_uninstall() {
     // Drop the table
     $wpdb->query( "DROP TABLE IF EXISTS $table_name" );
 
+    // wiseBanner analytics
+    $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wc_banner_stats" );
+    delete_option( 'wisecampaign_banner_stats_db_version' );
+    delete_option( 'wc-wisebanner-v2-analytics' );
+
     error_log("Uninstalling Wise Campaign Plugin...");
     error_log("Dropping table: $table_name");
 }

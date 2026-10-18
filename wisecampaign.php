@@ -119,6 +119,7 @@ if (WISECAMPAIGN_HAS_WC) {
 
 // Import classes
 use WISECAMPAIGN\Classes\Banner;
+use WISECAMPAIGN\Classes\BannerAnalytics;
 use WISECAMPAIGN\Classes\Menu;
 use WISECAMPAIGN\Classes\Register;
 use WISECAMPAIGN\Classes\StockBar;
@@ -215,6 +216,7 @@ class Wisecampaign
         }
 
         WiseBannerV2::getInstance();
+        BannerAnalytics::getInstance();
 
         if (WISECAMPAIGN_HAS_WC) {
             \WISECAMPAIGN\Features\WiseVideoCommerce::getInstance();

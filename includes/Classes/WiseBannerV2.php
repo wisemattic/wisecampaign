@@ -314,7 +314,8 @@ class WiseBannerV2
             wp_localize_script('wise-banner-v2-frontend', 'wiseBannerData', [
                 'isStorefront' => true,
                 'config' => $config,
-                'isPro' => $is_pro_active
+                'isPro' => $is_pro_active,
+                'tracking' => BannerAnalytics::getInstance()->get_storefront_config()
             ]);
         }
     }

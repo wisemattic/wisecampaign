@@ -29,8 +29,163 @@ import {
     Link as LinkIcon,
     Power,
     Crown,
-    Sparkles
+    Sparkles,
+    Check,
+    Lock,
+    BarChart3
 } from 'lucide-react';
+import SeasonalBanner from './templates/seasonal/SeasonalBanner';
+import { SEASONAL_PACKS } from './templates/seasonal/packs';
+import { HalloweenSwatch } from './templates/halloween/HalloweenArt';
+import ScaledPreview from './components/ScaledPreview';
+import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
+import { getTimeLeft, getUpcomingHalloween, getUpcomingBlackFriday, getUpcomingNewYear } from './utils/countdown';
+import { copyText } from './utils/clipboard';
+import { createTracker } from './utils/analytics';
+
+const DEFAULT_CONFIG = {
+    id: 'holiday-gradient',
+    name: 'Holiday Sale Gradient',
+    layout: 'classic',
+    bgType: 'gradient',
+    bgSolid: '#0F172A',
+    bgGradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+    bgImage: '',
+    bgEffect: 'none',
+    bgEffectOpacity: 60,
+    headline: 'Black Friday Mega Sale!',
+    headlineHighlight: '',
+    highlightColor: '#FCD34D',
+
+    headlineSize: '16px',
+    headlineColor: '#FFFFFF',
+    headlineWeight: '900',
+    subHeadline: 'Use code: SAVE50 for 50% off everything',
+    subHeadlineSize: '12px',
+    subHeadlineColor: '#E2E8F0',
+    subHeadlineWeight: '500',
+    showSubHeadline: true,
+    showTimer: true,
+    endDate: '2025-12-31',
+    endTime: '23:59',
+    timerLabel: 'OFFER ENDS IN:',
+    timerTextColor: '#FFFFFF',
+    timerBgColor: 'rgba(255, 255, 255, 0.1)',
+    showCTA: true,
+    ctaText: 'SHOP NOW',
+    ctaUrl: 'https://myshop.com/sale',
+    ctaBg: '#FCD34D',
+    ctaTextColor: '#111827',
+    ctaRadius: '12px',
+    ctaAnimation: 'none',
+    showBogoBadge: false,
+
+    badgeType: 'text',
+    badgeImage: '',
+    badgeTopText: '',
+    bogoText: '50% OFF',
+    badgeBgColor: '#EF4444',
+    badgeTextColor: '#FFFFFF',
+    badgeRotation: '-12deg',
+    badgePosition: 'left',
+    badgeVerticalPosition: 'middle',
+    timerLabelPosition: 'left',
+
+
+    daysLabel: 'D',
+    hoursLabel: 'H',
+    minutesLabel: 'M',
+    secondsLabel: 'S',
+    enableRecursion: false,
+    recurrenceUnit: 'hours',
+    showCouponCode: false,
+    couponCode: 'SAVE10',
+    couponPlacement: 'bottom',
+    scene: '',
+    showClose: false,
+    position: 'top',
+    isSticky: false,
+    hideBranding: false,
+    isActive: true
+};
+
+// Design keys that belong to a layout. They reset to defaults when switching
+// between layouts so e.g. seasonal sizing doesn't leak into a classic template.
+const LAYOUT_STYLE_KEYS = [
+    'headlineSize', 'headlineWeight', 'subHeadlineSize', 'subHeadlineWeight', 'highlightColor',
+    'timerLabel', 'timerLabelPosition', 'timerTextColor', 'timerBgColor',
+    'daysLabel', 'hoursLabel', 'minutesLabel', 'secondsLabel',
+    'ctaRadius', 'ctaAnimation', 'bgEffect', 'bgEffectOpacity',
+    'badgeType', 'badgeTopText', 'badgeRotation', 'badgePosition', 'badgeVerticalPosition',
+    'badgeBgColor', 'badgeTextColor', 'scene', 'hwScene', 'showClose'
+];
+
+const TEMPLATE_CATEGORIES = [
+    { id: 'all', label: 'All Templates' },
+    { id: 'basic', label: 'Basic' },
+    { id: 'halloween', label: 'Halloween', icon: '🎃' },
+    { id: 'blackfriday', label: 'Black Friday', icon: '🛍️' },
+    { id: 'newyear', label: 'New Year', icon: '🎆' }
+];
+
+const NEW_YEAR = getUpcomingNewYear();
+
+// Shared settings for every seasonal (pack-based) template.
+const SEASONAL_BASE = {
+    bgType: 'gradient',
+    headlineSize: '34px',
+    subHeadlineSize: '22px',
+    showSubHeadline: true,
+    showTimer: true,
+    endTime: '23:59',
+    enableRecursion: false,
+    timerLabel: '',
+    daysLabel: 'Days',
+    hoursLabel: 'Hours',
+    minutesLabel: 'Mins',
+    secondsLabel: 'Secs',
+    showCTA: true,
+    ctaRadius: '40px',
+    ctaAnimation: 'glow',
+    showBogoBadge: true,
+    badgeType: 'text',
+    showClose: true
+};
+
+const HALLOWEEN_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'halloween',
+    endDate: getUpcomingHalloween(),
+    badgeBgColor: '#B97A3E',
+    badgeTextColor: '#FFF4D6'
+};
+
+const BLACK_FRIDAY_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'blackfriday',
+    endDate: getUpcomingBlackFriday(),
+    headlineSize: '38px',
+    subHeadlineSize: '20px',
+    daysLabel: 'Days',
+    hoursLabel: 'Hrs',
+    minutesLabel: 'Min',
+    secondsLabel: 'Sec',
+    ctaAnimation: 'shimmer'
+};
+
+const NEW_YEAR_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'newyear',
+    endDate: NEW_YEAR.endDate,
+    headlineSize: '32px',
+    subHeadlineSize: '20px'
+};
+
+const EmojiSwatch = ({ background, emoji }) => (
+    <div className="w-full h-full rounded-lg flex items-center justify-center text-base leading-none" style={{ background }}>
+        {emoji}
+    </div>
+);
 
 const TEMPLATES = [
     {
@@ -143,73 +298,294 @@ const TEMPLATES = [
                 <div className="w-10 h-3 bg-yellow-400 rounded-sm ml-2"></div>
             </div>
         )
+    },
+    {
+        id: 'halloween-haunted-night',
+        name: 'Haunted Night',
+        style: 'Halloween',
+        category: 'halloween',
+        isPro: true,
+        description: 'Moonlit castle, flying bats, a witch-hat pumpkin and a swinging wooden offer sign.',
+        config: {
+            ...HALLOWEEN_BASE,
+            scene: 'castle',
+            bgGradient: 'linear-gradient(90deg, #2A1468 0%, #4321A8 36%, #5230C6 68%, #4C29B8 100%)',
+            subHeadline: 'Halloween Sale is Live 🎃',
+            subHeadlineColor: '#D8CCFF',
+            headline: 'Spooky Savings on',
+            headlineHighlight: 'All Products',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FFD43B',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'FLAT',
+            bogoText: '35% OFF',
+            ctaText: 'Grab the Deal',
+            ctaBg: '#FF8A1F',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <HalloweenSwatch background="linear-gradient(135deg, #2A1468 0%, #5230C6 100%)" />
+    },
+    {
+        id: 'halloween-pumpkin-patch',
+        name: 'Pumpkin Patch',
+        style: 'Halloween',
+        category: 'halloween',
+        isPro: true,
+        description: 'Dark graveyard under a harvest moon with rising embers and a fiery orange call to action.',
+        config: {
+            ...HALLOWEEN_BASE,
+            scene: 'graveyard',
+            bgGradient: 'linear-gradient(90deg, #0E0806 0%, #231009 42%, #3A1708 100%)',
+            subHeadline: 'Trick or Treat Sale 🍬',
+            subHeadlineColor: '#FDBA74',
+            headline: 'Wickedly Good Deals on',
+            headlineHighlight: 'Everything',
+            headlineColor: '#FFF7ED',
+            highlightColor: '#FF9F1C',
+            timerTextColor: '#FFF7ED',
+            badgeTopText: 'UP TO',
+            bogoText: '40% OFF',
+            ctaText: 'Shop the Sale',
+            ctaBg: '#FF6B00',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'embers',
+            bgEffectOpacity: 55
+        },
+        icon: <HalloweenSwatch background="linear-gradient(135deg, #0E0806 0%, #3A1708 100%)" />
+    },
+    {
+        id: 'halloween-witching-hour',
+        name: 'Witching Hour',
+        style: 'Halloween',
+        category: 'halloween',
+        isPro: true,
+        description: 'Spider webs, a bubbling cauldron and toxic-green highlights for a bewitching sale.',
+        config: {
+            ...HALLOWEEN_BASE,
+            scene: 'web',
+            bgGradient: 'linear-gradient(90deg, #03140F 0%, #0A2A22 45%, #0F3A2E 100%)',
+            subHeadline: 'The Witching Hour Has Begun 🕸️',
+            subHeadlineColor: '#BBF7D0',
+            headline: 'Bewitching Deals on',
+            headlineHighlight: 'All Products',
+            headlineColor: '#F0FDF4',
+            highlightColor: '#A3E635',
+            timerTextColor: '#F0FDF4',
+            badgeTopText: 'SAVE',
+            bogoText: '30% OFF',
+            ctaText: 'Claim Offer',
+            ctaBg: '#A3E635',
+            ctaTextColor: '#0A1F14',
+            bgEffect: 'none'
+        },
+        icon: <HalloweenSwatch background="linear-gradient(135deg, #03140F 0%, #0F3A2E 100%)" />
+    },
+    {
+        id: 'blackfriday-gold-rush',
+        name: 'Gold Rush',
+        style: 'Black Friday',
+        category: 'blackfriday',
+        isPro: true,
+        description: 'Black and gold luxury look with shopping bags, a light sweep and a swinging price tag.',
+        config: {
+            ...BLACK_FRIDAY_BASE,
+            scene: 'bags',
+            bgGradient: 'linear-gradient(90deg, #050505 0%, #111111 50%, #1C1606 100%)',
+            subHeadline: 'Our Biggest Sale of the Year',
+            subHeadlineColor: '#D4D4D4',
+            headline: 'Black Friday',
+            headlineHighlight: 'Mega Sale',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FACC15',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'UP TO',
+            bogoText: '70% OFF',
+            badgeBgColor: '#FACC15',
+            badgeTextColor: '#0A0A0A',
+            ctaText: 'Shop Now',
+            ctaBg: '#FACC15',
+            ctaTextColor: '#0A0A0A',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #050505 0%, #3A2F0B 100%)" emoji="🛍️" />
+    },
+    {
+        id: 'blackfriday-red-alert',
+        name: 'Red Alert',
+        style: 'Black Friday',
+        category: 'blackfriday',
+        isPro: true,
+        description: 'Loud red doorbuster banner with a shouting megaphone and spinning light rays.',
+        config: {
+            ...BLACK_FRIDAY_BASE,
+            scene: 'burst',
+            bgGradient: 'linear-gradient(90deg, #7F0A0A 0%, #B91C1C 50%, #DC2626 100%)',
+            subHeadline: 'Doorbuster Deals 🔥',
+            subHeadlineColor: '#FECACA',
+            headline: 'Black Friday',
+            headlineHighlight: 'Starts Now',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FDE047',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '50% OFF',
+            badgeBgColor: '#0A0A0A',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Grab the Deal',
+            ctaBg: '#0A0A0A',
+            ctaTextColor: '#FFFFFF',
+            ctaAnimation: 'pulse',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #7F0A0A 0%, #DC2626 100%)" emoji="📣" />
+    },
+    {
+        id: 'blackfriday-cyber-neon',
+        name: 'Cyber Monday',
+        style: 'Black Friday',
+        category: 'blackfriday',
+        isPro: true,
+        description: 'Neon cyber look with a glowing grid, lightning bolt and a neon price tag.',
+        config: {
+            ...BLACK_FRIDAY_BASE,
+            scene: 'neon',
+            endDate: getUpcomingBlackFriday(3),
+            bgGradient: 'linear-gradient(90deg, #05051A 0%, #0B0B2E 50%, #170A36 100%)',
+            subHeadline: 'Cyber Monday Exclusive 💻',
+            subHeadlineColor: '#A5B4FC',
+            headline: 'Cyber Week',
+            headlineHighlight: 'Deals',
+            headlineColor: '#F5F3FF',
+            highlightColor: '#22D3EE',
+            timerTextColor: '#E0F2FE',
+            badgeTopText: 'FLASH',
+            bogoText: '60% OFF',
+            badgeBgColor: '#0B0B2E',
+            badgeTextColor: '#F0ABFC',
+            ctaText: 'Shop Cyber Deals',
+            ctaBg: '#22D3EE',
+            ctaTextColor: '#05051A',
+            ctaAnimation: 'glow',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #05051A 0%, #3B0764 100%)" emoji="⚡" />
+    },
+    {
+        id: 'newyear-midnight-fireworks',
+        name: 'Midnight Fireworks',
+        style: 'New Year',
+        category: 'newyear',
+        isPro: true,
+        description: 'City skyline at midnight with fireworks bursting, gold accents and a rosette seal.',
+        config: {
+            ...NEW_YEAR_BASE,
+            scene: 'fireworks',
+            bgGradient: 'linear-gradient(90deg, #070B24 0%, #121A4A 50%, #1E1457 100%)',
+            subHeadline: `Happy New Year ${NEW_YEAR.year} ✨`,
+            subHeadlineColor: '#C7D2FE',
+            headline: 'New Year,',
+            headlineHighlight: 'New Deals',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#F5C542',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '40% OFF',
+            badgeBgColor: '#F5C542',
+            badgeTextColor: '#3B2A05',
+            ctaText: 'Shop the Sale',
+            ctaBg: '#F5C542',
+            ctaTextColor: '#1A1405',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #070B24 0%, #1E1457 100%)" emoji="🎆" />
+    },
+    {
+        id: 'newyear-golden-countdown',
+        name: 'Golden Countdown',
+        style: 'New Year',
+        category: 'newyear',
+        isPro: true,
+        description: 'Black and gold midnight clock with falling gold confetti for an elegant countdown.',
+        config: {
+            ...NEW_YEAR_BASE,
+            scene: 'clock',
+            bgGradient: 'linear-gradient(90deg, #0A0A0A 0%, #1A1608 55%, #2A2109 100%)',
+            subHeadline: 'The Countdown Is On ⏳',
+            subHeadlineColor: '#E7D7A5',
+            headline: 'Countdown to',
+            headlineHighlight: String(NEW_YEAR.year),
+            headlineColor: '#FFFFFF',
+            highlightColor: '#E9C46A',
+            timerTextColor: '#F5E6B8',
+            badgeTopText: 'FLAT',
+            bogoText: '30% OFF',
+            badgeBgColor: '#E9C46A',
+            badgeTextColor: '#2A1F05',
+            ctaText: 'Celebrate & Save',
+            ctaBg: '#E9C46A',
+            ctaTextColor: '#1A1405',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #0A0A0A 0%, #2A2109 100%)" emoji="🕛" />
+    },
+    {
+        id: 'newyear-champagne-toast',
+        name: 'Champagne Toast',
+        style: 'New Year',
+        category: 'newyear',
+        isPro: true,
+        description: 'Warm burgundy and champagne tones with a popping bottle, clinking flutes and bubbles.',
+        config: {
+            ...NEW_YEAR_BASE,
+            scene: 'champagne',
+            bgGradient: 'linear-gradient(90deg, #2B0F1C 0%, #4A1730 50%, #5E1F3A 100%)',
+            subHeadline: 'Cheers to the New Year 🥂',
+            subHeadlineColor: '#FBCFE8',
+            headline: 'Pop the Bubbly,',
+            headlineHighlight: 'Save Big',
+            headlineColor: '#FFF7ED',
+            highlightColor: '#F7D9A8',
+            timerTextColor: '#FFF7ED',
+            badgeTopText: 'UP TO',
+            bogoText: '50% OFF',
+            badgeBgColor: '#F7D9A8',
+            badgeTextColor: '#5A1A33',
+            ctaText: 'Toast to Savings',
+            ctaBg: '#F7D9A8',
+            ctaTextColor: '#4A1730',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #2B0F1C 0%, #5E1F3A 100%)" emoji="🥂" />
     }
 ];
 
+const buildTemplateConfig = (current, template) => {
+    const nextLayout = template.config.layout || 'classic';
+    const layoutChanged = (current.layout || 'classic') !== nextLayout;
+    const styleDefaults = layoutChanged
+        ? LAYOUT_STYLE_KEYS.reduce((acc, key) => ({ ...acc, [key]: DEFAULT_CONFIG[key] }), {})
+        : {};
+
+    return {
+        ...current,
+        ...styleDefaults,
+        ...template.config,
+        id: template.id,
+        name: template.name,
+        layout: nextLayout
+    };
+};
+
 function App() {
     const [activeTab, setActiveTab] = useState('design');
+    const [appView, setAppView] = useState('editor');
     const [device, setDevice] = useState('desktop');
     const [showTemplateModal, setShowTemplateModal] = useState(false);
+    const [templateCategory, setTemplateCategory] = useState('all');
     const [selectedTemplateId, setSelectedTemplateId] = useState('holiday-gradient');
 
-    const [config, setConfig] = useState({
-        id: 'holiday-gradient',
-        name: 'Holiday Sale Gradient',
-        bgType: 'gradient',
-        bgSolid: '#0F172A',
-        bgGradient: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-        bgImage: '',
-        bgEffect: 'none',
-        bgEffectOpacity: 60,
-        headline: 'Black Friday Mega Sale!',
-
-        headlineSize: '16px',
-        headlineColor: '#FFFFFF',
-        headlineWeight: '900',
-        subHeadline: 'Use code: SAVE50 for 50% off everything',
-        subHeadlineSize: '12px',
-        subHeadlineColor: '#E2E8F0',
-        subHeadlineWeight: '500',
-        showSubHeadline: true,
-        showTimer: true,
-        endDate: '2025-12-31',
-        endTime: '23:59',
-        timerLabel: 'OFFER ENDS IN:',
-        timerTextColor: '#FFFFFF',
-        timerBgColor: 'rgba(255, 255, 255, 0.1)',
-        showCTA: true,
-        ctaText: 'SHOP NOW',
-        ctaUrl: 'https://myshop.com/sale',
-        ctaBg: '#FCD34D',
-        ctaTextColor: '#111827',
-        ctaRadius: '12px',
-        ctaAnimation: 'none',
-        showBogoBadge: false,
-
-        badgeType: 'text',
-        badgeImage: '',
-        bogoText: '50% OFF',
-        badgeBgColor: '#EF4444',
-        badgeTextColor: '#FFFFFF',
-        badgeRotation: '-12deg',
-        badgePosition: 'left',
-        badgeVerticalPosition: 'middle',
-        timerLabelPosition: 'left',
-
-
-        daysLabel: 'D',
-        hoursLabel: 'H',
-        minutesLabel: 'M',
-        secondsLabel: 'S',
-        enableRecursion: false,
-        recurrenceUnit: 'hours',
-        showCouponCode: false,
-        couponCode: 'SAVE10',
-        couponPlacement: 'bottom',
-        position: 'top',
-        isSticky: false,
-        isActive: true
-    });
+    const [config, setConfig] = useState(DEFAULT_CONFIG);
 
     const [displaySettings, setDisplaySettings] = useState({
         displayOnAllPages: true,
@@ -231,11 +607,64 @@ function App() {
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
 
+    // Visitors can close banners that show a close button; remembered for the browser session.
+    const getDismissKey = (cfg) => `wise-banner-v2-dismissed:${cfg?.id || ''}:${cfg?.endDate || ''}`;
+    const [isDismissed, setIsDismissed] = useState(() => {
+        if (!isStorefront) return false;
+        try {
+            return window.sessionStorage.getItem(getDismissKey(window.wiseBannerData?.config)) === '1';
+        } catch (e) {
+            return false;
+        }
+    });
+
+    // Storefront analytics reporter (no-op in the editor and for excluded users).
+    const track = React.useMemo(
+        () => (isStorefront ? createTracker(window.wiseBannerData?.tracking, window.wiseBannerData?.config?.id) : null),
+        [isStorefront]
+    );
+
+    const handleDismiss = () => {
+        if (track) track('close');
+        try {
+            window.sessionStorage.setItem(getDismissKey(config), '1');
+        } catch (e) {
+            // Storage unavailable (private mode); still hide for this page view.
+        }
+        setIsDismissed(true);
+    };
+
     useEffect(() => {
         if (!config.isActive) {
             setShowDisabledOverlay(true);
         }
     }, [config.isActive]);
+
+    // One impression per page view, plus one unique visitor per browser session.
+    const viewTrackedRef = React.useRef(false);
+    useEffect(() => {
+        if (!track || isLoading || isDismissed || !config.isActive || viewTrackedRef.current) return;
+        viewTrackedRef.current = true;
+        track('view');
+        try {
+            const visitorKey = `wise-banner-v2-visitor:${config.id}`;
+            if (!window.sessionStorage.getItem(visitorKey)) {
+                window.sessionStorage.setItem(visitorKey, '1');
+                track('visitor');
+            }
+        } catch (e) {
+            // Without session storage we can't tell repeat views apart; skip the visitor count.
+        }
+    }, [track, isLoading, isDismissed, config.isActive, config.id]);
+
+    useEffect(() => {
+        if (!showTemplateModal) return undefined;
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') setShowTemplateModal(false);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [showTemplateModal]);
 
     useEffect(() => {
         if (!isStorefront) {
@@ -243,7 +672,7 @@ function App() {
         } else {
             // If storefront, we already have data in window.wiseBannerData.config
             if (window.wiseBannerData?.config) {
-                setConfig(window.wiseBannerData.config);
+                setConfig({ ...DEFAULT_CONFIG, ...window.wiseBannerData.config });
                 setSelectedTemplateId(window.wiseBannerData.config.id || 'holiday-gradient');
             }
             if (window.wiseBannerData?.isPro !== undefined) {
@@ -255,7 +684,7 @@ function App() {
 
     // Dynamically adjust webpage body padding & placement to prevent header overflow
     useEffect(() => {
-        if (!isStorefront) return;
+        if (!isStorefront || isDismissed) return;
 
         const isSticky = isPro && config.isSticky;
         const isBottom = isPro && config.position === 'bottom';
@@ -297,7 +726,7 @@ function App() {
             document.body.style.paddingTop = '';
             document.body.style.paddingBottom = '';
         };
-    }, [isStorefront, isPro, config.isSticky, config.position, config.isActive]);
+    }, [isStorefront, isPro, config.isSticky, config.position, config.isActive, isDismissed]);
 
 
     const fetchSettings = async () => {
@@ -310,7 +739,7 @@ function App() {
             const resBanner = await fetch(`${baseUrl}banner-v2`, { headers });
             const bannerData = await resBanner.json();
             if (bannerData && bannerData.id) {
-                setConfig(bannerData);
+                setConfig({ ...DEFAULT_CONFIG, ...bannerData });
                 setSelectedTemplateId(bannerData.id);
             }
 
@@ -457,45 +886,32 @@ function App() {
     };
 
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
+    const seasonalPack = SEASONAL_PACKS[config.layout] || null;
+    const isSeasonalLayout = !!seasonalPack;
+    const activeSceneId = seasonalPack
+        ? (seasonalPack.scenes[config.scene || config.hwScene] ? (config.scene || config.hwScene) : seasonalPack.defaultScene)
+        : null;
+    const visibleTemplates = templateCategory === 'all'
+        ? TEMPLATES
+        : TEMPLATES.filter(t => (t.category || 'basic') === templateCategory);
+
+    const applyTemplate = (template) => {
+        if (template.isPro && !isPro) {
+            setProModalReason(`The "${template.name}" template is part of wiseCampaign Pro. Upgrade to unlock all seasonal templates.`);
+            setShowProModal(true);
+            return;
+        }
+        setSelectedTemplateId(template.id);
+        setConfig(prev => buildTemplateConfig(prev, template));
+        setShowTemplateModal(false);
+    };
 
 
     const CountdownTimer = ({ endDate, endTime, textColor, bgColor, label, labelPosition = 'left', daysLabel = 'D', hoursLabel = 'H', minutesLabel = 'M', secondsLabel = 'S', enableRecursion = false, recurrenceAmount = 24, recurrenceUnit = 'hours', isMobileMode = false }) => {
         const [timeLeft, setTimeLeft] = useState({ days: '00', hrs: '00', min: '00', sec: '00' });
 
         useEffect(() => {
-            const calculateTime = () => {
-                let target = new Date(`${endDate}T${endTime}:00`);
-                let now = new Date();
-                let diff = target.getTime() - now.getTime();
-
-                // Handle Recurring Mode (Evergreen Loop after fixed end)
-                if (enableRecursion && diff <= 0) {
-                    const amount = parseInt(recurrenceAmount) || 24;
-                    const msPerUnit = recurrenceUnit === 'days' ? 86400000 : (recurrenceUnit === 'hours' ? 3600000 : 60000);
-                    const intervalMs = amount * msPerUnit;
-
-                    // Add intervals until target is in the future
-                    const intervalsPassed = Math.floor(Math.abs(diff) / intervalMs) + 1;
-                    target = new Date(target.getTime() + (intervalsPassed * intervalMs));
-                    diff = target.getTime() - now.getTime();
-                }
-
-                if (diff <= 0) {
-                    return { days: '00', hrs: '00', min: '00', sec: '00' };
-                }
-
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hrs = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const min = Math.floor((diff / (1000 * 60)) % 60);
-                const sec = Math.floor((diff / 1000) % 60);
-
-                return {
-                    days: days.toString().padStart(2, '0'),
-                    hrs: hrs.toString().padStart(2, '0'),
-                    min: min.toString().padStart(2, '0'),
-                    sec: sec.toString().padStart(2, '0')
-                };
-            };
+            const calculateTime = () => getTimeLeft({ endDate, endTime, enableRecursion, recurrenceAmount, recurrenceUnit });
 
             const timer = setInterval(() => {
                 setTimeLeft(calculateTime());
@@ -709,46 +1125,52 @@ function App() {
         return null;
     };
 
-    const BannerContent = ({ isMobileMode = false }) => {
+    // `cfg` renders a specific config (template previews); otherwise the live config is used.
+    const BannerContent = ({ isMobileMode = false, cfg = null, forcePro = false, isPreview = false, onClose = null, onTrack = null }) => {
         const [copied, setCopied] = useState(false);
-        if (isLoading) return null;
+        const c = cfg || config;
+        const pro = forcePro || isPro;
+        if (isLoading && !cfg) return null;
+
+        if (SEASONAL_PACKS[c.layout] && pro) {
+            return (
+                <SeasonalBanner
+                    config={c}
+                    isPro={pro}
+                    isMobileMode={isMobileMode}
+                    isPreview={isPreview}
+                    onClose={onClose}
+                    onTrack={onTrack}
+                    showBranding={!pro || !c.hideBranding}
+                    effectLayer={
+                        <BackgroundEffectLayer
+                            effect={c.bgEffect}
+                            opacity={c.bgEffectOpacity !== undefined ? c.bgEffectOpacity : 60}
+                        />
+                    }
+                />
+            );
+        }
 
         const handleCopyCode = async (e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (isPreview) return;
 
-            const code = config.couponCode;
+            const code = c.couponCode;
 
-            try {
-                // Try modern Clipboard API
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(code);
-                } else {
-                    // Fallback to execCommand('copy')
-                    const textArea = document.createElement("textarea");
-                    textArea.value = code;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-9999px";
-                    textArea.style.top = "0";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    const successful = document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    if (!successful) throw new Error('execCommand failed');
-                }
-
+            if (await copyText(code)) {
+                if (onTrack) onTrack('copy');
                 setCopied(true);
                 setGlobalToast(`Coupon code "${code}" copied to clipboard!`);
                 setTimeout(() => setCopied(false), 2000);
-            } catch (err) {
-                console.error('Failed to copy: ', err);
+            } else {
                 setGlobalToast('Failed to copy code. Please copy it manually.');
             }
         };
 
         const getCouponLayout = () => {
-            switch (config.couponPlacement) {
+            switch (c.couponPlacement) {
                 case 'top': return 'flex-col-reverse';
                 case 'left': return 'flex-row-reverse';
                 case 'right': return 'flex-row';
@@ -763,9 +1185,9 @@ function App() {
             return 'items-center';
         };
 
-        const badgePosition = config.badgePosition || 'left';
+        const badgePosition = c.badgePosition || 'left';
         const isBadgeRight = badgePosition === 'right';
-        const badgeVPos = config.badgeVerticalPosition || 'middle';
+        const badgeVPos = c.badgeVerticalPosition || 'middle';
 
         let vPosClass = 'top-1/2 -translate-y-1/2';
         if (badgeVPos === 'top') {
@@ -788,23 +1210,23 @@ function App() {
                         : 'py-3.5 px-6 sm:px-8 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4'
                 }`}
                 style={{
-                    backgroundColor: config.bgType === 'solid' ? config.bgSolid : undefined,
-                    backgroundImage: config.bgType === 'gradient' ? config.bgGradient : (config.bgType === 'image' ? `url(${config.bgImage})` : undefined),
+                    backgroundColor: c.bgType === 'solid' ? c.bgSolid : undefined,
+                    backgroundImage: c.bgType === 'gradient' ? c.bgGradient : (c.bgType === 'image' ? `url(${c.bgImage})` : undefined),
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                 }}
             >
                 <BackgroundEffectLayer
-                    effect={isPro ? config.bgEffect : 'none'}
-                    opacity={config.bgEffectOpacity !== undefined ? config.bgEffectOpacity : 60}
+                    effect={pro ? c.bgEffect : 'none'}
+                    opacity={c.bgEffectOpacity !== undefined ? c.bgEffectOpacity : 60}
                 />
 
-                {config.showBogoBadge && (
+                {c.showBogoBadge && (
                     <div className={`absolute z-[10000] animate-bounce-subtle pointer-events-none ${badgePositionClass}`}>
                         <div className="relative group">
-                            {config.badgeType === 'image' && config.badgeImage ? (
+                            {c.badgeType === 'image' && c.badgeImage ? (
                                 <img
-                                    src={config.badgeImage}
+                                    src={c.badgeImage}
                                     alt="Badge"
                                     className={`object-contain drop-shadow-xl hover:scale-105 transition-transform ${isMobileMode ? 'w-10' : 'w-14 sm:w-16'}`}
                                 />
@@ -812,7 +1234,7 @@ function App() {
                                 <>
                                     <div
                                         className="absolute inset-0 rounded-full blur-[6px] opacity-40 group-hover:opacity-60 transition-opacity"
-                                        style={{ backgroundColor: config.badgeBgColor }}
+                                        style={{ backgroundColor: c.badgeBgColor }}
                                     />
                                     <div
                                         className={`relative font-black rounded-full border border-white/20 shadow-xl flex items-center justify-center tracking-tighter ${
@@ -821,12 +1243,12 @@ function App() {
                                                 : 'text-[10px] px-2.5 py-1 sm:text-xs sm:px-3.5 sm:py-1.5'
                                         }`}
                                         style={{
-                                            backgroundColor: config.badgeBgColor,
-                                            color: config.badgeTextColor,
-                                            transform: `rotate(${config.badgeRotation || (isBadgeRight ? '12deg' : '-12deg')})`
+                                            backgroundColor: c.badgeBgColor,
+                                            color: c.badgeTextColor,
+                                            transform: `rotate(${c.badgeRotation || (isBadgeRight ? '12deg' : '-12deg')})`
                                         }}
                                     >
-                                        {config.bogoText}
+                                        {c.bogoText}
                                     </div>
                                 </>
                             )}
@@ -834,39 +1256,45 @@ function App() {
                     </div>
                 )}
 
-                <div className={`flex ${config.showBogoBadge && (config.badgePosition || 'left') === 'left' ? (isMobileMode ? 'pl-8' : 'pl-14 sm:pl-20') : ''} ${isMobileMode ? 'flex-col items-center text-center gap-1.5 w-full' : `flex-1 w-full gap-3.5 ${getCouponLayout()} ${getCouponAlign()} ${getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}`}>
+                <div className={`flex ${c.showBogoBadge && (c.badgePosition || 'left') === 'left' ? (isMobileMode ? 'pl-8' : 'pl-14 sm:pl-20') : ''} ${isMobileMode ? 'flex-col items-center text-center gap-1.5 w-full' : `flex-1 w-full gap-3.5 ${getCouponLayout()} ${getCouponAlign()} ${getCouponLayout().includes('row') ? 'md:justify-start' : ''}`}`}>
                     <div className={`flex flex-col ${isMobileMode ? 'text-center w-full px-2' : 'md:text-left md:w-auto w-full'}`}>
 
 
                         <span
                             className={`tracking-tight drop-shadow-sm ${isMobileMode ? 'whitespace-normal leading-snug' : 'whitespace-nowrap'}`}
                             style={{
-                                color: config.headlineColor,
+                                color: c.headlineColor,
                                 fontSize: isMobileMode
                                     ? `clamp(13px, 4vw, 17px)`
-                                    : `clamp(14px, 2.5vw, ${config.headlineSize})`,
-                                fontWeight: config.headlineWeight
+                                    : `clamp(14px, 2.5vw, ${c.headlineSize})`,
+                                fontWeight: c.headlineWeight
                             }}
                         >
-                            {config.headline}
+                            {c.headline}
+                            {c.headlineHighlight && (
+                                <>
+                                    {' '}
+                                    <span style={{ color: c.highlightColor || '#FFD43B' }}>{c.headlineHighlight}</span>
+                                </>
+                            )}
                         </span>
-                        {config.showSubHeadline && (
+                        {c.showSubHeadline && (
                             <span
                                 className={`font-medium tracking-tight mt-0.5 opacity-90 ${isMobileMode ? 'whitespace-normal text-xs leading-tight' : 'whitespace-nowrap'}`}
                                 style={{
-                                    color: config.subHeadlineColor,
+                                    color: c.subHeadlineColor,
                                     fontSize: isMobileMode
                                         ? `clamp(10px, 3vw, 12px)`
-                                        : `clamp(11px, 1.8vw, ${config.subHeadlineSize})`,
-                                    fontWeight: config.subHeadlineWeight
+                                        : `clamp(11px, 1.8vw, ${c.subHeadlineSize})`,
+                                    fontWeight: c.subHeadlineWeight
                                 }}
                             >
-                                {config.subHeadline}
+                                {c.subHeadline}
                             </span>
                         )}
                     </div>
 
-                    {config.showCouponCode && (
+                    {c.showCouponCode && (
                         <div
                             onClick={handleCopyCode}
                             title="Click to copy code"
@@ -885,40 +1313,41 @@ function App() {
                                     isMobileMode ? 'px-2.5 py-0.5' : 'px-3 py-1'
                                 }`}
                                 style={{
-                                    borderColor: copied ? '#22c55e' : `${config.headlineColor}44`,
-                                    backgroundColor: copied ? '#22c55e22' : `${config.headlineColor}11`,
-                                    color: copied ? '#16a34a' : config.headlineColor
+                                    borderColor: copied ? '#22c55e' : `${c.headlineColor}44`,
+                                    backgroundColor: copied ? '#22c55e22' : `${c.headlineColor}11`,
+                                    color: copied ? '#16a34a' : c.headlineColor
                                 }}
                             >
                                 <span className="text-[9px] uppercase font-black tracking-widest opacity-60">CODE:</span>
-                                <span className="text-xs font-black tracking-tight">{config.couponCode}</span>
+                                <span className="text-xs font-black tracking-tight">{c.couponCode}</span>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className={`flex items-center justify-center ${config.showBogoBadge && (config.badgePosition || 'left') === 'right' ? (isMobileMode ? 'pr-8' : 'pr-14 sm:pr-20') : ''} ${isMobileMode ? 'flex-col gap-2 w-full mt-1' : 'flex-wrap gap-4 w-full md:justify-end sm:gap-6 md:gap-8 md:w-auto shrink-0'}`}>
+                <div className={`flex items-center justify-center ${c.showBogoBadge && (c.badgePosition || 'left') === 'right' ? (isMobileMode ? 'pr-8' : 'pr-14 sm:pr-20') : ''} ${isMobileMode ? 'flex-col gap-2 w-full mt-1' : 'flex-wrap gap-4 w-full md:justify-end sm:gap-6 md:gap-8 md:w-auto shrink-0'}`}>
 
-                    {config.showTimer && (
+                    {c.showTimer && (
                         <CountdownTimer
-                            endDate={config.endDate}
-                            endTime={config.endTime}
-                            textColor={config.timerTextColor}
-                            bgColor={config.timerBgColor}
-                            label={config.timerLabel}
-                            labelPosition={config.timerLabelPosition}
-                            daysLabel={config.daysLabel}
-                            hoursLabel={config.hoursLabel}
-                            secondsLabel={config.secondsLabel}
-                            enableRecursion={config.enableRecursion}
-                            recurrenceAmount={config.recurrenceAmount}
-                            recurrenceUnit={config.recurrenceUnit}
+                            endDate={c.endDate}
+                            endTime={c.endTime}
+                            textColor={c.timerTextColor}
+                            bgColor={c.timerBgColor}
+                            label={c.timerLabel}
+                            labelPosition={c.timerLabelPosition}
+                            daysLabel={c.daysLabel}
+                            hoursLabel={c.hoursLabel}
+                            minutesLabel={c.minutesLabel}
+                            secondsLabel={c.secondsLabel}
+                            enableRecursion={c.enableRecursion}
+                            recurrenceAmount={c.recurrenceAmount}
+                            recurrenceUnit={c.recurrenceUnit}
                             isMobileMode={isMobileMode}
                         />
                     )}
 
-                    {config.showCTA && (() => {
-                        const buttonAnim = isPro && config.ctaAnimation ? config.ctaAnimation : 'none';
+                    {c.showCTA && (() => {
+                        const buttonAnim = pro && c.ctaAnimation ? c.ctaAnimation : 'none';
                         let animClass = '';
                         if (buttonAnim === 'pulse') animClass = 'animate-pulse-subtle';
                         else if (buttonAnim === 'shake') animClass = 'animate-shake-subtle';
@@ -929,19 +1358,20 @@ function App() {
 
                         return (
                             <a
-                                href={config.ctaUrl}
+                                href={c.ctaUrl}
+                                onClick={() => onTrack && onTrack('click')}
                                 className={`font-black shadow-xl flex items-center justify-center gap-1.5 group cursor-pointer transition-all hover:brightness-105 active:scale-95 no-underline whitespace-nowrap ${animClass} ${
                                     isMobileMode
                                         ? 'w-full py-2 px-4 text-xs'
                                         : 'px-4 py-2 text-[10px] sm:px-5 sm:py-2 sm:text-xs shrink-0'
                                 }`}
                                 style={{
-                                    backgroundColor: config.ctaBg,
-                                    color: config.ctaTextColor,
-                                    borderRadius: config.ctaRadius
+                                    backgroundColor: c.ctaBg,
+                                    color: c.ctaTextColor,
+                                    borderRadius: c.ctaRadius
                                 }}
                             >
-                                <span>{config.ctaText}</span>
+                                <span>{c.ctaText}</span>
                                 <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                             </a>
                         );
@@ -949,7 +1379,7 @@ function App() {
                 </div>
 
 
-                {(!isPro || !config.hideBranding) && (
+                {(!pro || !c.hideBranding) && (
                     <a
                         href="https://wisemattic.com/wisecampaign"
                         target="_blank"
@@ -959,7 +1389,7 @@ function App() {
                                 ? 'mt-1 self-center'
                                 : 'absolute right-3 bottom-0.5 sm:right-6 sm:bottom-0.5'
                         }`}
-                        style={{ color: config.headlineColor }}
+                        style={{ color: c.headlineColor }}
                     >
                         <span>Made with</span>
                         <span className="font-bold underline">wiseCampaign</span>
@@ -994,6 +1424,8 @@ function App() {
     };
 
     if (isStorefront) {
+        if (isDismissed) return null;
+
         const isSticky = isPro && config.isSticky;
         const isBottom = isPro && config.position === 'bottom';
 
@@ -1015,7 +1447,7 @@ function App() {
 
         return (
             <div ref={bannerContainerRef} className={positionClasses} style={customStyle}>
-                <BannerContent />
+                <BannerContent onClose={handleDismiss} onTrack={track} />
                 {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
             </div>
         );
@@ -1024,9 +1456,9 @@ function App() {
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
-            {/* Pro Upgrade Modal */}
+            {/* Pro Upgrade Modal (above the template modal, which can open it) */}
             {showProModal && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
+                <div className="fixed inset-0 z-[100001] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
                     <div className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in p-8 flex flex-col items-center text-center border border-slate-100">
                         <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center mb-6 shadow-lg shadow-amber-200" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
                             <Crown size={32} />
@@ -1097,45 +1529,153 @@ function App() {
 
             {/* Template Selection Modal */}
             {showTemplateModal && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4">
-                    <div className="bg-white w-full max-w-md rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden scale-in max-h-[90vh] flex flex-col">
-                        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white flex-shrink-0">
-                            <div>
-                                <h2 className="text-xl font-black text-[#0F172A] tracking-tight">Select Template</h2>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.1em] mt-1 opacity-70">Choose a visual style for your banner</p>
+                <div
+                    className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in p-4 sm:p-6"
+                    onClick={() => setShowTemplateModal(false)}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="wise-template-modal-title"
+                        className="bg-white w-full max-w-[1180px] h-[min(880px,92vh)] rounded-2xl shadow-[0_30px_80px_rgba(15,23,42,0.35)] overflow-hidden scale-in flex flex-col"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="px-6 sm:px-8 pt-6 pb-5 flex items-start justify-between gap-6 shrink-0">
+                            <div className="flex items-start gap-3.5">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                    <Layout size={20} />
+                                </div>
+                                <div>
+                                    <h2 id="wise-template-modal-title" className="m-0 p-0 text-xl font-black text-[#0F172A] tracking-tight leading-tight">Choose a Template</h2>
+                                    <p className="m-0 text-xs text-slate-500 font-medium mt-1">
+                                        Live previews of each design. Click a template to apply it, then fine-tune it in the editor.
+                                    </p>
+                                </div>
                             </div>
                             <button
+                                type="button"
+                                aria-label="Close"
                                 onClick={() => setShowTemplateModal(false)}
-                                className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400 flex-shrink-0"
+                                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 flex-shrink-0"
                             >
-                                <X size={18} />
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <div className="p-4 overflow-y-auto">
-                            <div className="flex flex-col gap-4">
-                                {TEMPLATES.map((template) => (
+                        {/* Category Tabs */}
+                        <div className="px-6 sm:px-8 pb-4 border-b border-slate-100 flex items-center gap-2 overflow-x-auto shrink-0">
+                            {TEMPLATE_CATEGORIES.map((category) => {
+                                const count = category.id === 'all'
+                                    ? TEMPLATES.length
+                                    : TEMPLATES.filter(t => (t.category || 'basic') === category.id).length;
+                                const isCurrent = templateCategory === category.id;
+                                return (
                                     <button
-                                        key={template.id}
-                                        onClick={() => {
-                                            setSelectedTemplateId(template.id);
-                                            setConfig(prev => ({ ...prev, ...template.config, id: template.id, name: template.name }));
-                                            setShowTemplateModal(false);
-                                        }}
-                                        className={`group flex flex-col items-start p-2 rounded-md border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
+                                        key={category.id}
+                                        type="button"
+                                        onClick={() => setTemplateCategory(category.id)}
+                                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${isCurrent ? 'bg-[#0F172A] border-[#0F172A] text-white shadow-sm' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}
                                     >
-                                        <div className="w-full aspect-[3/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-1 group-hover:bg-slate-100 transition-colors">
-                                            {template.icon}
-                                        </div>
-                                        <div className="w-full space-y-1">
-                                            <div className="flex items-center justify-between w-full">
-                                                <h3 className="text-xs font-black text-[#0F172A] tracking-tight">{template.name}</h3>
-                                                <span className="text-[8px] text-blue-600 font-black uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded-full">{template.style}</span>
-                                            </div>
-                                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed line-clamp-2">{template.description}</p>
-                                        </div>
+                                        {category.icon && <span className="text-sm leading-none">{category.icon}</span>}
+                                        <span>{category.label}</span>
+                                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full leading-none ${isCurrent ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            {count}
+                                        </span>
                                     </button>
-                                ))}
+                                );
+                            })}
+                        </div>
+
+                        {/* Template List */}
+                        <div className="flex-1 overflow-y-auto bg-slate-50/70 px-6 sm:px-8 py-6 custom-scrollbar">
+                            <div className="grid grid-cols-1 gap-5">
+                                {visibleTemplates.map((template) => {
+                                    const isSelected = selectedTemplateId === template.id;
+                                    const isLocked = template.isPro && !isPro;
+                                    return (
+                                        <div
+                                            key={template.id}
+                                            className={`group relative bg-white rounded-xl border transition-all duration-200 ${isSelected ? 'border-blue-600 ring-4 ring-blue-600/10 shadow-md' : 'border-slate-200 hover:border-slate-300 hover:shadow-lg'}`}
+                                        >
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-label={`Use ${template.name} template`}
+                                                onClick={() => applyTemplate(template)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        applyTemplate(template);
+                                                    }
+                                                }}
+                                                className="block p-3 pb-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-t-xl"
+                                            >
+                                                <div className="rounded-lg overflow-hidden border border-slate-200 bg-white relative">
+                                                    {/* Mini browser chrome */}
+                                                    <div className="h-6 px-3 flex items-center gap-1.5 bg-slate-100 border-b border-slate-200">
+                                                        <span className="w-2 h-2 rounded-full bg-[#FF5F57]" />
+                                                        <span className="w-2 h-2 rounded-full bg-[#FFBD2E]" />
+                                                        <span className="w-2 h-2 rounded-full bg-[#28C840]" />
+                                                        <span className="ml-3 h-3 w-40 max-w-[40%] rounded bg-white border border-slate-200" />
+                                                    </div>
+
+                                                    <ScaledPreview width={1440} lazy>
+                                                        <BannerContent cfg={buildTemplateConfig(config, template)} forcePro isPreview />
+                                                    </ScaledPreview>
+
+                                                    {/* Page skeleton under the banner */}
+                                                    <div className="px-4 py-3 flex items-center gap-3 bg-white">
+                                                        <span className="h-2 w-16 rounded-full bg-slate-100" />
+                                                        <span className="h-2 w-10 rounded-full bg-slate-100" />
+                                                        <span className="h-2 w-12 rounded-full bg-slate-100" />
+                                                        <span className="ml-auto h-2 w-20 rounded-full bg-slate-100" />
+                                                    </div>
+
+                                                    {isLocked && (
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/0 group-hover:bg-slate-900/45 transition-colors">
+                                                            <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black shadow-xl" style={{ backgroundColor: '#F59E0B', color: '#FFFFFF' }}>
+                                                                <Lock size={14} />
+                                                                Unlock with Pro
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <h3 className="m-0 p-0 text-sm font-black text-[#0F172A] tracking-tight">{template.name}</h3>
+                                                        <span className="text-[9px] text-blue-600 font-black uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full">{template.style}</span>
+                                                        {template.isPro && (
+                                                            <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ backgroundColor: '#FEF3C7', color: '#B45309' }}>
+                                                                <Crown size={10} />
+                                                                Pro
+                                                            </span>
+                                                        )}
+                                                        {isSelected && (
+                                                            <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">
+                                                                <Check size={10} strokeWidth={3} />
+                                                                Active
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="m-0 text-xs text-slate-500 font-medium mt-1 truncate">{template.description}</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => applyTemplate(template)}
+                                                    disabled={isSelected}
+                                                    className={`shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 ${isSelected ? 'bg-slate-100 text-slate-400 cursor-default' : (isLocked ? 'shadow-sm hover:brightness-105' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200')}`}
+                                                    style={isLocked && !isSelected ? { backgroundColor: '#F59E0B', color: '#FFFFFF' } : undefined}
+                                                >
+                                                    {isSelected ? <><Check size={14} /> Applied</> : (isLocked ? <><Crown size={14} /> Unlock Pro</> : 'Use Template')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -1157,11 +1697,29 @@ function App() {
                             </div>
                         </div>
                         <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none">Wise Banner Editor</span>
+                        <div className="flex bg-slate-100 p-1 rounded-md" role="tablist" aria-label="wiseBanner views">
+                            {[
+                                { id: 'editor', label: 'Editor', icon: <Layout size={14} /> },
+                                { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={14} /> }
+                            ].map((view) => (
+                                <button
+                                    key={view.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={appView === view.id}
+                                    onClick={() => setAppView(view.id)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold transition-all ${appView === view.id ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    {view.icon}
+                                    {view.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Center: Device Switcher */}
+                {appView === 'editor' && (
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                     <div className="flex bg-slate-100 p-1 rounded-md">
                         <button
@@ -1180,9 +1738,10 @@ function App() {
                         </button>
                     </div>
                 </div>
+                )}
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-6">
+                <div className={`flex items-center gap-6 ${appView === 'editor' ? '' : 'invisible'}`}>
                     <div className="flex items-center gap-3 pr-2">
                         <button
                             onClick={() => handleSave()}
@@ -1196,6 +1755,20 @@ function App() {
                 </div>
             </header>
 
+            {appView === 'analytics' && (
+                <AnalyticsDashboard
+                    apiUrl={window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/'}
+                    nonce={window.wiseModuleData?.nonce}
+                    isPro={isPro}
+                    templates={TEMPLATES}
+                    onUpgrade={(reason) => {
+                        setProModalReason(reason);
+                        setShowProModal(true);
+                    }}
+                />
+            )}
+
+            {appView === 'editor' && (
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
                 <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto relative">
@@ -1275,6 +1848,17 @@ function App() {
                                                     value={config.headline}
                                                     onChange={(e) => setConfig(prev => ({ ...prev, headline: e.target.value }))}
                                                     className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Highlighted Words (Optional)</label>
+                                                <input
+                                                    type="text"
+                                                    value={config.headlineHighlight || ''}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, headlineHighlight: e.target.value }))}
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                    placeholder="Shown after the headline in the highlight color"
                                                 />
                                             </div>
 
@@ -1418,6 +2002,7 @@ function App() {
                                                         </div>
                                                     )}
                                                 </div>
+                                                {!isSeasonalLayout && (<>
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Text (Optional)</label>
                                                     <input
@@ -1441,6 +2026,7 @@ function App() {
                                                         ))}
                                                     </div>
                                                 </div>
+                                                </>)}
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Unit Labels</label>
                                                     <div className="flex gap-2">
@@ -1452,7 +2038,7 @@ function App() {
                                                                 onChange={(e) => setConfig(prev => ({ ...prev, daysLabel: e.target.value }))}
                                                                 className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
                                                                 placeholder="D"
-                                                                maxLength={3}
+                                                                maxLength={8}
                                                             />
                                                         </div>
                                                         <div className="space-y-1 flex-1">
@@ -1463,7 +2049,7 @@ function App() {
                                                                 onChange={(e) => setConfig(prev => ({ ...prev, hoursLabel: e.target.value }))}
                                                                 className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
                                                                 placeholder="H"
-                                                                maxLength={3}
+                                                                maxLength={8}
                                                             />
                                                         </div>
                                                         <div className="space-y-1 flex-1">
@@ -1474,7 +2060,18 @@ function App() {
                                                                 onChange={(e) => setConfig(prev => ({ ...prev, minutesLabel: e.target.value }))}
                                                                 className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
                                                                 placeholder="M"
-                                                                maxLength={3}
+                                                                maxLength={8}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1 flex-1">
+                                                            <span className="text-[9px] font-bold text-slate-400 ml-1">Secs</span>
+                                                            <input
+                                                                type="text"
+                                                                value={config.secondsLabel}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, secondsLabel: e.target.value }))}
+                                                                className="w-full bg-white border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                                placeholder="S"
+                                                                maxLength={8}
                                                             />
                                                         </div>
                                                     </div>
@@ -1552,6 +2149,18 @@ function App() {
                                                     </button>
                                                 </div>
 
+                                                {config.badgeType === 'text' && isSeasonalLayout && (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Top Line</label>
+                                                        <input
+                                                            type="text"
+                                                            value={config.badgeTopText || ''}
+                                                            onChange={(e) => setConfig(prev => ({ ...prev, badgeTopText: e.target.value }))}
+                                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-red-500 transition-all shadow-sm"
+                                                            placeholder="e.g. FLAT"
+                                                        />
+                                                    </div>
+                                                )}
                                                 {config.badgeType === 'text' ? (
                                                     <div className="space-y-2">
                                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Badge Text</label>
@@ -1587,6 +2196,7 @@ function App() {
                                                         </div>
                                                     </div>
                                                 )}
+                                                {!isSeasonalLayout && (<>
                                                 {/* Badge Horizontal Position */}
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Horizontal Position</label>
@@ -1627,6 +2237,7 @@ function App() {
                                                         ))}
                                                     </div>
                                                 </div>
+                                                </>)}
                                             </div>
                                         )}
                                         <div className="h-[1px] bg-slate-50" />
@@ -1679,6 +2290,25 @@ function App() {
 
                             {activeTab === 'design' && (
                                 <div className="space-y-4 animate-fade-in">
+                                    {isSeasonalLayout && (
+                                        <section className="space-y-2">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">{seasonalPack.label} Scene</h3>
+                                            <div className="grid grid-cols-3 gap-1.5">
+                                                {Object.entries(seasonalPack.scenes).map(([sceneId, scene]) => (
+                                                    <button
+                                                        key={sceneId}
+                                                        type="button"
+                                                        onClick={() => setConfig(prev => ({ ...prev, scene: sceneId }))}
+                                                        className={`flex flex-col items-center gap-1 py-2.5 px-1 text-[11px] font-bold rounded-lg border transition-all ${activeSceneId === sceneId ? 'border-blue-600 bg-blue-50/50 text-blue-600 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 text-slate-600'}`}
+                                                    >
+                                                        <span className="text-lg leading-none">{scene.icon}</span>
+                                                        <span className="truncate max-w-full">{scene.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="h-[1px] bg-slate-50" />
+                                        </section>
+                                    )}
                                     {/* Background Styling */}
                                     <section className="space-y-2">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Background Styling</h3>
@@ -1901,6 +2531,33 @@ function App() {
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* Highlight Color */}
+                                                {config.headlineHighlight && (
+                                                    <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md hover:border-slate-300 transition-colors group">
+                                                        <span className="text-xs font-bold text-slate-600">Highlight Color</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <input
+                                                                type="text"
+                                                                value={config.highlightColor}
+                                                                onChange={(e) => setConfig(prev => ({ ...prev, highlightColor: e.target.value }))}
+                                                                className="text-[10px] font-mono text-slate-400 bg-transparent border-none w-14 outline-none p-0 focus:text-slate-900"
+                                                            />
+                                                            <div className="relative group/color cursor-pointer">
+                                                                <div
+                                                                    className="w-6 h-6 rounded-md border border-slate-200 shadow-sm"
+                                                                    style={{ backgroundColor: config.highlightColor }}
+                                                                />
+                                                                <input
+                                                                    type="color"
+                                                                    value={config.highlightColor}
+                                                                    onChange={(e) => setConfig(prev => ({ ...prev, highlightColor: e.target.value }))}
+                                                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
 
@@ -2045,7 +2702,7 @@ function App() {
                                                         <input
                                                             type="range"
                                                             min="0"
-                                                            max="24"
+                                                            max="40"
                                                             value={parseInt(config.ctaRadius)}
                                                             onChange={(e) => setConfig(prev => ({ ...prev, ctaRadius: `${e.target.value}px` }))}
                                                             className="w-32 accent-blue-600"
@@ -2329,6 +2986,23 @@ function App() {
                                         </div>
                                     </div>
 
+                                    {isSeasonalLayout && (
+                                        <div
+                                            onClick={() => setConfig(prev => ({ ...prev, showClose: prev.showClose === false }))}
+                                            className="flex items-center justify-between p-3.5 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm"
+                                        >
+                                            <div className="flex flex-col pr-2">
+                                                <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">Close Button</span>
+                                                <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                    Let visitors dismiss the banner for their session
+                                                </span>
+                                            </div>
+                                            <div className={`w-10 h-5 rounded-full transition-all relative shrink-0 ${config.showClose !== false ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}>
+                                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showClose !== false ? 'right-1' : 'left-1'}`} />
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="space-y-3 pt-6 border-t border-slate-100">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Branding Settings</h3>
                                         <div
@@ -2598,6 +3272,7 @@ function App() {
                     </div>
                 </main>
             </div >
+            )}
 
             <style jsx>{`
                 @keyframes fadeIn {
