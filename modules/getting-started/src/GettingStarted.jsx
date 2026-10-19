@@ -24,7 +24,7 @@ import {
 
 const GettingStarted = () => {
     const isPro = window.wiseModuleData?.pro?.isLicenseActive || false;
-    const version = window.wiseModuleData?.version || "1.3.0";
+    const version = window.wiseModuleData?.version || "1.3.1";
 
 
     // Video play state

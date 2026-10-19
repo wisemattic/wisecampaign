@@ -4,7 +4,7 @@ Tags: woocommerce discount, flash sale, countdown timer, sales notification, dyn
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 WC requires at least: 4.0
 WC tested up to: 11.2
 License: GPLv2 or later
@@ -186,6 +186,13 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v1.3.1 =
+- Added: Sales Notification now works without WooCommerce. Sites without a store can show simulated purchase notifications (Pro) with their own buyer names, locations and products.
+- Added: Sales Notification "Custom Products" option - type in the products or services to promote, one per line, with an optional link (for example "Pro Plan | https://example.com/pricing"). Works with or without WooCommerce.
+- Improved: Simulated notifications for products without a photo now show the buyer's avatar instead of a placeholder image.
+- Fixed: Critical error on sites with WooCommerce active on Linux servers, caused by a wrong letter case in a file path.
+- Fixed: Sales Notification popups now escape buyer names, product names and locations before showing them.
+
 = v1.3.0 =
 - Added: wiseBanner seasonal template collections (Pro) - Halloween (Haunted Night, Pumpkin Patch, Witching Hour), Black Friday (Gold Rush, Red Alert, Cyber Monday) and New Year (Midnight Fireworks, Golden Countdown, Champagne Toast) with animated scenes, offer badges and countdowns that update their dates every year.
 - Added: wiseBanner template gallery redesign with live previews of every design, category tabs and lazy loading.
@@ -331,6 +338,9 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Initial release
 
 == Upgrade Notice ==
+
+= 1.3.1 =
+Fixes a critical error on sites running WooCommerce on Linux servers, and lets Sales Notification run without WooCommerce using your own products. Update recommended.
 
 = 1.3.0 =
 Adds seasonal banner templates, built-in banner analytics, a banner close button and new Sales Notification image options, and fixes a WooCommerce compatibility notice.
