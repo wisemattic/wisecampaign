@@ -105,15 +105,14 @@ class Menu
             'wisecampaign_direct_checkout_settings_page'
         );
 
-        $sales_callback = (defined('WISECAMPAIGN_HAS_WC') && WISECAMPAIGN_HAS_WC)
-            ? [SalesNotification::getInstance(), 'render_admin_page']
-            : '__return_null';
-        $this->add_wc_dependent_submenu(
+        // Works without WooCommerce too: it then shows simulated orders only.
+        add_submenu_page(
             'wisecampaign_getting_started',
             __('Sales Notification', 'wisecampaign'),
             __('Sales Notification', 'wisecampaign'),
+            'manage_options',
             'wisecampaign_notification',
-            $sales_callback
+            [SalesNotification::getInstance(), 'render_admin_page']
         );
 
         $this->add_wc_dependent_submenu(

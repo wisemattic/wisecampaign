@@ -109,11 +109,14 @@ add_action('before_woocommerce_init', function () {
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
+// Sales Notification also runs without WooCommerce, using simulated orders.
+require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+
 if (WISECAMPAIGN_HAS_WC) {
     require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
-    require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
     require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
-    require_once plugin_dir_path(__FILE__) . 'includes/Features/WiseVideoCommerce.php';
+    // Lowercase "features": the folder name is case-sensitive on Linux servers.
+    require_once plugin_dir_path(__FILE__) . 'includes/features/WiseVideoCommerce.php';
     require_once plugin_dir_path(__FILE__) . 'includes/features/WiseProductTable.php';
 }
 
@@ -208,9 +211,10 @@ class Wisecampaign
             'dev_port' => 5175
         ]);
 
+        WISECAMPAIGN\Classes\SalesNotification::getInstance();
+
         if (WISECAMPAIGN_HAS_WC) {
             StockBar::getInstance();
-            WISECAMPAIGN\Classes\SalesNotification::getInstance();
             WISECAMPAIGN\Features\WiseCart::getInstance();
             \WISECAMPAIGN\Features\WiseProductTable::getInstance();
         }

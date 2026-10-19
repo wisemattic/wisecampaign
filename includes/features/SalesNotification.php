@@ -208,6 +208,7 @@ class SalesNotification
         add_settings_field('sn_virtual_names', __('', 'wisecampaign'), [$this, 'field_cb_virtual_names'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Buyer Names', 'wisecampaign')]);
         add_settings_field('sn_virtual_locations', __('', 'wisecampaign'), [$this, 'field_cb_virtual_locations'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Locations', 'wisecampaign')]);
         add_settings_field('sn_virtual_products_mode', __('', 'wisecampaign'), [$this, 'field_cb_virtual_products_mode'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Products to Promote', 'wisecampaign')]);
+        add_settings_field('sn_virtual_custom_products', __('', 'wisecampaign'), [$this, 'field_cb_virtual_custom_products'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Products', 'wisecampaign')]);
         add_settings_field('sn_virtual_selected_products', __('', 'wisecampaign'), [$this, 'field_cb_virtual_selected_products'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Select Products', 'wisecampaign')]);
         add_settings_field('sn_virtual_image_type', __('', 'wisecampaign'), [$this, 'field_cb_virtual_image_type'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Notification Image', 'wisecampaign')]);
         add_settings_field('sn_virtual_custom_images', __('', 'wisecampaign'), [$this, 'field_cb_virtual_custom_images'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Product Photos / Logos', 'wisecampaign')]);
@@ -226,6 +227,55 @@ class SalesNotification
             return \WISECAMPAIGNPRO\Classes\ProPluginLicense::getInstance()->is_activated();
         }
         return false;
+    }
+
+    private function has_wc()
+    {
+        return defined('WISECAMPAIGN_HAS_WC') && WISECAMPAIGN_HAS_WC;
+    }
+
+    /**
+     * Without WooCommerce there are no real orders, so the order sources fall back to simulated orders.
+     */
+    private function get_source($settings)
+    {
+        $source = $settings['source'] ?? ($this->has_wc() ? 'recent_orders' : 'virtual_orders');
+        if (!$this->has_wc() && in_array($source, ['recent_orders', 'selected_orders'], true)) {
+            $source = 'virtual_orders';
+        }
+        return $source;
+    }
+
+    /**
+     * WooCommerce product modes need WooCommerce; without it only custom products are possible.
+     */
+    private function get_products_mode($settings)
+    {
+        if (!$this->has_wc()) {
+            return 'custom_products';
+        }
+        $mode = $settings['virtual_products_mode'] ?? 'all_products';
+        return in_array($mode, ['all_products', 'selected_products', 'custom_products'], true) ? $mode : 'all_products';
+    }
+
+    /**
+     * Parses the custom products field: one "Product name | https://link" per line, the link is optional.
+     */
+    private function parse_custom_products($raw)
+    {
+        $products = [];
+        foreach (preg_split('/\r\n|\r|\n/', (string) $raw) as $line) {
+            $parts = array_map('trim', explode('|', $line, 2));
+            $name = sanitize_text_field($parts[0]);
+            if ($name === '') {
+                continue;
+            }
+            $products[] = [
+                'name' => $name,
+                'url'  => isset($parts[1]) ? esc_url_raw($parts[1], ['http', 'https']) : '',
+            ];
+        }
+        return $products;
     }
 
 
@@ -513,10 +563,12 @@ class SalesNotification
     public function field_cb_source($args)
     {
         $is_pro = $this->is_pro_active();
-        $value = $this->get_option('source', 'recent_orders');
+        $has_wc = $this->has_wc();
+        $value = $this->get_source(get_option($this->option_name, []));
+        $wc_suffix = !$has_wc ? ' ' . __('(requires WooCommerce)', 'wisecampaign') : '';
         $sources = [
-            'recent_orders'   => __('Recent Orders', 'wisecampaign'),
-            'selected_orders' => __('Selected Orders', 'wisecampaign'),
+            'recent_orders'   => __('Recent Orders', 'wisecampaign') . $wc_suffix,
+            'selected_orders' => __('Selected Orders', 'wisecampaign') . $wc_suffix,
             'virtual_orders'  => __('Custom / Virtual Orders (Simulated)', 'wisecampaign') . (!$is_pro ? ' [PRO]' : ''),
         ];
         ?>
@@ -527,12 +579,17 @@ class SalesNotification
             <div class="wisecampaign-field-control">
                 <select id="wisecampaign_order_source_select" name="<?php echo esc_attr($this->option_name); ?>[source]">
                     <?php foreach ($sources as $key => $label) :
-                        $disabled = (!$is_pro && $key === 'virtual_orders') ? 'disabled' : '';
+                        $is_wc_source = $key !== 'virtual_orders';
+                        $disabled = ((!$is_pro && !$is_wc_source) || (!$has_wc && $is_wc_source)) ? 'disabled' : '';
                     ?>
                         <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?> <?php echo $disabled; ?>><?php echo esc_html($label); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <p class="description"><?php esc_html_e('Choose real recent orders, select specific past orders, or generate realistic virtual orders for instant social proof.', 'wisecampaign'); ?></p>
+                <?php if ($has_wc) : ?>
+                    <p class="description"><?php esc_html_e('Choose real recent orders, select specific past orders, or generate realistic virtual orders for instant social proof.', 'wisecampaign'); ?></p>
+                <?php else : ?>
+                    <p class="description"><?php esc_html_e('WooCommerce is not active, so notifications are built from simulated orders: your own buyer names, locations and products below.', 'wisecampaign'); ?></p>
+                <?php endif; ?>
                 <?php if (!$is_pro) : ?>
                     <p class="description" style="color: #d97706; margin-top: 4px;"><span class="dashicons dashicons-lock" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span> <?php printf(esc_html__('Virtual Orders generator is a %s feature.', 'wisecampaign'), '<a href="https://wisemattic.com/wisecampaign/pricing" target="_blank">PRO</a>'); ?></p>
                 <?php endif; ?>
@@ -543,6 +600,9 @@ class SalesNotification
 
     public function field_cb_selected_orders($args)
     {
+        if (!$this->has_wc()) {
+            return;
+        }
         $selected_orders = $this->get_option('selected_orders', []);
         $query = new \WC_Order_Query(['limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
         $orders = $query->get_orders();
@@ -607,10 +667,13 @@ class SalesNotification
 
     public function field_cb_virtual_products_mode($args)
     {
-        $value = $this->get_option('virtual_products_mode', 'all_products');
-        $modes = [
+        $value = $this->get_products_mode(get_option($this->option_name, []));
+        $modes = $this->has_wc() ? [
             'all_products'      => __('All In-Stock Products', 'wisecampaign'),
             'selected_products' => __('Specific Selected Products', 'wisecampaign'),
+            'custom_products'   => __('Custom Products (enter your own)', 'wisecampaign'),
+        ] : [
+            'custom_products'   => __('Custom Products (enter your own)', 'wisecampaign'),
         ];
         ?>
         <div class="wisecampaign-field-group wisecampaign-field-virtual-products-mode">
@@ -623,7 +686,25 @@ class SalesNotification
                         <option value="<?php echo esc_attr($k); ?>" <?php selected($k, $value); ?>><?php echo esc_html($label); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <p class="description"><?php esc_html_e('Choose whether to showcase all published products or only hand-picked products.', 'wisecampaign'); ?></p>
+                <p class="description"><?php echo $this->has_wc()
+                    ? esc_html__('Showcase all published products, only hand-picked products, or products you type in yourself.', 'wisecampaign')
+                    : esc_html__('Without WooCommerce, type in the products or services you want to promote below.', 'wisecampaign'); ?></p>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function field_cb_virtual_custom_products($args)
+    {
+        $value = $this->get_option('virtual_custom_products', '');
+        ?>
+        <div class="wisecampaign-field-group wisecampaign-field-virtual-custom-products">
+            <div class="wisecampaign-field-label">
+                <label for="wisecampaign-virtual-custom-products"><?php echo esc_html($args['label_for']); ?></label>
+            </div>
+            <div class="wisecampaign-field-control">
+                <textarea id="wisecampaign-virtual-custom-products" name="<?php echo esc_attr($this->option_name); ?>[virtual_custom_products]" rows="4" placeholder="<?php esc_attr_e("Pro Plan | https://example.com/pricing\nOnline Course\nConsultation Call | https://example.com/book", 'wisecampaign'); ?>"><?php echo esc_textarea($value); ?></textarea>
+                <p class="description"><?php esc_html_e('One product per line. Add " | " and a link to make the notification clickable, for example: Pro Plan | https://example.com/pricing', 'wisecampaign'); ?></p>
             </div>
         </div>
         <?php
@@ -631,6 +712,9 @@ class SalesNotification
 
     public function field_cb_virtual_selected_products($args)
     {
+        if (!$this->has_wc()) {
+            return;
+        }
         $selected_products = $this->get_option('virtual_selected_products', []);
         $products = function_exists('wc_get_products') ? wc_get_products(['limit' => 100, 'status' => 'publish', 'orderby' => 'title', 'order' => 'ASC']) : [];
         ?>
@@ -730,7 +814,9 @@ class SalesNotification
                         <span><?php esc_html_e('Add Images', 'wisecampaign'); ?></span>
                     </button>
                 </div>
-                <p class="description"><?php esc_html_e('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to use each product\'s WooCommerce image.', 'wisecampaign'); ?></p>
+                <p class="description"><?php echo $this->has_wc()
+                    ? esc_html__('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to use each product\'s WooCommerce image.', 'wisecampaign')
+                    : esc_html__('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to show buyer avatars.', 'wisecampaign'); ?></p>
             </div>
         </div>
         <?php
@@ -788,7 +874,14 @@ class SalesNotification
         if (!empty($context['custom'])) {
             return ['url' => $context['custom'][$index % count($context['custom'])], 'type' => 'custom'];
         }
-        return ['url' => $product_image, 'type' => 'product'];
+        if ($product_image !== '') {
+            return ['url' => $product_image, 'type' => 'product'];
+        }
+        // Custom products have no photo of their own; the buyer's avatar looks better than a placeholder.
+        if (!empty($context['avatars'])) {
+            return ['url' => $this->get_avatar_for_name($buyer, $context['avatars']), 'type' => 'avatar'];
+        }
+        return ['url' => WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png', 'type' => 'product'];
     }
 
     public function admin_enqueue($hook)
@@ -850,6 +943,7 @@ class SalesNotification
             'virtual_locations' => 'textarea',
             'virtual_products_mode' => 'key',
             'virtual_selected_products' => 'array_int',
+            'virtual_custom_products' => 'textarea',
             'virtual_image_type' => 'key',
             'virtual_custom_images' => 'array_int',
             'visibility' => 'key',
@@ -902,6 +996,8 @@ class SalesNotification
             (array) ($all_settings['virtual_custom_images'] ?? []),
             'wp_attachment_is_image'
         ));
+        $all_settings['virtual_products_mode'] = $this->get_products_mode($all_settings);
+        $all_settings['source'] = $this->get_source($all_settings);
 
         // PRO feature validation
         if (!$is_pro) {
@@ -1026,7 +1122,7 @@ class SalesNotification
     private function get_notification_data()
     {
         $settings = get_option($this->option_name, []);
-        $source = $settings['source'] ?? 'recent_orders';
+        $source = $this->get_source($settings);
         $items = [];
 
         // Virtual (Simulated) Orders Generator (PRO)
@@ -1038,7 +1134,7 @@ class SalesNotification
             $defaults = $this->get_default_settings();
             $raw_names = !empty($settings['virtual_names']) ? $settings['virtual_names'] : $defaults['virtual_names'];
             $raw_locations = !empty($settings['virtual_locations']) ? $settings['virtual_locations'] : $defaults['virtual_locations'];
-            $products_mode = $settings['virtual_products_mode'] ?? 'all_products';
+            $products_mode = $this->get_products_mode($settings);
             $selected_pids = $settings['virtual_selected_products'] ?? [];
 
             $names = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', $raw_names))));
@@ -1052,7 +1148,9 @@ class SalesNotification
             }
 
             $products = [];
-            if ($products_mode === 'selected_products' && !empty($selected_pids)) {
+            if ($products_mode === 'custom_products') {
+                // Typed-in products, no WooCommerce needed.
+            } elseif ($products_mode === 'selected_products' && !empty($selected_pids)) {
                 if (function_exists('wc_get_products')) {
                     $products = wc_get_products([
                         'include' => $selected_pids,
@@ -1106,37 +1204,31 @@ class SalesNotification
                 'custom'  => $this->get_custom_image_urls($settings['virtual_custom_images'] ?? []),
             ];
 
-            if (!empty($products)) {
-                $prod_count = count($products);
-                for ($i = 0; $i < $total_items; $i++) {
-                    $product = $products[$i % $prod_count];
-                    if (!$product) continue;
-
-                    $image_url = function_exists('wp_get_attachment_url') ? wp_get_attachment_url($product->get_image_id()) : '';
-                    if (empty($image_url) && function_exists('wc_placeholder_img_src')) {
-                        $image_url = wc_placeholder_img_src();
-                    }
-                    if (empty($image_url)) {
-                        $image_url = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
-                    }
-
-                    $buyer = $names[$i % $name_count];
-                    $image = $this->get_virtual_item_image($i, $buyer, $image_url, $image_context);
-                    $items[] = [
-                        'product_name'  => $product->get_name(),
-                        'product_image' => $image['url'],
-                        'product_photo' => $image_url,
-                        'image_type'    => $image['type'],
-                        'product_url'   => get_permalink($product->get_id()),
-                        'buyer'         => $buyer,
-                        'time'          => $time_options[$i % $time_count],
-                        'location'      => $locations[$i % $loc_count],
-                        'is_virtual'    => true,
-                    ];
+            // Everything the notifications can promote, as name / link / photo.
+            $catalog = [];
+            if ($products_mode === 'custom_products') {
+                foreach ($this->parse_custom_products($settings['virtual_custom_products'] ?? '') as $custom) {
+                    $catalog[] = ['name' => $custom['name'], 'url' => $custom['url'], 'image' => ''];
                 }
-            } else {
-                // Fallback items if store has no WooCommerce products yet
-                $placeholder = function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src() : WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
+            }
+            foreach ($products as $product) {
+                if (!$product) {
+                    continue;
+                }
+                $image_url = wp_get_attachment_url($product->get_image_id());
+                if (empty($image_url) && function_exists('wc_placeholder_img_src')) {
+                    $image_url = wc_placeholder_img_src();
+                }
+                $catalog[] = [
+                    'name'  => $product->get_name(),
+                    'url'   => get_permalink($product->get_id()),
+                    'image' => $image_url ?: WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png',
+                ];
+            }
+
+            // Demo items until the WooCommerce store has products. Custom mode shows nothing until products are typed in.
+            if (empty($catalog) && $products_mode !== 'custom_products') {
+                $placeholder = function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src() : '';
                 $demo_items = [
                     'Premium Wireless Headphones',
                     'Smart Fitness Watch',
@@ -1144,22 +1236,31 @@ class SalesNotification
                     'Minimalist Leather Wallet',
                     'Stainless Steel Water Bottle'
                 ];
-                $demo_count = count($demo_items);
-                for ($i = 0; $i < $total_items; $i++) {
-                    $buyer = $names[$i % $name_count];
-                    $image = $this->get_virtual_item_image($i, $buyer, $placeholder, $image_context);
-                    $items[] = [
-                        'product_name'  => $demo_items[$i % $demo_count],
-                        'product_image' => $image['url'],
-                        'product_photo' => $placeholder,
-                        'image_type'    => $image['type'],
-                        'product_url'   => '#',
-                        'buyer'         => $buyer,
-                        'time'          => $time_options[$i % $time_count],
-                        'location'      => $locations[$i % $loc_count],
-                        'is_virtual'    => true,
-                    ];
+                foreach ($demo_items as $demo_item) {
+                    $catalog[] = ['name' => $demo_item, 'url' => '#', 'image' => $placeholder];
                 }
+            }
+
+            if (empty($catalog)) {
+                return [];
+            }
+
+            $catalog_count = count($catalog);
+            for ($i = 0; $i < $total_items; $i++) {
+                $entry = $catalog[$i % $catalog_count];
+                $buyer = $names[$i % $name_count];
+                $image = $this->get_virtual_item_image($i, $buyer, $entry['image'], $image_context);
+                $items[] = [
+                    'product_name'  => $entry['name'],
+                    'product_image' => $image['url'],
+                    'product_photo' => $entry['image'],
+                    'image_type'    => $image['type'],
+                    'product_url'   => $entry['url'],
+                    'buyer'         => $buyer,
+                    'time'          => $time_options[$i % $time_count],
+                    'location'      => $locations[$i % $loc_count],
+                    'is_virtual'    => true,
+                ];
             }
 
             return $items;
@@ -1234,6 +1335,7 @@ class SalesNotification
             'virtual_locations' => "New York, USA\nLondon, UK\nToronto, Canada\nSydney, Australia\nBerlin, Germany\nParis, France\nLos Angeles, USA\nMadrid, Spain",
             'virtual_products_mode' => 'all_products',
             'virtual_selected_products' => [],
+            'virtual_custom_products' => '',
             'virtual_image_type' => 'product',
             'virtual_custom_images' => [],
             'visibility' => 'all_pages',

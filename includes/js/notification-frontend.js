@@ -13,6 +13,16 @@
     let currentIndex = 0;
     let notificationQueue = [...notifications];
 
+    // Buyer names come from checkout forms and product names from admins, so escape before using innerHTML.
+    function esc(value) {
+        return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     if (settings.position) {
         const positionClass = 'position-' + settings.position; // e.g., "position-bottom-left"
         container.classList.add(positionClass);
@@ -76,24 +86,23 @@
           font-family: '${settings.font_family}', sans-serif;
           cursor: ${productUrl ? 'pointer' : 'default'};
         "
-        ${productUrl ? `onclick="window.location.href='${encodeURI(productUrl)}'"` : ''}
       >
-        <img 
-          src="${notification.product_image}" 
-          alt="${notification.image_type === 'avatar' ? notification.buyer : notification.product_name}"
-          class="${notification.image_type ? 'is-' + notification.image_type : ''}"
-          style="border-radius: ${settings.image_radius}px;" 
+        <img
+          src="${esc(notification.product_image)}"
+          alt="${esc(notification.image_type === 'avatar' ? notification.buyer : notification.product_name)}"
+          class="${notification.image_type ? 'is-' + esc(notification.image_type) : ''}"
+          style="border-radius: ${settings.image_radius}px;"
         >
         <div class="notification-content">
           <div class="notification-body">
             <p class="buyer-info">
-              <span class="buyer-name">${notification.buyer}</span> just purchased
+              <span class="buyer-name">${esc(notification.buyer)}</span> just purchased
             </p>
-            <p class="product-name">${notification.product_name}</p>
-            <p class="location-info">From: <span class="location">${notification.location}</span></p>
+            <p class="product-name">${esc(notification.product_name)}</p>
+            <p class="location-info">From: <span class="location">${esc(notification.location)}</span></p>
           </div>
           <div class="notification-footer">
-            <p class="timestamp">${timeText}</p>
+            <p class="timestamp">${esc(timeText)}</p>
 
             ${settings.hide_branding === '1' ? '' : `
             <p class="brand-credit">
@@ -114,6 +123,11 @@
 
 
         container.innerHTML = popupHTML;
+        if (productUrl) {
+            container.firstElementChild.addEventListener('click', function () {
+                window.location.href = productUrl;
+            });
+        }
         container.classList.add('show');
 
         const displayTime = (parseInt(settings.display_time, 10) || 5) * 1000;

@@ -182,8 +182,10 @@ jQuery(document).ready(function ($) {
         const $virtualLocationsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-locations');
         const $virtualModeField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-mode');
         const $virtualSelectProductsField = $('.wisecampaign-field-group').has('#wisecampaign-virtual-products-select');
+        const $customProductsField = $('.wisecampaign-field-virtual-custom-products');
         const $imageTypeField = $('.wisecampaign-field-virtual-image-type');
         const $customImagesField = $('.wisecampaign-field-virtual-custom-images');
+        const productsMode = $('#wisecampaign-virtual-products-mode').val();
 
         if (source === 'selected_orders') {
             $selectOrdersField.show();
@@ -191,6 +193,7 @@ jQuery(document).ready(function ($) {
             $virtualLocationsField.hide();
             $virtualModeField.hide();
             $virtualSelectProductsField.hide();
+            $customProductsField.hide();
             $imageTypeField.hide();
             $customImagesField.hide();
         } else if (source === 'virtual_orders') {
@@ -200,18 +203,15 @@ jQuery(document).ready(function ($) {
             $virtualModeField.show();
             $imageTypeField.show();
             $customImagesField.toggle(getImageType() === 'product');
-
-            if ($('#wisecampaign-virtual-products-mode').val() === 'selected_products') {
-                $virtualSelectProductsField.show();
-            } else {
-                $virtualSelectProductsField.hide();
-            }
+            $virtualSelectProductsField.toggle(productsMode === 'selected_products');
+            $customProductsField.toggle(productsMode === 'custom_products');
         } else {
             $selectOrdersField.hide();
             $virtualNamesField.hide();
             $virtualLocationsField.hide();
             $virtualModeField.hide();
             $virtualSelectProductsField.hide();
+            $customProductsField.hide();
             $imageTypeField.hide();
             $customImagesField.hide();
         }
@@ -249,6 +249,10 @@ jQuery(document).ready(function ($) {
                 if ($first.length) {
                     src = $first.data('url');
                     type = 'custom';
+                } else if (!src && avatars.length) {
+                    // Same fallback as SalesNotification::get_virtual_item_image() for products without a photo.
+                    src = avatarForName(preview.find('.buyer-name').text().trim());
+                    type = 'avatar';
                 }
             }
         }
@@ -335,6 +339,14 @@ jQuery(document).ready(function ($) {
         const locations = $(this).val().split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
         if (locations.length > 0) {
             preview.find('.location').text(locations[0]);
+        }
+    });
+
+    // "Product name | https://link" per line; the preview shows the first product name.
+    $('#wisecampaign-virtual-custom-products').on('input', function () {
+        const products = $(this).val().split(/\n/).map(s => s.split('|')[0].trim()).filter(Boolean);
+        if (products.length > 0) {
+            preview.find('.product-name').text(products[0]);
         }
     });
 
