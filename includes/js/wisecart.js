@@ -40,9 +40,9 @@ jQuery(document).ready(function($) {
     }
 
     /**
-     * Open cart function
+     * Open cart function. With view "checkout" the drawer goes straight to its checkout form.
      */
-    function openCart() {
+    function openCart(view) {
         if (isCartOpen) {
             return;
         }
@@ -55,7 +55,7 @@ jQuery(document).ready(function($) {
         bindCloseEvents();
 
         // Load cart content fresh every time
-        loadCartContent();
+        loadCartContent(view === 'checkout' && wiseCartData.replaceCheckout ? loadCheckoutContent : null);
     }
 
     /**
@@ -92,9 +92,9 @@ jQuery(document).ready(function($) {
     }
 
     /**
-     * Load cart content via AJAX
+     * Load cart content via AJAX, then run onLoaded if given
      */
-    function loadCartContent() {
+    function loadCartContent(onLoaded) {
         const $cartContainer = $('#wisecart-container');
         $cartContainer.html('<div class="wisecart-loading">Loading cart...</div>');
 
@@ -109,6 +109,9 @@ jQuery(document).ready(function($) {
                 if (response.success && response.data.data) {
                     $cartContainer.html(response.data.data);
                     bindCartEvents();
+                    if (onLoaded) {
+                        onLoaded();
+                    }
                 } else {
                     $cartContainer.html('<div class="wisecart-error">Failed to load cart content</div>');
                 }
@@ -390,6 +393,15 @@ jQuery(document).ready(function($) {
 
     // Initialize cart trigger
     initCartTrigger();
+
+    // The cart and checkout pages send shoppers here when wiseCart replaces them (wiseCart.php replace_default_pages)
+    const pageUrl = new URL(window.location.href);
+    const openView = pageUrl.searchParams.get('open-wisecart');
+    if (openView) {
+        openCart(openView);
+        pageUrl.searchParams.delete('open-wisecart');
+        window.history.replaceState({}, document.title, pageUrl.pathname + pageUrl.search + pageUrl.hash);
+    }
 
     // Make functions globally accessible
     window.wiseCartOpenCart = openCart;
