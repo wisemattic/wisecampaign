@@ -20,7 +20,7 @@ Turn your store visitors into buyers with **wiseCampaign**, the all-in-one WooCo
 Whether you run Black Friday sales, seasonal promotions, or daily flash deals, wiseCampaign equips your WooCommerce store with battle-tested conversion tools.
 
 = Watch Quick Overview =
-[youtube https://www.youtube.com/watch?v=crqwrNPTtbA]
+[youtube https://youtu.be/5ni6b6IdEjE]
 
 = Key Features at a Glance =
 * **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
@@ -200,6 +200,10 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Fixed: The copy shortcode button did not work on sites without HTTPS.
 - Fixed: The WordPress admin menu could not scroll on the WiseVideo Commerce, Product Table and Analytics pages.
 - Fixed: Some scripts and styles kept loading old cached copies after an update.
+- Fixed: When wiseCart replaces the checkout page, Buy Now and other checkout links now open the cart straight on its checkout form instead of only landing on the shop page.
+- Fixed: Uninstalling now also removes the Analytics data, and reinstalling creates the wiseBanner table again.
+- Fixed (Pro): The banner settings and license status endpoints now require an administrator.
+- Fixed (Pro): A database error was logged when Pro was activated again.
 
 = v1.3.1 =
 - Added: Sales Notification now works without WooCommerce. Sites without a store can show simulated purchase notifications (Pro) with their own buyer names, locations and products.
