@@ -625,7 +625,8 @@ class WiseCart
         }
 
         if (($this->get_option('wc_replace_cart_page') === 'yes' && is_cart()) || ($this->get_option('wc_replace_checkout_page') === 'yes' && is_checkout())) {
-            wp_safe_redirect(add_query_arg('open-wisecart', 'true', wc_get_page_permalink('shop')));
+            // wisecart.js opens the drawer on the shop page, on its checkout form when the shopper was headed to checkout
+            wp_safe_redirect(add_query_arg('open-wisecart', is_checkout() ? 'checkout' : 'cart', wc_get_page_permalink('shop')));
             exit();
         }
     }

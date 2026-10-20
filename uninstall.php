@@ -19,8 +19,18 @@ function wise_campaign_plugin_uninstall() {
     delete_option( 'wisecampaign_banner_stats_db_version' );
     delete_option( 'wc-wisebanner-v2-analytics' );
 
-    error_log("Uninstalling Wise Campaign Plugin...");
-    error_log("Dropping table: $table_name");
+    // The banner table is only created when this version flag is missing, so a reinstall needs it gone
+    delete_option( 'wisecampaign_banner_table_version' );
+
+    // Store-wide analytics
+    $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wisecampaign_stats" );
+    $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}wisecampaign_orders" );
+    delete_option( 'wisecampaign_analytics_db_version' );
+    delete_option( 'wisecampaign_analytics_since' );
+    delete_option( 'wisecampaign_analytics_settings' );
+
+    // Module on/off switches
+    delete_option( 'wisecampaign_modules' );
 }
 
 // Execute the uninstall logic
