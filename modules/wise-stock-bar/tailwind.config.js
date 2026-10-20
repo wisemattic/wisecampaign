@@ -3,6 +3,7 @@ export default {
     content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
+        "../shared/**/*.{js,jsx}",
     ],
     // Disable Tailwind Preflight (base reset) to prevent overriding the WordPress theme styles
     corePlugins: {
@@ -21,4 +22,4 @@ export default {
         },
     },
     plugins: [],
-}
+}

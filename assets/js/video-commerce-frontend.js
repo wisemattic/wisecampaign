@@ -1,81 +1,220 @@
-jQuery(document).ready(function($) {
-    $('.video-thumb').on('click', function() {
-        const videoUrl = $(this).data('video');
-        const $container = $(this).closest('.wisecampaign-product-video-gallery');
-        let $mainVideo = $container.find('.wisecampaign-main-video video');
-        const $mainImage = $container.find('.wisecampaign-main-image-fallback');
-        
-        // Update active class
-        $(this).siblings().removeClass('active');
-        $(this).addClass('active');
+/**
+ * WiseVideo Commerce storefront: gallery thumbnails, the product card's Buy Now button,
+ * reels that play while in view, and the reels lightbox.
+ */
+(function () {
+    'use strict';
 
-        // If we have a video element, just update src
-        if ($mainVideo.length) {
-            $mainVideo.fadeOut(200, function() {
-                $(this).attr('src', videoUrl);
-                $(this).fadeIn(200);
-                this.play();
-            });
-        } 
-        // If we have an image fallback, replace it with a video element
-        else if ($mainImage.length) {
-            const radius = $mainImage.find('img').css('border-radius') || '8px';
-            const videoHtml = `
-                <div class="wisecampaign-main-video woocommerce-product-gallery__wrapper" style="margin-bottom: 20px; position: relative; display: none;">
-                    <video id="wisecampaign-main-player" src="${videoUrl}" controls style="width: 100%; border-radius: ${radius}; box-shadow: 0 4px 30px rgba(0,0,0,0.15);"></video>
-                </div>
-            `;
-            
-            $mainImage.fadeOut(200, function() {
-                $(this).replaceWith(videoHtml);
-                const $newVideoWrap = $container.find('.wisecampaign-main-video');
-                $newVideoWrap.fadeIn(200, function() {
-                    $(this).find('video')[0].play();
-                });
-            });
-        }
-    });
-
-    // Mark first thumb as active if main video matches
-    const firstThumb = $('.video-thumb').first();
-    const mainVideoSrc = $('.wisecampaign-main-video video').attr('src');
-    if (firstThumb.length && mainVideoSrc === firstThumb.data('video')) {
-        firstThumb.addClass('active');
+    // WiseCampaign Analytics (includes/js/wise-track.js)
+    function track(event) {
+        (window.wiseTrackQueue = window.wiseTrackQueue || []).push(['wisevideo', event]);
     }
 
-    // Mobile Add to Cart Overlay (using delegation for lightbox support)
-    $(document).on('click', '.wisecampaign-mobile-add-to-cart', function(e) {
+    // Credits what the shopper adds to the cart from here to WiseVideo in WiseCampaign Analytics
+    function tagForm(form) {
+        var input = form.querySelector('input[name="wisecampaign_source"]');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'wisecampaign_source';
+            form.appendChild(input);
+        }
+        input.value = 'wisevideo';
+        return input;
+    }
+
+    // -----------------------------------------------------------------
+    // Gallery: clicking a thumbnail shows that video or image on the stage
+    // -----------------------------------------------------------------
+    document.querySelectorAll('.wcvc-gallery').forEach(function (gallery) {
+        var stage = gallery.querySelector('.wcvc-stage');
+        var video = stage.querySelector('.wcvc-stage__video');
+        var image = stage.querySelector('.wcvc-stage__image');
+
+        gallery.querySelectorAll('.wcvc-thumb').forEach(function (thumb) {
+            thumb.addEventListener('click', function () {
+                gallery.querySelectorAll('.wcvc-thumb').forEach(function (t) {
+                    t.classList.toggle('is-active', t === thumb);
+                });
+
+                var isVideo = thumb.dataset.type === 'video';
+                stage.classList.toggle('is-video', isVideo);
+                if (isVideo) {
+                    image.hidden = true;
+                    video.hidden = false;
+                    if (video.getAttribute('src') !== thumb.dataset.src) {
+                        video.src = thumb.dataset.src;
+                    }
+                    track('play');
+                    // The click lets the video play with sound
+                    var playing = video.play();
+                    if (playing && playing.catch) {
+                        playing.catch(function () {});
+                    }
+                } else {
+                    video.pause();
+                    video.hidden = true;
+                    image.hidden = false;
+                    image.src = thumb.dataset.src;
+                    image.alt = thumb.querySelector('img') ? thumb.querySelector('img').alt : '';
+                }
+            });
+        });
+    });
+
+    // -----------------------------------------------------------------
+    // Buy Now on the product card
+    // -----------------------------------------------------------------
+    document.addEventListener('click', function (e) {
+        var button = e.target.closest('[data-wcvc-buy]');
+        if (!button) {
+            return;
+        }
         e.preventDefault();
-        // Find the main WooCommerce add to cart button and trigger it
-        const $mainBtn = $('form.cart button.single_add_to_cart_button');
-        if ($mainBtn.length) {
-            $mainBtn.trigger('click');
-            
-            // Visual feedback
-            const $this = $(this);
-            const originalText = $this.text();
-            $this.text('Adding...');
-            setTimeout(() => {
-                $this.text(originalText);
-            }, 2000);
+
+        var form = document.querySelector('form.cart');
+        if (!form) {
+            return;
+        }
+        track('click');
+        var source = tagForm(form);
+
+        // Variable and other products need options picked first: show the form
+        if (button.dataset.wcvcBuy !== 'add') {
+            closeLightbox();
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            var firstField = form.querySelector('select, input[type="number"]');
+            if (firstField) {
+                firstField.focus({ preventScroll: true });
+            }
+            return;
+        }
+
+        var addButton = form.querySelector('.single_add_to_cart_button');
+        if (addButton) {
+            button.disabled = true;
+            button.dataset.label = button.textContent;
+            button.textContent = '…';
+            addButton.click();
+            setTimeout(function () {
+                button.disabled = false;
+                button.textContent = button.dataset.label;
+                // Themes that add to the cart without leaving the page: later adds are the shopper's own
+                source.remove();
+            }, 2500);
         }
     });
 
-    // Product Reels Lightbox
-    const $lightbox = $('#wisecampaign-reels-lightbox');
-    const $lightboxVideo = $('#wisecampaign-lightbox-video');
+    // -----------------------------------------------------------------
+    // Reels: autoplay only while visible, so a page of reels stays light
+    // -----------------------------------------------------------------
+    var reelsBlock = document.querySelector('.wcvc-reels');
+    var reels = reelsBlock ? Array.prototype.slice.call(reelsBlock.querySelectorAll('.wcvc-reel')) : [];
 
-    $('.wisecampaign-reel-item').on('click', function() {
-        const videoUrl = $(this).data('video');
-        $lightboxVideo.attr('src', videoUrl);
-        $lightbox.addClass('active');
-        $lightboxVideo[0].play();
+    if (reelsBlock && reelsBlock.classList.contains('is-autoplay') && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                var v = entry.target.querySelector('video');
+                if (entry.isIntersecting) {
+                    var p = v.play();
+                    if (p && p.then) {
+                        p.then(function () {
+                            entry.target.classList.add('is-playing');
+                        }).catch(function () {});
+                    }
+                } else {
+                    v.pause();
+                    entry.target.classList.remove('is-playing');
+                }
+            });
+        }, { threshold: 0.5 });
+        reels.forEach(function (reel) {
+            observer.observe(reel);
+        });
+    }
+
+    // -----------------------------------------------------------------
+    // Lightbox
+    // -----------------------------------------------------------------
+    var lightbox = document.querySelector('.wcvc-lightbox');
+    var lightboxVideo = lightbox ? lightbox.querySelector('.wcvc-lightbox__video') : null;
+    var current = 0;
+    var lastFocus = null;
+
+    function show(index) {
+        current = (index + reels.length) % reels.length;
+        lightboxVideo.src = reels[current].dataset.src;
+        var p = lightboxVideo.play();
+        if (p && p.catch) {
+            p.catch(function () {});
+        }
+    }
+
+    function openLightbox(index) {
+        if (!lightbox) {
+            return;
+        }
+        lastFocus = document.activeElement;
+        lightbox.hidden = false;
+        document.body.classList.add('wcvc-lightbox-open');
+        lightboxVideo.muted = false;
+        lightbox.classList.remove('is-muted');
+        track('play');
+        show(index);
+        lightbox.querySelector('.wcvc-lightbox__close').focus();
+    }
+
+    function closeLightbox() {
+        if (!lightbox || lightbox.hidden) {
+            return;
+        }
+        lightboxVideo.pause();
+        lightboxVideo.removeAttribute('src');
+        lightboxVideo.load();
+        lightbox.hidden = true;
+        document.body.classList.remove('wcvc-lightbox-open');
+        if (lastFocus) {
+            lastFocus.focus();
+        }
+    }
+
+    reels.forEach(function (reel, index) {
+        reel.addEventListener('click', function () {
+            openLightbox(index);
+        });
     });
 
-    $('.wisecampaign-lightbox-close, .wisecampaign-video-lightbox').on('click', function(e) {
-        if (e.target !== this && !$(e.target).hasClass('dashicons')) return;
-        $lightbox.removeClass('active');
-        $lightboxVideo[0].pause();
-        $lightboxVideo.attr('src', '');
-    });
-});
+    if (lightbox) {
+        lightbox.addEventListener('click', function (e) {
+            if (e.target === lightbox || e.target.closest('.wcvc-lightbox__close')) {
+                closeLightbox();
+            } else if (e.target.closest('.wcvc-lightbox__prev')) {
+                show(current - 1);
+            } else if (e.target.closest('.wcvc-lightbox__next')) {
+                show(current + 1);
+            } else if (e.target.closest('.wcvc-lightbox__sound')) {
+                lightboxVideo.muted = !lightboxVideo.muted;
+                lightbox.classList.toggle('is-muted', lightboxVideo.muted);
+            } else if (e.target === lightboxVideo) {
+                if (lightboxVideo.paused) {
+                    lightboxVideo.play();
+                } else {
+                    lightboxVideo.pause();
+                }
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (lightbox.hidden) {
+                return;
+            }
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowLeft' && reels.length > 1) {
+                show(current - 1);
+            } else if (e.key === 'ArrowRight' && reels.length > 1) {
+                show(current + 1);
+            }
+        });
+    }
+})();

@@ -26,7 +26,21 @@ import {
     Target,
     Power
 } from 'lucide-react';
+import StockBarMarkup from './StockBarMarkup.jsx';
+import PerformanceCard from '../../shared/PerformanceCard.jsx';
 
+// Product page placements, ids match StockBar::get_product_positions()
+const PRODUCT_POSITIONS = [
+    { id: 'after_price', label: 'After the price', desc: 'Right under the product price' },
+    { id: 'before_form', label: 'Above Add to Cart', desc: 'Full width, just before the buttons (recommended)' },
+    { id: 'after_form', label: 'Below Add to Cart', desc: 'Full width, under the buttons' },
+];
+
+// Sample numbers for the preview
+const SAMPLE_STOCK = { stock: 12, sold: 21 };
+
+// Defaults must match StockBar::get_template_defaults() in includes/Classes/StockBar.php.
+// Texts take {stock} (items left), {sold} and {total}.
 const TEMPLATES = [
     {
         id: 'linear',
@@ -39,11 +53,11 @@ const TEMPLATES = [
             stockBarBg: '#FFFFFF',
             textColor: '#111827',
             borderColor: '#F1F5F9',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 'Bold',
-            mainText: "Hurry! Selling fast!",
+            mainText: "Hurry! Selling fast",
             icon: "Flame",
-            subText: "items left"
+            subText: "{stock} left"
         }
     },
     {
@@ -57,11 +71,11 @@ const TEMPLATES = [
             stockBarBg: '#FEF2F2',
             textColor: '#991B1B',
             borderColor: '#FEE2E2',
-            fontSize: '13px',
+            fontSize: '14px',
             fontWeight: 'Bold',
-            mainText: "Extremely Limited Stock!",
+            mainText: "Extremely limited stock!",
             icon: "AlertCircle",
-            subText: "Only 12 items remaining"
+            subText: "Only {stock} left in stock"
         }
     },
     {
@@ -75,11 +89,11 @@ const TEMPLATES = [
             stockBarBg: '#F8FAFC',
             textColor: '#1E293B',
             borderColor: '#E2E8F0',
-            fontSize: '11px',
+            fontSize: '13px',
             fontWeight: 'Medium',
-            mainText: "Popular Product",
+            mainText: "Popular product",
             icon: "TrendingUp",
-            subText: "Pieces available"
+            subText: "{stock} available"
         }
     },
     {
@@ -93,9 +107,9 @@ const TEMPLATES = [
             stockBarBg: '#FFFBEB',
             textColor: '#92400E',
             borderColor: '#FEF3C7',
-            fontSize: '12px',
+            fontSize: '13px',
             fontWeight: 'Bold',
-            mainText: "Flash Sale Ends In",
+            mainText: "Flash sale ends in",
             icon: "Clock",
             subText: "left",
             labelPosition: "top",
@@ -118,9 +132,9 @@ const TEMPLATES = [
             borderColor: '#DCFCE7',
             fontSize: '12px',
             fontWeight: 'Bold',
-            mainText: "Limited Stock",
+            mainText: "Limited stock",
             icon: "Package",
-            subText: "left"
+            subText: "{stock} left"
         }
     }
 ];
@@ -156,8 +170,11 @@ function App() {
 
     const [displaySettings, setDisplaySettings] = useState({
         displayOnShopPage: false,
-        displayOnProductPage: true
+        displayOnProductPage: true,
+        productPosition: 'before_form',
+        hideDefaultStock: true
     });
+    const [previewPage, setPreviewPage] = useState('product');
 
     const [isEnabled, setIsEnabled] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -165,36 +182,15 @@ function App() {
     const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
 
-    const isStorefront = window.wiseStockbarData?.isStorefront || false;
-
     useEffect(() => {
         if (!isEnabled) {
             setShowDisabledOverlay(true);
         }
     }, [isEnabled]);
 
+    // The storefront is rendered by PHP (StockBar::render_stock_bar()); this app is the admin editor only.
     useEffect(() => {
-        if (!isStorefront) {
-            fetchSettings();
-        } else {
-            // If storefront, we already have data in window.wiseStockbarData.config
-            if (window.wiseStockbarData?.config) {
-                const incoming = window.wiseStockbarData.config;
-                const id = incoming.id || 'linear';
-
-                // Detection: if top level has colors, it might be legacy
-                if (incoming.progressBarColor && !incoming[id]) {
-                    setConfig(prev => ({
-                        ...prev,
-                        [id]: { ...prev[id], ...incoming }
-                    }));
-                } else {
-                    setConfig(incoming);
-                }
-                setSelectedTemplateId(id);
-            }
-            setIsLoading(false);
-        }
+        fetchSettings();
     }, []);
 
     const fetchSettings = async () => {
@@ -230,7 +226,7 @@ function App() {
             const resSettings = await fetch(`${baseUrl}stockbars/setting`, { headers });
             const settings = await resSettings.json();
             if (settings) {
-                setDisplaySettings(settings);
+                setDisplaySettings(prev => ({ ...prev, ...settings }));
             }
 
             // Fetch Status
@@ -335,250 +331,18 @@ function App() {
 
     const handleContentChange = handleConfigChange; // Unify handlers
 
-    const getFontSizeClass = (size) => {
-        if (typeof size === 'string' && size.endsWith('px')) {
-            return `text-[${size}]`;
-        }
-        return 'text-[12px]';
-    };
+    const renderBar = (context = 'single') => (
+        <StockBarMarkup
+            templateId={selectedTemplateId}
+            config={activeConfig}
+            defaults={activeTemplate.config}
+            stock={SAMPLE_STOCK.stock}
+            sold={SAMPLE_STOCK.sold}
+            context={context}
+        />
+    );
 
-    const getFontWeightClass = (weight) => {
-        return weight === 'Bold' ? 'font-black' : 'font-medium';
-    };
-
-    const stockInfo = window.wiseStockbarData?.stockInfo || {
-        totalSold: 21,
-        availableItems: 12,
-        totalItems: 33,
-        percentage: 63
-    };
-
-    const ActiveIcon = ({ size = 20, className = '', fill = 'none' }) => {
-        const iconName = activeConfig.icon;
-        const IconComp = ICON_MAP[iconName] || ICON_MAP.Flame;
-        return <IconComp size={size} className={className} fill={fill} />;
-    };
-
-    const CountdownTimer = ({ expiryDate, textColor, hoursLabel = 'h', minutesLabel = 'm', secondsLabel = 's' }) => {
-        const [timeLeft, setTimeLeft] = useState({ hours: '00', minutes: '00', seconds: '00', expired: false });
-
-        useEffect(() => {
-            if (!expiryDate) return;
-
-            const calculateTimeLeft = () => {
-                const difference = +new Date(expiryDate) - +new Date();
-                let timeLeft = {};
-
-                if (difference > 0) {
-                    timeLeft = {
-                        hours: Math.floor((difference / (1000 * 60 * 60))).toString().padStart(2, '0'),
-                        minutes: Math.floor((difference / 1000 / 60) % 60).toString().padStart(2, '0'),
-                        seconds: Math.floor((difference / 1000) % 60).toString().padStart(2, '0'),
-                        expired: false
-                    };
-                } else {
-                    timeLeft = { hours: '00', minutes: '00', seconds: '00', expired: true };
-                }
-                return timeLeft;
-            };
-
-            const timer = setInterval(() => {
-                setTimeLeft(calculateTimeLeft());
-            }, 1000);
-
-            setTimeLeft(calculateTimeLeft());
-
-            return () => clearInterval(timer);
-        }, [expiryDate]);
-
-        if (timeLeft.expired && isStorefront) return null;
-
-        return (
-            <div className="flex gap-1">
-                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.hours}</div>
-                <span className="text-[8px] font-black opacity-40">{hoursLabel}</span>
-                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.minutes}</div>
-                <span className="text-[8px] font-black opacity-40">{minutesLabel}</span>
-                <div className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-black" style={{ backgroundColor: `${textColor}10`, color: textColor }}>{timeLeft.seconds}</div>
-                <span className="text-[8px] font-black opacity-40">{secondsLabel}</span>
-            </div>
-        );
-    };
-
-    const StockBarContent = () => {
-        const [isExpired, setIsExpired] = useState(false);
-
-        useEffect(() => {
-            if (selectedTemplateId === 'countdown' && activeConfig.timerExpiry) {
-                const checkExpiry = () => {
-                    const difference = +new Date(activeConfig.timerExpiry) - +new Date();
-                    if (difference <= 0) {
-                        setIsExpired(true);
-                        return true;
-                    }
-                    setIsExpired(false);
-                    return false;
-                };
-
-                if (!checkExpiry()) {
-                    const timer = setInterval(() => {
-                        if (checkExpiry()) {
-                            clearInterval(timer);
-                        }
-                    }, 1000);
-                    return () => clearInterval(timer);
-                }
-            } else {
-                setIsExpired(false);
-            }
-        }, [selectedTemplateId, activeConfig.timerExpiry]);
-
-        if (isLoading) {
-            return (
-                <div className="flex items-center justify-center p-8 bg-slate-50 rounded-2xl">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            );
-        }
-
-        if (isExpired && selectedTemplateId === 'countdown' && isStorefront) {
-            return null;
-        }
-
-        return (
-            <div
-                className={`w-full overflow-hidden transition-all duration-500`}
-                style={{
-                    backgroundColor: activeConfig.stockBarBg,
-                    color: activeConfig.textColor,
-                    border: `1px solid ${activeConfig.borderColor}`,
-                    borderRadius: '16px',
-                    padding: '20px'
-                }}
-            >
-                {selectedTemplateId === 'linear' && (
-                    <div className="space-y-5">
-                        <div className="flex items-center justify-between text-left">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shadow-sm" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
-                                    <ActiveIcon size={14} fill="currentColor" />
-                                </div>
-                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
-                                    {activeConfig.mainText}
-                                </span>
-                            </div>
-                            <span className="text-[10px] font-black opacity-50 uppercase tracking-widest text-right">
-                                {stockInfo.availableItems} {activeConfig.subText}
-                            </span>
-                        </div>
-                        <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
-                            <div
-                                className="absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out flex items-center justify-end px-2"
-                                style={{
-                                    width: `${stockInfo.percentage}%`,
-                                    background: activeConfig.progressBarColor,
-                                    boxShadow: `0 0 20px ${activeConfig.progressBarColor}40`
-                                }}
-                            >
-                                <div className="w-1 h-1 bg-white rounded-full animate-pulse opacity-50"></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {selectedTemplateId === 'pulse' && (
-                    <div className="flex flex-col items-center gap-3 py-2">
-                        <div className="flex items-center gap-3 text-left">
-                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
-                                <ActiveIcon size={20} />
-                                <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20" style={{ backgroundColor: activeConfig.progressBarColor }}></div>
-                            </div>
-                            <div className="flex flex-col items-start">
-                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tighter leading-none mb-1`}>
-                                    {activeConfig.mainText}
-                                </span>
-                                <span className="text-[10px] font-black opacity-40 uppercase tracking-widest">
-                                    {activeConfig.subText}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {selectedTemplateId === 'minimal' && (
-                    <div className="flex flex-col items-center gap-2 py-2">
-                        <div className="flex items-center gap-2.5">
-                            <div className="text-blue-600" style={{ color: activeConfig.progressBarColor }}>
-                                <ActiveIcon size={18} />
-                            </div>
-                            <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
-                                {activeConfig.mainText}
-                            </span>
-                        </div>
-                        <span className="text-[10px] font-black opacity-40 uppercase tracking-[0.2em] scale-90">
-                            {stockInfo.availableItems} {activeConfig.subText}
-                        </span>
-                    </div>
-                )}
-
-                {selectedTemplateId === 'countdown' && (
-                    <div className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-3 text-left">
-                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
-                                <ActiveIcon size={18} />
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-pulse" style={{ backgroundColor: activeConfig.progressBarColor }}></div>
-                            </div>
-                            <div className={`flex ${activeConfig.labelPosition === 'below' ? 'flex-col-reverse' :
-                                activeConfig.labelPosition === 'right' ? 'flex-row-reverse items-center gap-3' :
-                                    activeConfig.labelPosition === 'left' ? 'flex-row items-center gap-3' :
-                                        'flex-col'
-                                }`}>
-                                <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
-                                    {activeConfig.mainText}
-                                </span>
-                                <div className={`flex items-center gap-2 ${(activeConfig.labelPosition === 'top' || activeConfig.labelPosition === 'below' || !activeConfig.labelPosition) ? 'mt-1' : ''
-                                    }`}>
-                                    <CountdownTimer
-                                        expiryDate={activeConfig.timerExpiry}
-                                        textColor={activeConfig.textColor}
-                                        hoursLabel={activeConfig.hoursLabel}
-                                        minutesLabel={activeConfig.minutesLabel}
-                                        secondsLabel={activeConfig.secondsLabel}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <span className="text-xl font-black" style={{ color: activeConfig.progressBarColor }}>{stockInfo.availableItems}</span>
-                            <span className="text-[8px] font-black opacity-40 block">{activeConfig.subText}</span>
-                        </div>
-                    </div>
-                )}
-
-                {selectedTemplateId === 'badge' && (
-                    <div className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-3 text-left">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 relative shrink-0" style={{ backgroundColor: `${activeConfig.progressBarColor}20`, color: activeConfig.progressBarColor }}>
-                                <ActiveIcon size={16} />
-                            </div>
-                            <span className={`${getFontSizeClass(activeConfig.fontSize)} ${getFontWeightClass(activeConfig.fontWeight)} uppercase tracking-tight`}>
-                                {activeConfig.mainText}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="text-white px-2 py-1 rounded-full text-[9px] font-black uppercase tracking-wider" style={{ backgroundColor: activeConfig.progressBarColor }}>
-                                {stockInfo.availableItems} {activeConfig.subText}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    if (isStorefront) {
-        return <StockBarContent />;
-    }
+    const timerEnded = selectedTemplateId === 'countdown' && activeConfig.timerExpiry && new Date(activeConfig.timerExpiry).getTime() <= Date.now();
 
     return (
         <div className="flex flex-col h-screen bg-[#F8FAFC] text-[#1E293B] font-sans overflow-hidden">
@@ -652,80 +416,15 @@ function App() {
                                         }}
                                         className={`group flex flex-col items-start p-2 rounded-2xl border-2 transition-all text-left ${selectedTemplateId === template.id ? 'border-blue-600 bg-blue-50/10' : 'border-slate-100 hover:border-blue-200 bg-white shadow-sm hover:shadow-md'}`}
                                     >
-                                        {/* Large Stock Bar Design Preview */}
-                                        <div className="w-full aspect-[2.5/1] bg-slate-50 rounded-xl overflow-hidden mb-3 border border-slate-100 flex items-center justify-center p-2 group-hover:bg-slate-100 transition-colors">
-                                            <div className="w-full scale-100">
-                                                {template.id === 'linear' && (
-                                                    <div className="w-full h-full flex flex-col justify-center gap-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 shadow-sm">
-                                                                    <Flame size={12} fill="currentColor" />
-                                                                </div>
-                                                                <span className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Hurry! Selling Fast!</span>
-                                                            </div>
-                                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">12 Items Left</span>
-                                                        </div>
-                                                        <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden shadow-inner border border-slate-300/30">
-                                                            <div className="h-full bg-pink-500 w-3/4 rounded-full" />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {template.id === 'pulse' && (
-                                                    <div className="w-full flex items-center gap-4 px-2 py-3 bg-red-50 rounded-xl border border-red-100">
-                                                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 animate-pulse relative flex-shrink-0">
-                                                            <AlertCircle size={18} />
-                                                            <div className="absolute inset-0 bg-red-400 rounded-full animate-ping opacity-20"></div>
-                                                        </div>
-                                                        <div className="flex flex-col gap-0.5 w-full">
-                                                            <span className="text-[10px] font-black text-red-900 uppercase tracking-tighter leading-none">Limited Stock!</span>
-                                                            <span className="text-[8px] font-bold text-red-700/60 uppercase">Only 12 items remaining</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {template.id === 'minimal' && (
-                                                    <div className="w-full flex flex-col items-center gap-2 py-3 bg-slate-50/50 rounded-xl border border-slate-200/50">
-                                                        <div className="flex items-center gap-2">
-                                                            <TrendingUp size={14} className="text-blue-500 font-black" />
-                                                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">Popular Product</span>
-                                                        </div>
-                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Pieces available</span>
-                                                    </div>
-                                                )}
-                                                {template.id === 'countdown' && (
-                                                    <div className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                                                                <Clock size={16} />
-                                                            </div>
-                                                            <span className="text-[10px] font-black text-amber-900 uppercase">Flash Sale Ends In</span>
-                                                        </div>
-                                                        <div className="flex gap-1">
-                                                            <div className="flex flex-col items-center">
-                                                                <div className="w-5 h-4 bg-white/80 rounded shadow-sm text-[8px] flex items-center justify-center font-black">15</div>
-                                                                <span className="text-[5px] font-black text-amber-900/40 uppercase mt-0.5">h</span>
-                                                            </div>
-                                                            <div className="flex flex-col items-center">
-                                                                <div className="w-5 h-4 bg-white/80 rounded shadow-sm text-[8px] flex items-center justify-center font-black">30</div>
-                                                                <span className="text-[5px] font-black text-amber-900/40 uppercase mt-0.5">m</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {template.id === 'badge' && (
-                                                    <div className="w-full flex items-center justify-between p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                                <Package size={14} />
-                                                            </div>
-                                                            <span className="text-[11px] font-black text-emerald-900 uppercase tracking-tight">Status Badge</span>
-                                                        </div>
-                                                        <div className="px-3 py-1 bg-emerald-500 text-white rounded-full text-[8px] font-black uppercase tracking-wider">
-                                                            12 Left
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
+                                        {/* Live preview of the template with its saved look */}
+                                        <div className="w-full bg-slate-50 rounded-xl mb-3 border border-slate-100 flex items-center justify-center px-4 py-5 group-hover:bg-slate-100 transition-colors pointer-events-none">
+                                            <StockBarMarkup
+                                                templateId={template.id}
+                                                config={{ ...template.config, ...(config[template.id] || {}) }}
+                                                defaults={template.config}
+                                                stock={SAMPLE_STOCK.stock}
+                                                sold={SAMPLE_STOCK.sold}
+                                            />
                                         </div>
 
                                         {/* Text content below preview */}
@@ -749,9 +448,11 @@ function App() {
                 {/* Left: Branding */}
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200 shrink-0">
-                            W
-                        </div>
+                        <img
+                            src={`${window.wiseModuleData?.pluginUrl || '/wp-content/plugins/wisecampaign/'}images/fe/wisecampaign-icon.png`}
+                            alt=""
+                            className="w-9 h-9 rounded-xl object-contain shrink-0"
+                        />
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2 text-left">
                                 <span className="font-bold text-lg tracking-tight text-[#0F172A]">WiseCampaign</span>
@@ -829,6 +530,7 @@ function App() {
                                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isEnabled ? 'right-1' : 'left-1'}`} />
                             </div>
                         </div>
+                        <PerformanceCard module="stockbar" />
                     </div>
 
                     <div className={`flex flex-col flex-1 transition-all duration-300 ${!isEnabled ? 'opacity-40 grayscale pointer-events-none select-none filter blur-[1px]' : ''}`}>
@@ -977,6 +679,9 @@ function App() {
                                                 onChange={(e) => handleConfigChange('subText', e.target.value)}
                                                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                             />
+                                            <p className="text-[11px] text-slate-400 font-medium leading-relaxed pl-1">
+                                                Use <code className="text-blue-600">{'{stock}'}</code> for items left, <code className="text-blue-600">{'{sold}'}</code> for items sold and <code className="text-blue-600">{'{total}'}</code> for both. Each product shows its own numbers.
+                                            </p>
                                         </div>
 
                                         {selectedTemplateId === 'countdown' && (
@@ -1008,6 +713,13 @@ function App() {
                                                         onChange={(e) => handleConfigChange('timerExpiry', e.target.value)}
                                                         className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold outline-none focus:border-amber-400"
                                                     />
+                                                    <p className="text-[10px] text-slate-400 font-medium leading-relaxed ml-1">
+                                                        {!activeConfig.timerExpiry
+                                                            ? 'No end date yet: the preview shows a sample time and your store shows the bar without a timer.'
+                                                            : timerEnded
+                                                                ? 'This date has passed, so the bar is hidden on your store.'
+                                                                : "Uses your site's timezone. The bar disappears when the time runs out."}
+                                                    </p>
                                                 </div>
 
                                                 <div className="space-y-1">
@@ -1101,6 +813,59 @@ function App() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {displaySettings.displayOnProductPage && (
+                                        <div className="mt-4 flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-200 bg-white">
+                                            <div>
+                                                <div className="text-xs font-black">Hide WooCommerce stock text</div>
+                                                <div className="text-[10px] text-slate-400 font-medium">Removes the "12 in stock" line, since the stock bar already shows it</div>
+                                            </div>
+                                            <div
+                                                role="switch"
+                                                aria-checked={displaySettings.hideDefaultStock !== false}
+                                                onClick={() => {
+                                                    setDisplaySettings(prev => ({ ...prev, hideDefaultStock: prev.hideDefaultStock === false }));
+                                                    setPreviewPage('product');
+                                                }}
+                                                className={`w-10 h-6 shrink-0 rounded-full relative cursor-pointer shadow-inner transition-colors ${displaySettings.hideDefaultStock !== false ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${displaySettings.hideDefaultStock !== false ? 'right-1' : 'left-1'}`}></div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displaySettings.displayOnProductPage && (
+                                        <div className="mt-8 space-y-2">
+                                            <h3 className="text-sm font-black">Product Page Placement</h3>
+                                            {PRODUCT_POSITIONS.map((pos) => {
+                                                const selected = (displaySettings.productPosition || 'before_form') === pos.id;
+                                                return (
+                                                    <button
+                                                        key={pos.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setDisplaySettings(prev => ({ ...prev, productPosition: pos.id }));
+                                                            setPreviewPage('product');
+                                                        }}
+                                                        className={`w-full flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all ${selected ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                                                    >
+                                                        <div className="w-12 h-10 shrink-0 rounded-md bg-slate-50 border border-slate-100 flex flex-col justify-center gap-1 px-1.5">
+                                                            <span className="h-1 w-6 rounded-full bg-slate-300" />
+                                                            {pos.id === 'after_price' && <span className="h-1.5 w-full rounded-sm bg-blue-500" />}
+                                                            <span className="h-1 w-8 rounded-full bg-slate-200" />
+                                                            {pos.id === 'before_form' && <span className="h-1.5 w-full rounded-sm bg-blue-500" />}
+                                                            <span className="h-1.5 w-full rounded-sm bg-slate-700" />
+                                                            {pos.id === 'after_form' && <span className="h-1.5 w-full rounded-sm bg-blue-500" />}
+                                                        </div>
+                                                        <div>
+                                                            <div className={`text-xs font-black ${selected ? 'text-blue-600' : 'text-slate-700'}`}>{pos.label}</div>
+                                                            <div className="text-[10px] text-slate-400 font-medium">{pos.desc}</div>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </section>
                             )}
                         </div>
@@ -1135,6 +900,27 @@ function App() {
                         </div>
                     )}
                     <div className={`transition-all duration-300 w-full max-w-5xl ${device === 'mobile' ? 'max-w-[375px]' : ''}`}>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                                {[
+                                    { id: 'product', label: 'Product Page' },
+                                    { id: 'shop', label: 'Shop Page' },
+                                ].map((page) => (
+                                    <button
+                                        key={page.id}
+                                        type="button"
+                                        onClick={() => setPreviewPage(page.id)}
+                                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${previewPage === page.id ? 'bg-slate-100 text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
+                                    >
+                                        {page.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <span className="text-[11px] font-bold text-slate-400">
+                                Sample product: {SAMPLE_STOCK.stock} in stock, {SAMPLE_STOCK.sold} sold
+                            </span>
+                        </div>
+
                         <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
                             {/* Browser UI */}
                             <div className="bg-[#F8FAFC] px-6 py-2 border-b border-slate-200 flex items-center gap-4">
@@ -1144,11 +930,8 @@ function App() {
                                     <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
                                 </div>
                                 <div className="flex-1 max-w-4xl mx-auto bg-white h-6 rounded-lg flex items-center px-3 gap-2 border border-slate-200/60 shadow-sm">
-                                    <div className="w-4 h-4 rounded-full bg-slate-100 shrink-0 flex items-center justify-center">
-                                        <div className="w-2 h-2 rounded-full bg-slate-300"></div>
-                                    </div>
                                     <span className="text-[11px] font-medium text-slate-500 flex-1 truncate text-center">
-                                        mysite.com/products/ergonomic-chair
+                                        {previewPage === 'shop' ? 'mysite.com/shop' : 'mysite.com/products/ergonomic-chair'}
                                     </span>
                                     <div className="w-4 h-4 shrink-0 flex items-center justify-center opacity-30">
                                         <Search size={10} className="text-slate-500" />
@@ -1156,94 +939,89 @@ function App() {
                                 </div>
                             </div>
 
-                            {/* Storefront Preview */}
-                            <div className={`transition-all duration-300 ${device === 'mobile' ? 'p-6' : 'p-12'}`}>
-                                <div className={`grid grid-cols-1 ${device === 'mobile' ? 'gap-8' : 'md:grid-cols-2 gap-16'}`}>
-                                    {/* Product Image Skeleton */}
-                                    <div className="space-y-6">
-                                        <div className="relative aspect-square bg-slate-100 rounded-[32px] overflow-hidden">
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-slate-200 to-slate-50 animate-pulse shimmer"></div>
+                            {/* Storefront Preview: the bar uses the storefront markup and stylesheet */}
+                            <div className={`transition-all duration-300 ${device === 'mobile' ? 'p-5' : 'p-10'}`}>
+                                {previewPage === 'product' ? (
+                                    <div className={`grid grid-cols-1 ${device === 'mobile' ? 'gap-6' : 'md:grid-cols-2 gap-12'}`}>
+                                        <div className="space-y-4">
+                                            <div className="aspect-square bg-slate-100 rounded-3xl"></div>
+                                            <div className="flex gap-3">
+                                                {[1, 2, 3, 4].map(id => (
+                                                    <div key={id} className="flex-1 aspect-square bg-slate-100 rounded-xl"></div>
+                                                ))}
+                                            </div>
                                         </div>
-                                        <div className="flex gap-4">
-                                            {[1, 2, 3, 4].map(id => (
-                                                <div key={id} className="flex-1 aspect-square bg-slate-100 rounded-2xl animate-pulse"></div>
+
+                                        <div className="text-left">
+                                            <div className="h-3 w-28 bg-slate-100 rounded-full mb-5"></div>
+                                            <div className="h-9 w-3/4 bg-slate-100 rounded-xl mb-3"></div>
+                                            <div className="flex gap-1 mb-5">
+                                                {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-3.5 h-3.5 bg-amber-200 rounded-full"></div>)}
+                                            </div>
+                                            <div className="flex items-baseline gap-3 mb-5">
+                                                <div className="h-8 w-28 bg-slate-200 rounded-lg"></div>
+                                                <div className="h-4 w-16 bg-slate-100 rounded-full"></div>
+                                            </div>
+
+                                            {!displaySettings.displayOnProductPage ? (
+                                                <div className="mb-5 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold">
+                                                    The stock bar is turned off for product pages (Settings tab).
+                                                </div>
+                                            ) : displaySettings.productPosition === 'after_price' && renderBar()}
+
+                                            <div className="space-y-2 mb-6">
+                                                <div className="h-2.5 w-full bg-slate-50 rounded-full"></div>
+                                                <div className="h-2.5 w-11/12 bg-slate-50 rounded-full"></div>
+                                                <div className="h-2.5 w-2/3 bg-slate-50 rounded-full"></div>
+                                            </div>
+
+                                            {/* WooCommerce's own stock line, unless the stock bar setting hides it */}
+                                            {(!displaySettings.displayOnProductPage || displaySettings.hideDefaultStock === false) && (
+                                                <p className="mb-4 text-sm font-semibold text-emerald-700">● {SAMPLE_STOCK.stock} in stock</p>
+                                            )}
+
+                                            {displaySettings.displayOnProductPage && (displaySettings.productPosition || 'before_form') === 'before_form' && renderBar()}
+
+                                            <div className="flex gap-3 items-center mb-5">
+                                                <div className="w-16 h-11 bg-white border border-slate-200 rounded-lg"></div>
+                                                <div className="flex-1 h-11 bg-slate-900 rounded-lg"></div>
+                                            </div>
+
+                                            {displaySettings.displayOnProductPage && displaySettings.productPosition === 'after_form' && renderBar()}
+
+                                            <div className="pt-4 border-t border-slate-100 space-y-2">
+                                                <div className="h-2.5 w-32 bg-slate-100 rounded-full"></div>
+                                                <div className="h-2.5 w-40 bg-slate-100 rounded-full"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="h-7 w-40 bg-slate-200 rounded-lg mb-6"></div>
+                                        {!displaySettings.displayOnShopPage && (
+                                            <div className="mb-5 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold">
+                                                The stock bar is turned off for shop pages (Settings tab).
+                                            </div>
+                                        )}
+                                        <div className={`grid ${device === 'mobile' ? 'grid-cols-1 gap-8' : 'grid-cols-3 gap-6'}`}>
+                                            {[1, 2, 3].map((i) => (
+                                                <div key={i} className="text-center">
+                                                    <div className="aspect-square bg-slate-100 rounded-2xl mb-3"></div>
+                                                    <div className="h-3 w-2/3 bg-slate-100 rounded-full mx-auto mb-2"></div>
+                                                    <div className="h-3 w-1/3 bg-slate-200 rounded-full mx-auto mb-1"></div>
+                                                    {displaySettings.displayOnShopPage && renderBar('loop')}
+                                                    {!displaySettings.displayOnShopPage && <div className="h-3" />}
+                                                    <div className="h-9 w-28 bg-slate-800/90 rounded-md mx-auto"></div>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
-
-                                    {/* Product Info Skeletons */}
-                                    <div className="space-y-8 text-left">
-                                        <nav className="flex items-center gap-2">
-                                            <div className="h-4 w-16 bg-slate-100 rounded-lg animate-pulse"></div>
-                                            <span className="text-slate-200">/</span>
-                                            <div className="h-4 w-12 bg-slate-100 rounded-lg animate-pulse"></div>
-                                        </nav>
-
-                                        <div className="space-y-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="h-12 w-3/4 bg-slate-100 rounded-xl animate-pulse"></div>
-                                                <div className="w-12 h-12 bg-slate-100 rounded-full animate-pulse"></div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex gap-1">
-                                                    {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-4 h-4 bg-slate-100 rounded-full animate-pulse"></div>)}
-                                                </div>
-                                                <div className="h-4 w-24 bg-slate-100 rounded-lg animate-pulse"></div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-baseline gap-4">
-                                            <div className="h-12 w-36 bg-slate-100 rounded-xl animate-pulse"></div>
-                                            <div className="h-6 w-24 bg-slate-50 rounded-lg animate-pulse"></div>
-                                        </div>
-
-                                        {/* DYNAMIC STOCK BAR PREVIEW */}
-                                        <div
-                                            className="p-1 rounded-3xl transition-all duration-300 shadow-sm"
-                                            style={{
-                                                backgroundColor: config.stockBarBg,
-                                                borderColor: config.borderColor,
-                                                color: config.textColor
-                                            }}
-                                        >
-                                            <StockBarContent
-                                                config={config}
-                                                selectedTemplateId={selectedTemplateId}
-                                                isStorefront={false}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-6 pt-4">
-                                            <div className="space-y-4">
-                                                <div className="h-5 w-24 bg-slate-100 rounded-lg animate-pulse"></div>
-                                                <div className="flex gap-4">
-                                                    <div className="w-10 h-10 bg-slate-200 rounded-full ring-4 ring-slate-100 ring-offset-2 animate-pulse"></div>
-                                                    <div className="w-10 h-10 bg-slate-100 rounded-full animate-pulse"></div>
-                                                    <div className="w-10 h-10 bg-slate-100 rounded-full animate-pulse"></div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex gap-4 items-center">
-                                                <div className="w-32 h-14 bg-slate-50 border border-slate-200 rounded-2xl animate-pulse"></div>
-                                                <div className="flex-1 h-14 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200 animate-pulse"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Brand Logos Footer */}
-                            <div className="p-12 bg-slate-50 border-t border-slate-100">
-                                <div className="flex items-center justify-center gap-16 grayscale opacity-20">
-                                    {['VOGUE', 'FORBES', 'WIRED', 'GQ'].map(brand => (
-                                        <span key={brand} className="text-2xl font-black italic tracking-tighter animate-pulse">{brand}</span>
-                                    ))}
-                                </div>
+                                )}
                             </div>
                         </div>
-                        <p className="text-center text-[10px] text-slate-400 font-bold mt-10 flex items-center justify-center gap-2 opacity-60 uppercase tracking-widest">
+                        <p className="text-center text-[10px] text-slate-400 font-bold mt-8 flex items-center justify-center gap-2 opacity-60 uppercase tracking-widest">
                             <Monitor size={14} />
-                            Previewing Live Experience Mode
+                            Live {previewPage === 'shop' ? 'shop page' : 'product page'} preview
                         </p>
                     </div>
                 </main>

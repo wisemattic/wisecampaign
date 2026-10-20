@@ -123,12 +123,16 @@
 
 
         container.innerHTML = popupHTML;
+        // WiseCampaign Analytics (includes/js/wise-track.js)
+        const trackQueue = (window.wiseTrackQueue = window.wiseTrackQueue || []);
         if (productUrl) {
             container.firstElementChild.addEventListener('click', function () {
+                trackQueue.push(['socialproof', 'click']);
                 window.location.href = productUrl;
             });
         }
         container.classList.add('show');
+        trackQueue.push(['socialproof', 'view']);
 
         const displayTime = (parseInt(settings.display_time, 10) || 5) * 1000;
         const delayTime = (parseInt(settings.delay_time, 10) || 5) * 1000;

@@ -23,6 +23,13 @@ jQuery(document).ready(function($) {
     }
 
     /**
+     * Reports to WiseCampaign Analytics (includes/js/wise-track.js)
+     */
+    function trackEvent(event) {
+        (window.wiseTrackQueue = window.wiseTrackQueue || []).push(['wisecart', event]);
+    }
+
+    /**
      * Initialize cart trigger functionality
      */
     function initCartTrigger() {
@@ -42,6 +49,7 @@ jQuery(document).ready(function($) {
 
         isCartOpen = true;
         $('body').addClass('wisecart-open');
+        trackEvent('open');
 
         // Bind close events
         bindCloseEvents();
@@ -155,6 +163,7 @@ jQuery(document).ready(function($) {
      */
     function bindCartEvents() {
         $(document).off('click.wisecart', '.wisecart-checkout-button').on('click.wisecart', '.wisecart-checkout-button', function(e) {
+            trackEvent('checkout');
             if (wiseCartData.replaceCheckout) {
                 e.preventDefault();
                 loadCheckoutContent();

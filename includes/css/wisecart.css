@@ -326,6 +326,166 @@ body.wisecart-open .wisecart-container {
 
 
 /* ==========================================================================
+   Reward Progress Bar
+   ========================================================================== */
+
+.wisecart-progress {
+    padding: 1rem 1.5rem 1.1rem;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+.wisecart-progress-message {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #1f2937;
+}
+
+.wisecart-progress-amount {
+    font-weight: 700;
+    color: var(--wc-checkout-bg, #28a745);
+}
+
+.wisecart-progress-track {
+    position: relative;
+    height: 8px;
+    margin: 0 10px 0 0;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.wisecart-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--wc-checkout-bg, #28a745);
+    transition: width 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.wisecart-progress-marker {
+    position: absolute;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    background: #ffffff;
+    font-size: 11px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wisecart-progress-marker.is-reached {
+    border-color: var(--wc-checkout-bg, #28a745);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+}
+
+.wisecart-progress-goals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+}
+
+.wisecart-progress-goal {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+}
+
+.wisecart-progress-goal.is-reached {
+    color: #15803d;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.wisecart-progress.is-complete .wisecart-progress-message {
+    color: #15803d;
+}
+
+/* Promotions other plugins print above the items (Discount Manager banners) */
+.wisecart-promo {
+    padding: 1rem 1.5rem 0;
+    flex-shrink: 0;
+}
+
+.wisecart-promo .wise-promo-banner {
+    margin: 0 !important;
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   Discounts, Savings & Total
+   ========================================================================== */
+
+.wisecart-totals + .wisecart-adjustments {
+    margin-top: -1rem;
+}
+
+.wisecart-adjustments {
+    margin-bottom: 1.5rem;
+}
+
+.wisecart-adjustment {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #4b5563;
+    padding: 0.2rem 0;
+}
+
+.wisecart-adjustment.is-saving span:last-child {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.wisecart-adjustment .woocommerce-remove-coupon {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.wisecart-grand-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    color: #1f2937;
+    padding-top: 0.6rem;
+    margin-top: 0.4rem;
+    border-top: 1px dashed #d1d5db;
+}
+
+.wisecart-savings {
+    margin-top: 0.6rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.wisecart-shipping-note {
+    margin: 0.5rem 0 0;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-align: right;
+}
+
+/* ==========================================================================
    Floating Action Button (Trigger)
    ========================================================================== */
 
@@ -707,5 +867,13 @@ body.wisecart-open .wisecart-container {
     .wisecart-footer,
     .wisecart-checkout-wrapper {
         padding: 1rem;
+    }
+
+    .wisecart-progress {
+        padding: 0.85rem 1rem 1rem;
+    }
+
+    .wisecart-promo {
+        padding: 0.85rem 1rem 0;
     }
 }

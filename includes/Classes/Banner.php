@@ -284,8 +284,15 @@ class Banner
     /**
      * Creates the banner table in the database if it does not exist.
      */
+    // Wisecampaign::on_activation() runs on every request, so the table is only checked once per plugin version
+    const TABLE_VERSION_OPTION = 'wisecampaign_banner_table_version';
+
     public function create_banner_table()
     {
+        if (get_option(self::TABLE_VERSION_OPTION) === WISECAMPAIGN_VERSION) {
+            return;
+        }
+
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
 
@@ -352,7 +359,6 @@ class Banner
 
         require_once(ABSPATH.'wp-admin/includes/upgrade.php');
         dbDelta($sql);
-        error_log('dbDelta executed for banner table creation or update.');
 
         // Check if the table contains any rows
         $row_count = $wpdb->get_var("SELECT COUNT(*) FROM $this->table_name");
@@ -362,6 +368,8 @@ class Banner
             // $wpdb->query("TRUNCATE TABLE $this->table_name");
             $this->insert_default_banners();
         }
+
+        update_option(self::TABLE_VERSION_OPTION, WISECAMPAIGN_VERSION);
     }
 
     public function insert_default_banners() {
@@ -430,8 +438,6 @@ class Banner
 
                 if ($inserted === false) {
                     error_log('Failed to insert banner with ID '.$banner['id'].': '.$wpdb->last_error);
-                } else {
-                    error_log('Successfully inserted banner with ID '.$banner['id']);
                 }
             }
         }

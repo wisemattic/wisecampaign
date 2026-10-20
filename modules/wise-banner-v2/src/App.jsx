@@ -1694,9 +1694,11 @@ function App() {
                 {/* Left: Branding */}
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200 shrink-0">
-                            W
-                        </div>
+                        <img
+                            src={`${window.wiseModuleData?.pluginUrl || '/wp-content/plugins/wisecampaign/'}images/fe/wisecampaign-icon.png`}
+                            alt=""
+                            className="w-9 h-9 rounded-xl object-contain shrink-0"
+                        />
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2 text-left">
                                 <span className="font-bold text-lg tracking-tight text-[#0F172A]">WiseCampaign</span>

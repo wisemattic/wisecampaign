@@ -6,7 +6,7 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           1.3.1
+ * Version:           2.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Tested up to:      7.1
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('WISECAMPAIGN_VERSION')) {
-    define('WISECAMPAIGN_VERSION', '1.3.1');
+    define('WISECAMPAIGN_VERSION', '2.0.0');
 }
 
 
@@ -109,15 +109,28 @@ add_action('before_woocommerce_init', function () {
 // Autoload required classes using Composer
 require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
+// Modules turned off on the Getting Started page are not loaded at all.
+use WISECAMPAIGN\Classes\Modules;
+
 // Sales Notification also runs without WooCommerce, using simulated orders.
-require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+if (Modules::is_enabled('socialproof')) {
+    require_once plugin_dir_path(__FILE__) . 'includes/features/SalesNotification.php';
+}
 
 if (WISECAMPAIGN_HAS_WC) {
-    require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
-    require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+    if (Modules::is_enabled('checkout')) {
+        require_once plugin_dir_path(__FILE__) . 'includes/features/direct-checkout.php';
+    }
+    if (Modules::is_enabled('wisecart')) {
+        require_once plugin_dir_path(__FILE__) . 'includes/features/wiseCart.php';
+    }
     // Lowercase "features": the folder name is case-sensitive on Linux servers.
-    require_once plugin_dir_path(__FILE__) . 'includes/features/WiseVideoCommerce.php';
-    require_once plugin_dir_path(__FILE__) . 'includes/features/WiseProductTable.php';
+    if (Modules::is_enabled('wisevideo')) {
+        require_once plugin_dir_path(__FILE__) . 'includes/features/WiseVideoCommerce.php';
+    }
+    if (Modules::is_enabled('producttable')) {
+        require_once plugin_dir_path(__FILE__) . 'includes/features/WiseProductTable.php';
+    }
 }
 
 // Import classes
@@ -199,6 +212,12 @@ class Wisecampaign
             'menu_slug' => 'wisecampaign_getting_started'
         ]);
 
+        $module_manager->register_module('wise-analytics', [
+            'name' => 'Analytics',
+            'menu_slug' => 'wisecampaign_analytics',
+            'dev_port' => 5179
+        ]);
+
         $module_manager->register_module('wise-video-commerce', [
             'name' => 'WiseVideo Commerce',
             'menu_slug' => 'wise_video_commerce',
@@ -211,18 +230,55 @@ class Wisecampaign
             'dev_port' => 5175
         ]);
 
-        WISECAMPAIGN\Classes\SalesNotification::getInstance();
+        $module_manager->register_module('wise-direct-checkout', [
+            'name' => 'Direct Checkout',
+            'menu_slug' => 'wisecampaign_checkout',
+            'dev_port' => 5176
+        ]);
 
-        if (WISECAMPAIGN_HAS_WC) {
-            StockBar::getInstance();
-            WISECAMPAIGN\Features\WiseCart::getInstance();
-            \WISECAMPAIGN\Features\WiseProductTable::getInstance();
+        $module_manager->register_module('wise-sales-notification', [
+            'name' => 'Sales Notification',
+            'menu_slug' => 'wisecampaign_notification',
+            'dev_port' => 5177
+        ]);
+
+        $module_manager->register_module('wise-cart', [
+            'name' => 'wiseCart',
+            'menu_slug' => 'wisecampaign_cart',
+            'dev_port' => 5178
+        ]);
+
+        Modules::getInstance();
+        // Store-wide analytics for every module; always on, modules that are off simply report nothing
+        WISECAMPAIGN\Classes\Analytics::getInstance();
+
+        if (Modules::is_enabled('socialproof')) {
+            WISECAMPAIGN\Classes\SalesNotification::getInstance();
         }
 
-        WiseBannerV2::getInstance();
-        BannerAnalytics::getInstance();
-
         if (WISECAMPAIGN_HAS_WC) {
+            if (Modules::is_enabled('stockbar')) {
+                StockBar::getInstance();
+            }
+            if (Modules::is_enabled('wisecart')) {
+                WISECAMPAIGN\Features\WiseCart::getInstance();
+            }
+            if (Modules::is_enabled('producttable')) {
+                \WISECAMPAIGN\Features\WiseProductTable::getInstance();
+            }
+        }
+
+        // Pages keep their [product_table] shortcodes while the module is off: print nothing instead of the raw tag
+        if (!Modules::is_enabled('producttable')) {
+            add_shortcode('product_table', '__return_empty_string');
+        }
+
+        if (Modules::is_enabled('banner')) {
+            WiseBannerV2::getInstance();
+            BannerAnalytics::getInstance();
+        }
+
+        if (WISECAMPAIGN_HAS_WC && Modules::is_enabled('wisevideo')) {
             \WISECAMPAIGN\Features\WiseVideoCommerce::getInstance();
         }
     }
@@ -284,9 +340,15 @@ class Wisecampaign
     public function wise_campaign_create_banner_table()
     {
         Banner::getInstance()->create_banner_table();
+        // Creating these instances adds their storefront hooks, so modules that are off are skipped.
+        // Their defaults are written on the first request after they are turned on.
         // if (WISECAMPAIGN_HAS_WC) {
-        StockBar::getInstance()->initialize_stockbar_defaults();
-        WiseBannerV2::getInstance()->initialize_defaults();
+        if (Modules::is_enabled('stockbar')) {
+            StockBar::getInstance()->initialize_stockbar_defaults();
+        }
+        if (Modules::is_enabled('banner')) {
+            WiseBannerV2::getInstance()->initialize_defaults();
+        }
         // }
     }
 }

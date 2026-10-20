@@ -1,151 +1,446 @@
-.wisecampaign-product-video-gallery {
-    width: 100%;
-    margin: 20px 0;
-    max-width: 100%;
+/*
+ * =================================================================
+ * WiseVideo Commerce (storefront)
+ * Settings arrive as CSS variables on :root (WiseVideoCommerce::enqueue_frontend_assets()):
+ * --wcvc-radius, --wcvc-card-bg, --wcvc-card-text, --wcvc-btn-bg, --wcvc-btn-text, --wcvc-title-size, --wcvc-title-color
+ * =================================================================
+ */
+
+/* WooCommerce hides .woocommerce-product-gallery until its own slider starts; this gallery has no slider */
+.wcvc-gallery.woocommerce-product-gallery {
+    opacity: 1 !important;
 }
 
-.wisecampaign-main-video video {
-    width: 100%;
+.wcvc-gallery svg {
     display: block;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    height: 100%;
 }
 
-.wisecampaign-video-thumbnails {
+.wcvc-gallery__title {
+    margin: 0 0 16px;
+    font-size: var(--wcvc-title-size, 16px);
+    font-weight: 800;
+    color: var(--wcvc-title-color, #000000);
+}
+
+/* -----------------------------------------------------------------
+ * Main stage: one video or image at a time
+ * ----------------------------------------------------------------- */
+.wcvc-stage {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--wcvc-radius, 8px);
+    background: #0f172a;
+    box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.35);
+}
+
+.wcvc-stage:not(.is-video) {
+    background: transparent;
+}
+
+.wcvc-stage__video,
+.wcvc-stage__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: inherit;
+}
+
+.wcvc-stage__video {
+    max-height: 80vh;
+    background: #000000;
+}
+
+.wcvc-stage [hidden] {
+    display: none !important;
+}
+
+/* -----------------------------------------------------------------
+ * Thumbnails
+ * ----------------------------------------------------------------- */
+.wcvc-thumbs {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
 }
 
-.wisecampaign-video-thumbnails::-webkit-scrollbar {
-    height: 4px;
-}
-
-.wisecampaign-video-thumbnails::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-
-.video-thumb {
+.wcvc-thumb {
+    position: relative;
+    flex: 0 0 84px;
+    height: 84px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     border: 2px solid transparent;
-    transition: all 0.2s ease;
+    border-radius: calc(var(--wcvc-radius, 8px) * 0.75);
+    background: #f1f5f9;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
-.video-thumb:hover {
-    border-color: #3b82f6;
+.wcvc-thumb:hover {
     transform: translateY(-2px);
 }
 
-.video-thumb.active {
-    border-color: #3b82f6;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+.wcvc-thumb.is-active {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Grid Layout */
-.wisecampaign-grid-2 {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    overflow-x: visible !important;
-}
-.wisecampaign-grid-2 .video-thumb {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1/1 !important;
-}
-
-/* Stacked Layout */
-.wisecampaign-stacked {
-    flex-direction: column !important;
-    overflow-x: visible !important;
-}
-.wisecampaign-stacked .video-thumb {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 16/9 !important;
-}
-
-/* Mobile Cart Overlay */
-.wisecampaign-mobile-cart-overlay {
-    z-index: 9999 !important;
-    display: flex !important;
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: auto !important;
-}
-
-@media (min-width: 768px) {
-    .wisecampaign-mobile-cart-overlay {
-        display: none !important;
-    }
-}
-
-.wisecampaign-mobile-cart-overlay button {
-    transition: all 0.2s ease;
-}
-
-.wisecampaign-mobile-cart-overlay button:active {
-    transform: scale(0.95);
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-/* Lightbox Modal */
-.wisecampaign-video-lightbox {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 100000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(10px);
-}
-
-.wisecampaign-video-lightbox.active {
-    display: flex;
-}
-
-.wisecampaign-lightbox-content {
-    position: relative;
-    width: 90%;
-    max-width: 450px;
-    aspect-ratio: 9/16;
-    background: #000;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    transform: scale(0.9);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.wisecampaign-video-lightbox.active .wisecampaign-lightbox-content {
-    transform: scale(1);
-}
-
-.wisecampaign-lightbox-content video {
+.wcvc-thumb video,
+.wcvc-thumb img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    pointer-events: none;
 }
 
-.wisecampaign-lightbox-close {
+.wcvc-thumb__play,
+.wcvc-reel__play {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    padding: 7px 6px 7px 8px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    pointer-events: none;
+}
+
+.wcvc-thumbs--grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow: visible;
+}
+
+.wcvc-thumbs--grid .wcvc-thumb,
+.wcvc-thumbs--stacked .wcvc-thumb {
+    flex: none;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+}
+
+.wcvc-thumbs--stacked {
+    flex-direction: column;
+    overflow: visible;
+}
+
+.wcvc-thumbs--stacked .wcvc-thumb {
+    aspect-ratio: 16 / 9;
+}
+
+/* -----------------------------------------------------------------
+ * Product card (on the main video on phones, and in the lightbox)
+ * ----------------------------------------------------------------- */
+.wcvc-card {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 56px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: var(--wcvc-card-bg, rgba(30, 41, 59, 0.7));
+    color: var(--wcvc-card-text, #ffffff);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: wcvcSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wcvc-card__thumb {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.wcvc-card__details {
+    flex: 1;
+    min-width: 0;
+}
+
+.wcvc-card__name {
+    margin: 0;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: inherit;
+}
+
+.wcvc-card__price {
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.85;
+    color: inherit;
+}
+
+.wcvc-card__price del {
+    opacity: 0.6;
+}
+
+.wcvc-card__price ins {
+    text-decoration: none;
+}
+
+.wcvc-card__btn {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--wcvc-btn-bg, #ffffff);
+    color: var(--wcvc-btn-text, #1e293b);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.wcvc-card__btn:active {
+    transform: scale(0.95);
+}
+
+.wcvc-card__btn[disabled] {
+    opacity: 0.7;
+    cursor: default;
+}
+
+/* On the gallery the card only shows on phones, and only while a video plays */
+.wcvc-card--stage {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .wcvc-stage.is-video .wcvc-card--stage {
+        display: flex;
+    }
+}
+
+@keyframes wcvcSlideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* -----------------------------------------------------------------
+ * Reels under Add to Cart
+ * ----------------------------------------------------------------- */
+.wcvc-reels {
+    margin: 28px 0;
+}
+
+.wcvc-reels__title {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #0f172a;
+}
+
+.wcvc-reels__list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.wcvc-reel {
+    position: relative;
+    flex: 0 0 132px;
+    aspect-ratio: 9 / 16;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 16px;
+    background: #e2e8f0;
+    box-shadow: 0 6px 18px -8px rgba(15, 23, 42, 0.35);
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.wcvc-reel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -10px rgba(15, 23, 42, 0.45);
+}
+
+.wcvc-reel video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.wcvc-reel__play {
     width: 40px;
     height: 40px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
+    padding: 11px 10px 11px 12px;
+    transition: opacity 0.2s ease;
+}
+
+/* While a reel plays on its own, the play button only shows on hover */
+.wcvc-reels.is-autoplay .wcvc-reel.is-playing .wcvc-reel__play {
+    opacity: 0;
+}
+
+.wcvc-reels.is-autoplay .wcvc-reel.is-playing:hover .wcvc-reel__play {
+    opacity: 1;
+}
+
+.wcvc-reel svg,
+.wcvc-lightbox svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* -----------------------------------------------------------------
+ * Lightbox
+ * ----------------------------------------------------------------- */
+.wcvc-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.2s;
+    padding: 16px;
+    background: rgba(2, 6, 23, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: wcvcFade 0.25s ease;
 }
 
-.wisecampaign-lightbox-close:hover {
-    background: rgba(255,255,255,0.3);
+.wcvc-lightbox[hidden] {
+    display: none;
+}
+
+.wcvc-lightbox__inner {
+    position: relative;
+    width: min(420px, 100%);
+    max-height: 92vh;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border-radius: 22px;
+    background: #000000;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    animation: wcvcPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wcvc-lightbox__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.wcvc-lightbox .wcvc-card {
+    bottom: 16px;
+}
+
+.wcvc-lightbox__btn {
+    position: absolute;
+    z-index: 4;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 10px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.wcvc-lightbox__btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.wcvc-lightbox__close {
+    top: 14px;
+    right: 14px;
+}
+
+.wcvc-lightbox__close:hover {
     transform: rotate(90deg);
+}
+
+.wcvc-lightbox__sound {
+    top: 14px;
+    left: 14px;
+}
+
+.wcvc-lightbox__sound .wcvc-mute,
+.wcvc-lightbox.is-muted .wcvc-lightbox__sound .wcvc-wave {
+    display: none;
+}
+
+.wcvc-lightbox.is-muted .wcvc-lightbox__sound .wcvc-mute {
+    display: inline;
+}
+
+.wcvc-lightbox__prev,
+.wcvc-lightbox__next {
+    top: 50%;
+    margin-top: -20px;
+}
+
+.wcvc-lightbox__prev {
+    left: 10px;
+}
+
+.wcvc-lightbox__next {
+    right: 10px;
+}
+
+body.wcvc-lightbox-open {
+    overflow: hidden;
+}
+
+@keyframes wcvcFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes wcvcPop {
+    from { transform: scale(0.92); }
+    to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wcvc-card,
+    .wcvc-lightbox,
+    .wcvc-lightbox__inner {
+        animation: none;
+    }
 }

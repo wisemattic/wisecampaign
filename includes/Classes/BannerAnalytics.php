@@ -43,8 +43,11 @@ class BannerAnalytics
         // WooCommerce order attribution (the hooks never fire without WooCommerce).
         add_action('woocommerce_checkout_order_processed', [$this, 'capture_classic_checkout_attribution'], 10, 3);
         add_action('woocommerce_store_api_checkout_order_processed', [$this, 'capture_attribution']);
-        add_action('woocommerce_order_status_processing', [$this, 'record_conversion']);
-        add_action('woocommerce_order_status_completed', [$this, 'record_conversion']);
+        add_action('woocommerce_order_status_changed', [$this, 'sync_conversion']);
+        add_action('woocommerce_order_refunded', [$this, 'sync_conversion']);
+        add_action('woocommerce_trash_order', [$this, 'sync_conversion']);
+        add_action('woocommerce_untrash_order', [$this, 'sync_conversion']);
+        add_action('woocommerce_before_delete_order', [$this, 'forget_conversion']);
     }
 
     public static function table_name()
@@ -265,6 +268,8 @@ class BannerAnalytics
             'clicked_at' => $clicked_at
         ]);
         $order->save();
+        // The order may already be paid by now
+        $this->sync_conversion($order->get_id());
 
         // One click attributes one order.
         if (!headers_sent()) {
@@ -273,27 +278,83 @@ class BannerAnalytics
     }
 
     /**
-     * Counts an attributed order once it is paid (processing or completed).
+     * Keeps an attributed order's conversion in step with the order, as WiseCampaign Analytics does:
+     * counted once it is paid (processing or completed), lowered by refunds, taken back off when it is
+     * cancelled or fully refunded. Changes land on the day the conversion was first counted.
      */
-    public function record_conversion($order_id)
+    public function sync_conversion($order_id)
+    {
+        $this->set_conversion($order_id, false);
+    }
+
+    // A deleted order no longer counts
+    public function forget_conversion($order_id)
+    {
+        $this->set_conversion($order_id, true);
+    }
+
+    private function set_conversion($order_id, $deleting)
     {
         if (!function_exists('wc_get_order')) {
             return;
         }
         $order = wc_get_order($order_id);
-        if (!$order) {
+        if (!$order || $order instanceof \WC_Order_Refund) {
             return;
         }
 
         $attribution = $order->get_meta(self::ATTRIBUTION_META);
-        if (empty($attribution['banner_id']) || $order->get_meta(self::CONVERTED_META)) {
+        if (empty($attribution['banner_id'])) {
             return;
         }
 
-        $this->increment('conversion', $attribution['banner_id'], $attribution['device'] ?? 'desktop', 1, (float) $order->get_total());
+        $counted = $order->get_meta(self::CONVERTED_META);
+        // Orders converted before refunds were followed hold the time they were counted
+        if (is_string($counted) && $counted !== '') {
+            $counted = ['date' => substr($counted, 0, 10), 'count' => 1, 'revenue' => (float) $order->get_total()];
+        }
+        if (!is_array($counted)) {
+            $counted = ['date' => current_time('Y-m-d'), 'count' => 0, 'revenue' => 0.0];
+        }
 
-        $order->update_meta_data(self::CONVERTED_META, current_time('mysql'));
+        $paid = !$deleting && $order->has_status(wc_get_is_paid_statuses());
+        $count = $paid ? 1 : 0;
+        $revenue = $paid ? max(0, (float) $order->get_total() - (float) $order->get_total_refunded()) : 0.0;
+        if ($count === (int) $counted['count'] && abs($revenue - (float) $counted['revenue']) < 0.0001) {
+            return;
+        }
+
+        $device = in_array($attribution['device'] ?? '', self::DEVICES, true) ? $attribution['device'] : 'desktop';
+        $this->adjust('conversion', sanitize_key($attribution['banner_id']), $device, $counted['date'], $count - (int) $counted['count'], $revenue - (float) $counted['revenue']);
+
+        $order->update_meta_data(self::CONVERTED_META, ['date' => $counted['date'], 'count' => $count, 'revenue' => $revenue]);
         $order->save();
+    }
+
+    /**
+     * Adds (or with negative numbers, takes off) a count and revenue on a given day. Never below zero.
+     */
+    private function adjust($event, $banner_id, $device, $date, $count, $revenue)
+    {
+        global $wpdb;
+        $this->maybe_create_table();
+        $table = self::table_name();
+
+        $wpdb->query(
+            $wpdb->prepare(
+                "INSERT INTO {$table} (stat_date, banner_id, event, device, count, revenue)
+                VALUES (%s, %s, %s, %s, %d, %f)
+                ON DUPLICATE KEY UPDATE count = GREATEST(0, CAST(count AS SIGNED) + %d), revenue = GREATEST(0, revenue + %f)",
+                $date,
+                $banner_id,
+                $event,
+                $device,
+                max(0, $count),
+                max(0, $revenue),
+                $count,
+                $revenue
+            )
+        );
     }
 
     /* ---------------------------------------------------------------------

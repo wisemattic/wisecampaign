@@ -95,6 +95,11 @@
     transform: translateX(20px) !important;
 }
 
+.wc-toggle-btn.wc-toggle-saving {
+    cursor: wait !important;
+    opacity: 0.7;
+}
+
 .video-grid-pattern {
     background-color: #0c081e;
     background-image: 

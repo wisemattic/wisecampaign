@@ -1,188 +1,101 @@
-jQuery(document).ready(function($) {
+/**
+ * WiseVideo Commerce boxes on the product edit screen: the main product video,
+ * the gallery videos and the reels. Ids are kept in hidden inputs as "1,2,3".
+ */
+jQuery(function ($) {
+    'use strict';
+
     // Primary Product Video
     let videoFrame;
-    $('#wisecampaign-set-product-video, #wisecampaign-video-placeholder').on('click', function(e) {
+    $('#wisecampaign-set-product-video, #wisecampaign-video-placeholder').on('click', function (e) {
         e.preventDefault();
 
-        if (videoFrame) {
-            videoFrame.open();
-            return;
+        if (!videoFrame) {
+            videoFrame = wp.media({
+                title: 'Select Product Video',
+                button: { text: 'Use this video' },
+                library: { type: 'video' },
+                multiple: false
+            });
+
+            videoFrame.on('select', function () {
+                const attachment = videoFrame.state().get('selection').first().toJSON();
+                $('#wisecampaign-product-video-id').val(attachment.id);
+                $('#wisecampaign-video-preview video').attr('src', attachment.url);
+                $('#wisecampaign-video-preview').prop('hidden', false);
+                $('#wisecampaign-video-placeholder').prop('hidden', true);
+                $('#wisecampaign-remove-product-video').prop('hidden', false);
+                $('#wisecampaign-set-product-video').text('Update product video');
+            });
         }
-
-        videoFrame = wp.media({
-            title: 'Select Product Video',
-            button: { text: 'Use this video' },
-            library: { type: 'video' },
-            multiple: false
-        });
-
-        videoFrame.on('select', function() {
-            const attachment = videoFrame.state().get('selection').first().toJSON();
-            $('#wisecampaign-product-video-id').val(attachment.id);
-            $('#wisecampaign-video-preview video').attr('src', attachment.url);
-            $('#wisecampaign-video-preview').show();
-            $('#wisecampaign-video-placeholder').hide();
-            $('#wisecampaign-remove-product-video').show();
-            $('#wisecampaign-set-product-video').text('Update product video');
-        });
 
         videoFrame.open();
     });
 
-    $('#wisecampaign-remove-product-video').on('click', function(e) {
+    $('#wisecampaign-remove-product-video').on('click', function (e) {
         e.preventDefault();
         $('#wisecampaign-product-video-id').val('');
-        $('#wisecampaign-video-preview').hide();
-        $('#wisecampaign-video-placeholder').show();
-        $('#wisecampaign-remove-product-video').hide();
+        $('#wisecampaign-video-preview video').removeAttr('src');
+        $('#wisecampaign-video-preview').prop('hidden', true);
+        $('#wisecampaign-video-placeholder').prop('hidden', false);
+        $(this).prop('hidden', true);
         $('#wisecampaign-set-product-video').text('Set product video');
     });
 
-    // Video Gallery
-    let galleryFrame;
-    $('#wisecampaign-add-video-gallery, #plus-video-placeholder').on('click', function(e) {
-        e.preventDefault();
+    /**
+     * A sortable list of videos (gallery or reels) backed by a hidden input.
+     */
+    function videoList(listSel, inputSel, addSel, removeClass, frameTitle, buttonText) {
+        const $list = $(listSel);
+        const $input = $(inputSel);
+        let frame;
 
-        if (galleryFrame) {
-            galleryFrame.open();
-            return;
+        // The input always follows the order of the list
+        function sync() {
+            $input.val($list.children('li').map(function () {
+                return $(this).data('id');
+            }).get().join(','));
         }
 
-        galleryFrame = wp.media({
-            title: 'Add Videos to Gallery',
-            button: { text: 'Add to gallery' },
-            library: { type: 'video' },
-            multiple: true
-        });
-
-        galleryFrame.on('select', function() {
-            const selections = galleryFrame.state().get('selection');
-            const idsInput = $('#wisecampaign-product-video-gallery-ids');
-            let currentIds = idsInput.val() ? idsInput.val().split(',') : [];
-
-            selections.map(function(attachment) {
-                attachment = attachment.toJSON();
-                if (!currentIds.includes(attachment.id.toString())) {
-                    currentIds.push(attachment.id);
-                    $('#wisecampaign-video-gallery-list').prepend(`
-                        <li data-id="${attachment.id}" style="position: relative; width: 60px; height: 60px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center;">
-                            <video src="${attachment.url}" style="width: 100%; height: 100%; object-fit: cover;"></video>
-                            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: #fff;">
-                                <span class="dashicons dashicons-video-alt3" style="font-size: 16px;"></span>
-                            </div>
-                            <a href="#" class="remove-gallery-video" style="position: absolute; top: -5px; right: -5px; background: #fff; border-radius: 50%; color: #f00; font-size: 10px;"><span class="dashicons dashicons-dismiss"></span></a>
-                        </li>
-                    `);
-                }
-            });
-
-            idsInput.val(currentIds.join(','));
-        });
-
-        galleryFrame.open();
-    });
-
-    $(document).on('click', '.remove-gallery-video', function(e) {
-        e.preventDefault();
-        const li = $(this).closest('li');
-        const id = li.data('id').toString();
-        const idsInput = $('#wisecampaign-product-video-gallery-ids');
-        let currentIds = idsInput.val().split(',');
-
-        currentIds = currentIds.filter(cid => cid !== id);
-        idsInput.val(currentIds.join(','));
-        li.remove();
-    });
-
-    // Sorting (basic)
-    if ($.fn.sortable) {
-        $('#wisecampaign-video-gallery-list').sortable({
-            items: 'li:not(#plus-video-placeholder)',
-            update: function() {
-                let ids = [];
-                $('#wisecampaign-video-gallery-list li:not(#plus-video-placeholder)').each(function() {
-                    ids.push($(this).data('id'));
-                });
-                $('#wisecampaign-product-video-gallery-ids').val(ids.join(','));
+        function addItem(attachment) {
+            if ($list.children('li[data-id="' + attachment.id + '"]').length) {
+                return;
             }
-        });
-    }
-
-    // Product Reels
-    let reelsFrame;
-    $('#wisecampaign-add-reels, #plus-reel-placeholder').on('click', function(e) {
-        e.preventDefault();
-
-        if (reelsFrame) {
-            reelsFrame.open();
-            return;
+            const $video = $('<video muted preload="metadata"></video>').attr('src', attachment.url + '#t=0.5');
+            const $remove = $('<button type="button" aria-label="Remove video"><span class="dashicons dashicons-no-alt"></span></button>').addClass(removeClass);
+            $('<li></li>').attr('data-id', attachment.id).append($video, $remove).appendTo($list);
         }
 
-        reelsFrame = wp.media({
-            title: 'Add Videos to Reels',
-            button: { text: 'Add to reels' },
-            library: { type: 'video' },
-            multiple: true
-        });
-
-        reelsFrame.on('select', function() {
-            const selections = reelsFrame.state().get('selection');
-            const idsInput = $('#wisecampaign-product-reels-ids');
-            let currentIds = idsInput.val() ? idsInput.val().split(',') : [];
-
-            selections.map(function(attachment) {
-                attachment = attachment.toJSON();
-                if (!currentIds.includes(attachment.id.toString())) {
-                    currentIds.push(attachment.id);
-                    $('#wisecampaign-reels-list').prepend(`
-                        <li data-id="${attachment.id}" style="position: relative; width: 60px; height: 100px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; background: #eee; display: flex; align-items: center; justify-content: center;">
-                            <video src="${attachment.url}" style="width: 100%; height: 100%; object-fit: cover;"></video>
-                            <a href="#" class="remove-reel-video" style="position: absolute; top: -5px; right: -5px; background: #fff; border-radius: 50%; color: #f00; font-size: 10px;"><span class="dashicons dashicons-dismiss"></span></a>
-                        </li>
-                    `);
-                }
-            });
-
-            idsInput.val(currentIds.join(','));
-        });
-
-        reelsFrame.open();
-    });
-
-    $(document).on('click', '.remove-reel-video', function(e) {
-        e.preventDefault();
-        const li = $(this).closest('li');
-        const id = li.data('id').toString();
-        const idsInput = $('#wisecampaign-product-reels-ids');
-        let currentIds = idsInput.val().split(',');
-
-        currentIds = currentIds.filter(cid => cid !== id);
-        idsInput.val(currentIds.join(','));
-        li.remove();
-    });
-
-    // Sorting (basic)
-    if ($.fn.sortable) {
-        $('#wisecampaign-video-gallery-list').sortable({
-            items: 'li:not(#plus-video-placeholder)',
-            update: function() {
-                let ids = [];
-                $('#wisecampaign-video-gallery-list li:not(#plus-video-placeholder)').each(function() {
-                    ids.push($(this).data('id'));
+        $(addSel).on('click', function (e) {
+            e.preventDefault();
+            if (!frame) {
+                frame = wp.media({
+                    title: frameTitle,
+                    button: { text: buttonText },
+                    library: { type: 'video' },
+                    multiple: true
                 });
-                $('#wisecampaign-product-video-gallery-ids').val(ids.join(','));
+                frame.on('select', function () {
+                    frame.state().get('selection').each(function (model) {
+                        addItem(model.toJSON());
+                    });
+                    sync();
+                });
             }
+            frame.open();
         });
 
-        $('#wisecampaign-reels-list').sortable({
-            items: 'li:not(#plus-reel-placeholder)',
-            update: function() {
-                let ids = [];
-                $('#wisecampaign-reels-list li:not(#plus-reel-placeholder)').each(function() {
-                    ids.push($(this).data('id'));
-                });
-                $('#wisecampaign-product-reels-ids').val(ids.join(','));
-            }
+        $list.on('click', '.' + removeClass, function (e) {
+            e.preventDefault();
+            $(this).closest('li').remove();
+            sync();
         });
+
+        if ($.fn.sortable) {
+            $list.sortable({ items: 'li', tolerance: 'pointer', update: sync });
+        }
     }
+
+    videoList('#wisecampaign-video-gallery-list', '#wisecampaign-product-video-gallery-ids', '#wisecampaign-add-video-gallery', 'remove-gallery-video', 'Add Videos to Gallery', 'Add to gallery');
+    videoList('#wisecampaign-reels-list', '#wisecampaign-product-reels-ids', '#wisecampaign-add-reels', 'remove-reel-video', 'Add Videos to Reels', 'Add to reels');
 });

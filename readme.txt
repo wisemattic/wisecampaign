@@ -4,7 +4,7 @@ Tags: woocommerce discount, flash sale, countdown timer, sales notification, dyn
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 2.0.0
 WC requires at least: 4.0
 WC tested up to: 11.2
 License: GPLv2 or later
@@ -186,6 +186,21 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v2.0.0 =
+- Added: Analytics dashboard (wiseCampaign > Analytics) that shows how each module helps your sales: views, clicks and adds to cart per module, the orders and revenue wiseCampaign took part in, average order value compared with other orders, a daily revenue chart, and numbers per product table and per Discount Manager rule. Orders and revenue are part of Pro. Only daily totals are stored, on your own server.
+- Added: A performance card in every module dashboard with that module's last 30 days.
+- Added: Turn modules on or off on the Getting Started page. A module that is off leaves the menu and no longer loads on your store.
+- Added: Product Table (Pro) rebuilt: save several tables, each with its own shortcode; choose products by category, tag or one by one; pick and order columns; variation choices, quantity and "add selected" buttons; search and filters; 5 design templates; cards on narrow screens. The editor warns when a table would show no products.
+- Added: Direct Checkout button templates, animations, hover effects and icons (Pro).
+- Added: StockBar placement setting for product pages, and an option to hide WooCommerce's "X in stock" text where the bar shows the count (on by default).
+- Added: wiseCart works with Discount Manager: spend targets on the progress bar, discounted prices and your savings in the cart.
+- Improved: New dashboards with a live preview for Direct Checkout, Sales Notification, wiseCart, StockBar, WiseVideo Commerce and Product Table.
+- Improved: Redesigned StockBar templates.
+- Improved: wiseBanner revenue now goes down when an order is refunded, and is removed when the order is cancelled or deleted.
+- Fixed: The copy shortcode button did not work on sites without HTTPS.
+- Fixed: The WordPress admin menu could not scroll on the WiseVideo Commerce, Product Table and Analytics pages.
+- Fixed: Some scripts and styles kept loading old cached copies after an update.
+
 = v1.3.1 =
 - Added: Sales Notification now works without WooCommerce. Sites without a store can show simulated purchase notifications (Pro) with their own buyer names, locations and products.
 - Added: Sales Notification "Custom Products" option - type in the products or services to promote, one per line, with an optional link (for example "Pro Plan | https://example.com/pricing"). Works with or without WooCommerce.
@@ -338,6 +353,9 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Initial release
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+A big update: a new Analytics dashboard, on/off switches for every module, a rebuilt Product Table and new dashboards for every module. If you use wiseCampaign Pro, update it to 2.0.0 as well.
 
 = 1.3.1 =
 Fixes a critical error on sites running WooCommerce on Linux servers, and lets Sales Notification run without WooCommerce using your own products. Update recommended.
