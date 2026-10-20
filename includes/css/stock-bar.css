@@ -1,0 +1,352 @@
+/*
+ * =================================================================
+ * StockBar (storefront and admin preview)
+ * Colors and type come from CSS variables set on .wise-sb:
+ * --wsb-accent, --wsb-bg, --wsb-text, --wsb-border, --wsb-size, --wsb-weight, --wsb-fill
+ * =================================================================
+*/
+.wise-sb {
+    --wsb-soft: color-mix(in srgb, var(--wsb-accent, #ec4899) 14%, transparent);
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 1.25em;
+    padding: 14px 16px;
+    background: var(--wsb-bg, #ffffff);
+    color: var(--wsb-text, #111827);
+    border: 1px solid var(--wsb-border, #f1f5f9);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 14px -6px rgba(15, 23, 42, 0.08);
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: left;
+}
+
+.wise-sb *,
+.wise-sb *::before,
+.wise-sb *::after {
+    box-sizing: border-box;
+}
+
+.wise-sb__row,
+.wise-sb__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wise-sb__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.wise-sb__title {
+    font-size: var(--wsb-size, 13px);
+    font-weight: var(--wsb-weight, 700);
+    letter-spacing: -0.01em;
+}
+
+.wise-sb__sub {
+    font-size: 0.85em;
+    opacity: 0.75;
+}
+
+.wise-sb__sub strong,
+.wise-sb__count strong {
+    color: var(--wsb-accent, #ec4899);
+}
+
+/* Icon chip */
+.wise-sb__icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--wsb-soft);
+    color: var(--wsb-accent, #ec4899);
+}
+
+.wise-sb__svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+}
+
+/* Progress track */
+.wise-sb__track {
+    position: relative;
+    height: 10px;
+    margin-top: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--wsb-text, #111827) 8%, transparent);
+    overflow: hidden;
+}
+
+.wise-sb__fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--wsb-fill, 50%);
+    border-radius: inherit;
+    background:
+        repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.22) 0 8px, transparent 8px 16px),
+        linear-gradient(90deg, color-mix(in srgb, var(--wsb-accent, #ec4899) 65%, #ffffff), var(--wsb-accent, #ec4899));
+    background-size: 22px 22px, 100% 100%;
+    animation: wiseSbStripes 1.2s linear infinite;
+    transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.wise-sb__track--thin {
+    height: 5px;
+    margin-top: 10px;
+}
+
+.wise-sb__track--thin .wise-sb__fill {
+    background: var(--wsb-accent, #ec4899);
+    animation: none;
+}
+
+.wise-sb__meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
+@keyframes wiseSbStripes {
+    from { background-position: 0 0, 0 0; }
+    to { background-position: 22px 0, 0 0; }
+}
+
+/* -----------------------------------------------------------------
+ * 1. High Demand Flow (linear)
+ * ----------------------------------------------------------------- */
+.wise-sb--linear .wise-sb__head .wise-sb__title {
+    flex: 1;
+}
+
+.wise-sb__count {
+    flex-shrink: 0;
+    font-size: 0.85em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------
+ * 2. Urgent Alert (pulse)
+ * ----------------------------------------------------------------- */
+.wise-sb--pulse {
+    border-left: 4px solid var(--wsb-accent, #ef4444);
+}
+
+.wise-sb--pulse .wise-sb__icon {
+    width: 38px;
+    height: 38px;
+}
+
+.wise-sb--pulse .wise-sb__icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--wsb-accent, #ef4444);
+    animation: wiseSbPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes wiseSbPing {
+    0% { transform: scale(1); opacity: 0.6; }
+    80%, 100% { transform: scale(1.7); opacity: 0; }
+}
+
+/* -----------------------------------------------------------------
+ * 3. Modern Minimal (minimal)
+ * ----------------------------------------------------------------- */
+.wise-sb--minimal {
+    padding: 12px 14px;
+    box-shadow: none;
+}
+
+.wise-sb--minimal .wise-sb__icon {
+    width: auto;
+    height: auto;
+    background: none;
+}
+
+.wise-sb--minimal .wise-sb__title {
+    flex: 1;
+}
+
+.wise-sb--minimal .wise-sb__sub {
+    flex-shrink: 0;
+    opacity: 0.65;
+    white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------
+ * 4. Flash Sale Timer (countdown)
+ * ----------------------------------------------------------------- */
+.wise-sb__timer {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.wise-sb__timer b {
+    display: inline-block;
+    min-width: 1.9em;
+    padding: 3px 4px;
+    border-radius: 6px;
+    background: var(--wsb-accent, #f59e0b);
+    color: #ffffff;
+    font-size: 0.95em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.wise-sb__timer i {
+    margin-right: 3px;
+    font-size: 0.75em;
+    font-style: normal;
+    font-weight: 600;
+    opacity: 0.6;
+}
+
+.wise-sb__text--left,
+.wise-sb__text--right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.wise-sb__text--right {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.wise-sb__text--below {
+    flex-direction: column-reverse;
+}
+
+.wise-sb__text--top .wise-sb__timer,
+.wise-sb__text--below .wise-sb__timer {
+    margin: 2px 0;
+}
+
+.wise-sb__stock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.wise-sb__stock b {
+    color: var(--wsb-accent, #f59e0b);
+    font-size: 1.6em;
+    font-weight: 800;
+}
+
+.wise-sb__stock span {
+    margin-top: 3px;
+    font-size: 0.75em;
+    font-weight: 600;
+    opacity: 0.6;
+}
+
+/* -----------------------------------------------------------------
+ * 5. Low Stock Badge (badge)
+ * ----------------------------------------------------------------- */
+.wise-sb--badge {
+    display: inline-flex;
+    width: auto;
+    max-width: 100%;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 12px;
+    border-radius: 999px;
+    box-shadow: none;
+}
+
+.wise-sb__dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--wsb-accent, #10b981);
+    box-shadow: 0 0 0 3px var(--wsb-soft);
+    animation: wiseSbBlink 1.6s ease-in-out infinite;
+}
+
+@keyframes wiseSbBlink {
+    50% { opacity: 0.35; }
+}
+
+.wise-sb__pill {
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--wsb-accent, #10b981);
+    color: #ffffff;
+    font-size: 0.85em;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* -----------------------------------------------------------------
+ * Shop and category pages: compact, with room before the Add to Cart button
+ * ----------------------------------------------------------------- */
+.wise-sb--loop {
+    margin: 0.5em 0 1em;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.wise-sb--loop .wise-sb__title {
+    font-size: min(var(--wsb-size, 13px), 13px);
+}
+
+.wise-sb--loop .wise-sb__icon {
+    width: 24px;
+    height: 24px;
+}
+
+.wise-sb--loop .wise-sb__svg {
+    width: 13px;
+    height: 13px;
+}
+
+.wise-sb--loop .wise-sb__track {
+    height: 6px;
+    margin-top: 8px;
+}
+
+.wise-sb--loop .wise-sb__meta {
+    display: none;
+}
+
+.wise-sb--loop.wise-sb--badge {
+    padding: 4px 4px 4px 10px;
+}
+
+.wise-sb--loop.wise-sb--countdown .wise-sb__icon,
+.wise-sb--loop.wise-sb--pulse .wise-sb__icon {
+    width: 28px;
+    height: 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wise-sb__fill,
+    .wise-sb__dot,
+    .wise-sb--pulse .wise-sb__icon::after {
+        animation: none;
+    }
+}
