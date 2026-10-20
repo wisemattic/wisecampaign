@@ -12,18 +12,19 @@ class WiseCart
 {
     use SingletonTrait;
 
-    private $settings_page_slug = 'wisecampaign_cart';
     private $settings_group = 'wisecart_settings_group';
     private $options_key = 'wisecart_options';
     private $options = [];
 
     public function __construct()
     {
-        add_action('admin_init', [$this, 'register_admin_settings']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
-        add_action('wp_ajax_wisecart_save_settings', [$this, 'ajax_save_settings']);
+        add_action('rest_api_init', [$this, 'register_rest_routes']);
 
-        // Options use translated labels, so they must load on init (WP 6.7+ warns on earlier translation calls).
+        // Progress bar goals: other plugins (such as wiseCampaign Pro's Discount Manager) add theirs to this filter.
+        add_filter('wisecart_progress_goals', [$this, 'add_free_shipping_goal'], 10, 2);
+        add_action('wisecart_before_items', [$this, 'render_progress_bar'], 10);
+
+        // Options load on init, before the storefront hooks below are registered.
         add_action('init', [$this, 'init_hooks']);
     }
 
@@ -57,7 +58,7 @@ class WiseCart
 
     private function load_options()
     {
-        $defaults = array_column($this->get_settings_fields(), 'default', 'id');
+        $defaults = $this->get_defaults();
         $saved_options = get_option($this->options_key, []);
         $this->options = wp_parse_args($saved_options, $defaults);
     }
@@ -67,178 +68,437 @@ class WiseCart
         return $this->options[$key] ?? null;
     }
 
-    private function get_settings_fields()
+    /**
+     * Default value of every wiseCart setting. Toggles are stored as "yes" / "no".
+     */
+    private function get_defaults()
     {
         return [
-            'wisecart_options_title' => ['id' => 'wisecart_options_title', 'title' => __('wiseCart Options', 'wisecampaign'), 'type' => 'title', 'desc' => __('The following options control the appearance and behavior of the wiseCart feature.', 'wisecampaign')],
-            'wc_enable_wisecart' => ['id' => 'wc_enable_wisecart', 'title' => __('Enable wiseCart', 'wisecampaign'), 'desc' => __('Enable the side cart on your site.', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'no'],
-            'wc_auto_open_cart' => ['id' => 'wc_auto_open_cart', 'title' => __('Auto open', 'wisecampaign'), 'desc' => __('Open after adding a product to the cart', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-
-            'wc_direct_checkout' => ['id' => 'wc_direct_checkout', 'title' => __('Direct checkout', 'wisecampaign'), 'desc' => __('Skip the cart and show the checkout immediately', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'no'],
-            'wisecart_contents_title' => ['id' => 'wisecart_contents_title', 'title' => __('Cart Contents', 'wisecampaign'), 'type' => 'title'],
-            'wc_show_product_images' => ['id' => 'wc_show_product_images', 'title' => __('Product Images', 'wisecampaign'), 'desc' => __('Show product images', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_product_prices' => ['id' => 'wc_show_product_prices', 'title' => __('Product Prices', 'wisecampaign'), 'desc' => __('Show product prices', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_quantity_pickers' => ['id' => 'wc_show_quantity_pickers', 'title' => __('Quantity Pickers', 'wisecampaign'), 'desc' => __('Show quantity pickers', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_delete_buttons' => ['id' => 'wc_show_delete_buttons', 'title' => __('Delete Buttons', 'wisecampaign'), 'desc' => __('Show delete buttons', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_coupons' => ['id' => 'wc_show_coupons', 'title' => __('Coupons', 'wisecampaign'), 'desc' => __('Show coupons', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_order_subtotal' => ['id' => 'wc_show_order_subtotal', 'title' => __('Order Subtotal', 'wisecampaign'), 'desc' => __('Show order subtotal', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_show_keep_shopping' => ['id' => 'wc_show_keep_shopping', 'title' => __('Continue Shopping Button', 'wisecampaign'), 'desc' => __("Show 'Keep Shopping' button", 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wisecart_icon_title' => ['id' => 'wisecart_icon_title', 'title' => __('Cart Icon', 'wisecampaign'), 'type' => 'title'],
-            'wc_icon_position' => ['id' => 'wc_icon_position', 'title' => __('Position', 'wisecampaign'), 'type' => 'radio', 'options' => ['bottom_right' => __('Bottom Right'), 'bottom_left' => __('Bottom Left'), 'middle_right' => __('Middle Right'), 'middle_left' => __('Middle Left'), 'top_right' => __('Top Right'), 'top_left' => __('Top Left'), 'hidden' => __('Hidden')], 'default' => 'bottom_right'],
-            'wc_button_style' => ['id' => 'wc_button_style', 'title' => __('Button style', 'wisecampaign'), 'type' => 'select', 'options' => ['icon_only' => 'Icon Only', 'text_only' => 'Text Only', 'icon_and_text' => 'Icon and Text'], 'default' => 'icon_only'],
-            'wc_button_text' => ['id' => 'wc_button_text', 'title' => __('Button text', 'wisecampaign'), 'desc' => '(Used for "Text Only" and "Icon and Text" styles)', 'type' => 'text', 'default' => 'Cart'],
-            'wisecart_replace_pages_title' => ['id' => 'wisecart_replace_pages_title', 'title' => __('Replace Pages', 'wisecampaign'), 'type' => 'title'],
-            'wc_replace_cart_page' => ['id' => 'wc_replace_cart_page', 'title' => __('Replace cart page', 'wisecampaign'), 'desc' => __('Open wiseCart when customers try to access the default cart page', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_replace_checkout_page' => ['id' => 'wc_replace_checkout_page', 'title' => __('Replace checkout page', 'wisecampaign'), 'desc' => __('Open wiseCart when customers try to access the default checkout page', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wisecart_design_title' => ['id' => 'wisecart_design_title', 'title' => __('Design Customization', 'wisecampaign'), 'type' => 'title'],
-            'wc_button_background' => ['id' => 'wc_button_background', 'title' => __('Cart Button Background', 'wisecampaign'), 'type' => 'color', 'default' => '#1d1d1d'],
-            'wc_icon_color' => ['id' => 'wc_icon_color', 'title' => __('Cart Icon Color', 'wisecampaign'), 'type' => 'color', 'default' => '#ffffff'],
-            'wc_count_background' => ['id' => 'wc_count_background', 'title' => __('Cart Count Background', 'wisecampaign'), 'type' => 'color', 'default' => '#d63638'],
-            'wc_count_text_color' => ['id' => 'wc_count_text_color', 'title' => __('Cart Count Text Color', 'wisecampaign'), 'type' => 'color', 'default' => '#ffffff'],
-            'wc_border_radius' => ['id' => 'wc_border_radius', 'title' => __('Cart Button Border Radius (px)', 'wisecampaign'), 'type' => 'number', 'default' => '50'],
-            'wc_checkout_btn_background' => ['id' => 'wc_checkout_btn_background', 'title' => __('Checkout Button Background', 'wisecampaign'), 'type' => 'color', 'default' => '#28a745'],
-            'wc_checkout_text_color' => ['id' => 'wc_checkout_text_color', 'title' => __('Checkout Button Text Color', 'wisecampaign'), 'type' => 'color', 'default' => '#ffffff'],
-            'wc_continue_btn_background' => ['id' => 'wc_continue_btn_background', 'title' => __('Continue Shopping BG', 'wisecampaign'), 'type' => 'color', 'default' => '#e9ecef'],
-            'wc_continue_btn_text_color' => ['id' => 'wc_continue_btn_text_color', 'title' => __('Continue Shopping Text', 'wisecampaign'), 'type' => 'color', 'default' => '#343a40'],
-            'wisecart_success_title' => ['id' => 'wisecart_success_title', 'title' => __('Order Success Message', 'wisecampaign'), 'type' => 'title'],
-            'wc_success_message_enable' => ['id' => 'wc_success_message_enable', 'title' => __('Show Success Message', 'wisecampaign'), 'desc' => __('Display success message in cart after order placement', 'wisecampaign'), 'type' => 'checkbox', 'default' => 'yes'],
-            'wc_success_message_title' => ['id' => 'wc_success_message_title', 'title' => __('Success Title', 'wisecampaign'), 'desc' => __('Title displayed on successful order', 'wisecampaign'), 'type' => 'text', 'default' => 'Order Placed Successfully!'],
-            'wc_success_message_text' => ['id' => 'wc_success_message_text', 'title' => __('Success Message', 'wisecampaign'), 'desc' => __('Message displayed on successful order', 'wisecampaign'), 'type' => 'textarea', 'default' => 'Thank you for your order! We\'ve received your payment and will process your order shortly.'],
-            'wc_success_redirect_delay' => ['id' => 'wc_success_redirect_delay', 'title' => __('Redirect Delay (seconds)', 'wisecampaign'), 'desc' => __('Time to wait before redirecting to order confirmation page', 'wisecampaign'), 'type' => 'number', 'default' => '10'],
+            'wc_enable_wisecart'         => 'no',
+            'wc_auto_open_cart'          => 'yes',
+            'wc_direct_checkout'         => 'no',
+            'wc_show_product_images'     => 'yes',
+            'wc_show_product_prices'     => 'yes',
+            'wc_show_quantity_pickers'   => 'yes',
+            'wc_show_delete_buttons'     => 'yes',
+            'wc_show_coupons'            => 'yes',
+            'wc_show_order_subtotal'     => 'yes',
+            'wc_show_keep_shopping'      => 'yes',
+            'wc_show_progress_bar'       => 'yes',
+            'wc_show_discounts'          => 'yes',
+            'wc_icon_position'           => 'bottom_right',
+            'wc_button_style'            => 'icon_only',
+            'wc_button_text'             => 'Cart',
+            'wc_replace_cart_page'       => 'yes',
+            'wc_replace_checkout_page'   => 'yes',
+            'wc_button_background'       => '#1d1d1d',
+            'wc_icon_color'              => '#ffffff',
+            'wc_count_background'        => '#d63638',
+            'wc_count_text_color'        => '#ffffff',
+            'wc_border_radius'           => '50',
+            'wc_checkout_btn_background' => '#28a745',
+            'wc_checkout_text_color'     => '#ffffff',
+            'wc_continue_btn_background' => '#e9ecef',
+            'wc_continue_btn_text_color' => '#343a40',
+            'wc_success_message_enable'  => 'yes',
+            'wc_success_message_title'   => 'Order Placed Successfully!',
+            'wc_success_message_text'    => 'Thank you for your order! We\'ve received your payment and will process your order shortly.',
+            'wc_success_redirect_delay'  => '10',
         ];
     }
 
-    public function sanitize_options($input)
+    /**
+     * =================================================================
+     * ADMIN APP (React module: modules/wise-cart)
+     * =================================================================
+     */
+
+    public function register_rest_routes()
     {
-        $output = [];
-        $settings_fields = $this->get_settings_fields();
-        foreach ($settings_fields as $id => $field) {
-            if (!isset($input[$id])) {
+        $permission = function () {
+            return current_user_can('manage_options');
+        };
+
+        register_rest_route('wisecampaign/v1', '/wisecart', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'rest_get_settings'],
+                'permission_callback' => $permission,
+            ],
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'rest_save_settings'],
+                'permission_callback' => $permission,
+            ],
+        ]);
+
+        register_rest_route('wisecampaign/v1', '/wisecart/status', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'rest_set_status'],
+            'permission_callback' => $permission,
+        ]);
+    }
+
+    /**
+     * Settings plus a sample cart for the live preview.
+     */
+    public function rest_get_settings()
+    {
+        $css_path = WISECAMPAIGN_DIR_PATH . 'includes/css/wisecart.css';
+
+        $response = rest_ensure_response([
+            'settings'       => $this->get_saved_settings(),
+            'defaults'       => $this->get_defaults(),
+            'sample'         => $this->get_preview_cart(),
+            'goals'          => $this->get_progress_goals(null),
+            'currency'       => [
+                'symbol'      => html_entity_decode(get_woocommerce_currency_symbol()),
+                'position'    => get_option('woocommerce_currency_pos', 'left'),
+                'decimals'    => wc_get_price_decimals(),
+                'decimalSep'  => wc_get_price_decimal_separator(),
+                'thousandSep' => wc_get_price_thousand_separator(),
+            ],
+            'couponsEnabled' => function_exists('wc_coupons_enabled') && wc_coupons_enabled(),
+            // The preview loads the storefront stylesheet, so it always matches the live cart.
+            'cssUrl'         => WISECAMPAIGN_DIR_URL . 'includes/css/wisecart.css?ver=' . (file_exists($css_path) ? filemtime($css_path) : '1'),
+        ]);
+        // Some hosts cache REST responses; settings must always be fresh.
+        $response->header('Cache-Control', 'no-store');
+        return $response;
+    }
+
+    public function rest_save_settings(\WP_REST_Request $request)
+    {
+        $settings = $this->sanitize_settings($request->get_json_params());
+        // On/off has its own endpoint, so saving the form never flips it.
+        $settings['wc_enable_wisecart'] = $this->get_saved_settings()['wc_enable_wisecart'];
+        update_option($this->options_key, $settings);
+
+        return rest_ensure_response(['success' => true, 'settings' => $this->get_saved_settings()]);
+    }
+
+    public function rest_set_status(\WP_REST_Request $request)
+    {
+        $settings = $this->get_saved_settings();
+        $settings['wc_enable_wisecart'] = filter_var($request->get_param('enabled'), FILTER_VALIDATE_BOOLEAN) ? 'yes' : 'no';
+        update_option($this->options_key, $settings);
+
+        return rest_ensure_response(['success' => true, 'enabled' => $settings['wc_enable_wisecart']]);
+    }
+
+    private function get_saved_settings()
+    {
+        $saved = get_option($this->options_key, []);
+        return wp_parse_args(is_array($saved) ? $saved : [], $this->get_defaults());
+    }
+
+    /**
+     * Sanitizes a full settings payload; unknown or invalid values fall back to the defaults.
+     */
+    private function sanitize_settings($input)
+    {
+        $input = is_array($input) ? $input : [];
+        $defaults = $this->get_defaults();
+
+        // Reads a scalar field as a string; anything else (arrays, objects) counts as missing.
+        $str = function ($key) use ($input, $defaults) {
+            return isset($input[$key]) && is_scalar($input[$key]) ? (string) $input[$key] : (string) $defaults[$key];
+        };
+        $toggle = function ($key) use ($str) {
+            $value = $str($key);
+            return ($value === 'yes' || filter_var($value, FILTER_VALIDATE_BOOLEAN)) ? 'yes' : 'no';
+        };
+        $enum = function ($key, $allowed) use ($str, $defaults) {
+            $value = $str($key);
+            return in_array($value, $allowed, true) ? $value : $defaults[$key];
+        };
+        $color = function ($key) use ($str, $defaults) {
+            return sanitize_hex_color($str($key)) ?: $defaults[$key];
+        };
+        $int = function ($key, $min, $max) use ($str) {
+            return (string) max($min, min($max, absint($str($key))));
+        };
+        $text = function ($key) use ($str, $defaults) {
+            $value = sanitize_text_field($str($key));
+            return $value !== '' ? $value : $defaults[$key];
+        };
+
+        $settings = [];
+        foreach ($defaults as $key => $default) {
+            if ($default === 'yes' || $default === 'no') {
+                $settings[$key] = $toggle($key);
+            }
+        }
+
+        return array_merge($settings, [
+            'wc_icon_position'           => $enum('wc_icon_position', ['bottom_right', 'bottom_left', 'middle_right', 'middle_left', 'top_right', 'top_left', 'hidden']),
+            'wc_button_style'            => $enum('wc_button_style', ['icon_only', 'text_only', 'icon_and_text']),
+            'wc_button_text'             => $text('wc_button_text'),
+            'wc_button_background'       => $color('wc_button_background'),
+            'wc_icon_color'              => $color('wc_icon_color'),
+            'wc_count_background'        => $color('wc_count_background'),
+            'wc_count_text_color'        => $color('wc_count_text_color'),
+            'wc_border_radius'           => $int('wc_border_radius', 0, 100),
+            'wc_checkout_btn_background' => $color('wc_checkout_btn_background'),
+            'wc_checkout_text_color'     => $color('wc_checkout_text_color'),
+            'wc_continue_btn_background' => $color('wc_continue_btn_background'),
+            'wc_continue_btn_text_color' => $color('wc_continue_btn_text_color'),
+            'wc_success_message_title'   => $text('wc_success_message_title'),
+            'wc_success_message_text'    => sanitize_textarea_field($str('wc_success_message_text')),
+            'wc_success_redirect_delay'  => $int('wc_success_redirect_delay', 1, 120),
+        ]);
+    }
+
+    /**
+     * A few of the store's products as cart lines, so the preview looks like the real cart.
+     */
+    private function get_preview_cart()
+    {
+        $placeholder = function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src('thumbnail') : '';
+        $quantities = [1, 2, 1];
+        $lines = [];
+
+        foreach (wc_get_products(['limit' => 3, 'status' => 'publish', 'orderby' => 'date', 'order' => 'DESC']) as $index => $product) {
+            $lines[] = [
+                'name'  => $product->get_name(),
+                'image' => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail') ?: $placeholder,
+                'price' => (float) $product->get_price(),
+                'qty'   => $quantities[$index],
+            ];
+        }
+
+        // Demo lines until the store has products
+        if (empty($lines)) {
+            foreach ([['Wireless Headphones', 79], ['Leather Wallet', 25], ['Water Bottle', 15]] as $index => $demo) {
+                $lines[] = ['name' => $demo[0], 'image' => $placeholder, 'price' => (float) $demo[1], 'qty' => $quantities[$index]];
+            }
+        }
+
+        $subtotal = 0;
+        $count = 0;
+        foreach ($lines as &$line) {
+            $subtotal += $line['price'] * $line['qty'];
+            $count += $line['qty'];
+            $line['priceHtml'] = wc_price($line['price']);
+            unset($line['price']);
+        }
+        unset($line);
+
+        return [
+            'items'        => $lines,
+            'subtotal'     => $subtotal,
+            'subtotalHtml' => wc_price($subtotal),
+            'count'        => $count,
+        ];
+    }
+
+    /**
+     * =================================================================
+     * PROGRESS BAR & SAVINGS
+     * =================================================================
+     */
+
+    /**
+     * The free shipping method that applies to this cart, when it unlocks at a minimum amount.
+     * Without a cart (admin preview) the store's own address decides the shipping zone.
+     */
+    private function get_free_shipping_method($cart)
+    {
+        if (!class_exists('WC_Shipping_Zones') || !wc_shipping_enabled()) {
+            return null;
+        }
+
+        if ($cart && $cart->needs_shipping()) {
+            $packages = $cart->get_shipping_packages();
+            $package = reset($packages);
+        } else {
+            $package = ['destination' => [
+                'country'  => WC()->countries->get_base_country(),
+                'state'    => WC()->countries->get_base_state(),
+                'postcode' => WC()->countries->get_base_postcode(),
+            ]];
+        }
+        if (empty($package)) {
+            return null;
+        }
+
+        $zone = \WC_Shipping_Zones::get_zone_matching_package($package);
+        foreach ($zone->get_shipping_methods(true) as $method) {
+            if ($method->id === 'free_shipping' && in_array($method->requires, ['min_amount', 'either'], true) && (float) $method->min_amount > 0) {
+                return $method;
+            }
+        }
+        return null;
+    }
+
+    public function add_free_shipping_goal($goals, $cart)
+    {
+        $method = $this->get_free_shipping_method($cart);
+        if (!$method) {
+            return $goals;
+        }
+
+        $goal = [
+            'id'        => 'free_shipping',
+            'label'     => __('Free shipping', 'wisecampaign'),
+            'threshold' => (float) $method->min_amount,
+            'icon'      => 'truck',
+        ];
+        // Same amount WooCommerce compares with the minimum: subtotal, after coupons unless the method ignores them.
+        if ($cart) {
+            $current = (float) $cart->get_displayed_subtotal();
+            if ($method->ignore_discounts !== 'yes') {
+                $current -= (float) $cart->get_discount_total();
+                if ($cart->display_prices_including_tax()) {
+                    $current -= (float) $cart->get_discount_tax();
+                }
+            }
+            $goal['current'] = $current;
+        }
+        $goals[] = $goal;
+        return $goals;
+    }
+
+    /**
+     * All progress bar goals, cheapest first. Each goal: id, label, threshold, icon (truck|gift|tag) and
+     * optionally current, the cart amount that goal is measured against.
+     */
+    private function get_progress_goals($cart)
+    {
+        $goals = [];
+        foreach ((array) apply_filters('wisecart_progress_goals', [], $cart) as $goal) {
+            if (!is_array($goal) || empty($goal['id']) || empty($goal['label']) || (float) ($goal['threshold'] ?? 0) <= 0) {
                 continue;
             }
-            switch ($field['type']) {
-                case 'checkbox':
-                    $output[$id] = 'yes';
-                    break;
-                case 'color':
-                    $output[$id] = sanitize_hex_color($input[$id]);
-                    break;
-                case 'number':
-                    $output[$id] = absint($input[$id]);
-                    break;
-                case 'textarea':
-                    $output[$id] = sanitize_textarea_field($input[$id]);
-                    break;
-                default:
-                    $output[$id] = sanitize_text_field($input[$id]);
-                    break;
-            }
+            $goals[$goal['id']] = [
+                'id'        => (string) $goal['id'],
+                'label'     => wp_strip_all_tags((string) $goal['label']),
+                'threshold' => (float) $goal['threshold'],
+                'icon'      => in_array($goal['icon'] ?? '', ['truck', 'gift', 'tag'], true) ? $goal['icon'] : 'gift',
+                'current'   => isset($goal['current']) ? (float) $goal['current'] : null,
+            ];
         }
-        foreach ($settings_fields as $id => $field) {
-            if ($field['type'] === 'checkbox' && !isset($output[$id])) {
-                $output[$id] = 'no';
-            }
-        }
-        return $output;
+        $goals = array_values($goals);
+        usort($goals, function ($a, $b) {
+            return $a['threshold'] <=> $b['threshold'];
+        });
+        return $goals;
     }
 
-    public function register_admin_settings()
+    public function render_progress_bar($cart)
     {
-        add_settings_section('wisecart_section_main', null, null, $this->settings_page_slug);
-
-        foreach ($this->get_settings_fields() as $id => $field) {
-            $field_title = ($field['type'] === 'title') ? '' : ($field['title'] ?? '');
-            add_settings_field($id, $field_title, [$this, 'render_field'], $this->settings_page_slug, 'wisecart_section_main', $field);
+        if ($this->get_option('wc_show_progress_bar') !== 'yes' || !$cart) {
+            return;
         }
-    }
-
-    public function render_field($args)
-    {
-        $id = esc_attr($args['id']);
-        $type = $args['type'];
-        $value = $this->get_option($id);
-        $desc = $args['desc'] ?? '';
-        $options_name = $this->options_key . '[' . $id . ']';
-
-        echo "<script>(function(){ var el = document.getElementById('" . esc_js($id) . "'); if(el) { var tr = el.closest('tr'); if(tr) { tr.className += ' wisecart-field-type-" . esc_js($type) . "'; } } })();</script>";
-
-        switch ($type) {
-            case 'title':
-                echo '<h2>' . esc_html($args['title']) . '</h2>';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-            case 'checkbox':
-                echo '<label class="wisecart-switch">';
-                echo '<input type="checkbox" id="' . $id . '" name="' . $options_name . '" value="yes"' . checked('yes', $value, false) . ' />';
-                echo '<span class="wisecart-slider"></span>';
-                echo '</label>';
-                if (!empty($desc)) {
-                    echo '<span class="wisecart-switch-description">' . esc_html($desc) . '</span>';
-                }
-                break;
-            case 'text':
-                echo '<input type="text" id="' . $id . '" name="' . $options_name . '" value="' . esc_attr($value) . '" class="regular-text" />';
-                if (!empty($desc)) {
-                    echo '<em> ' . esc_html($desc) . '</em>';
-                }
-                break;
-            case 'number':
-                echo '<input type="number" id="' . $id . '" name="' . $options_name . '" value="' . esc_attr($value) . '" class="small-text" />';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-            case 'radio':
-                echo '<fieldset>';
-                foreach ($args['options'] as $key => $label) {
-                    echo '<label><input type="radio" name="' . $options_name . '" value="' . esc_attr($key) . '"' . checked($value, $key, false) . '> ' . esc_html($label) . '</label><br>';
-                }
-                echo '</fieldset>';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-            case 'select':
-                echo '<select id="' . $id . '" name="' . $options_name . '">';
-                foreach ($args['options'] as $key => $label) {
-                    echo '<option value="' . esc_attr($key) . '"' . selected($value, $key, false) . '>' . esc_html($label) . '</option>';
-                }
-                echo '</select>';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-            case 'textarea':
-                echo '<textarea id="' . $id . '" name="' . $options_name . '" rows="3" cols="50" class="large-text">' . esc_textarea($value) . '</textarea>';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-            case 'color':
-                echo '<input type="text" id="' . $id . '" name="' . $options_name . '" value="' . esc_attr($value) . '" class="wisecart-color-picker" data-default-color="' . esc_attr($args['default']) . '" />';
-                if (!empty($desc)) {
-                    echo '<p class="description">' . esc_html($desc) . '</p>';
-                }
-                break;
-        }
-    }
-
-    public function enqueue_admin_assets($hook_suffix)
-    {
-        if (strpos($hook_suffix, 'wisecampaign_cart') === false) {
+        $goals = $this->get_progress_goals($cart);
+        if (empty($goals)) {
             return;
         }
 
-        wp_enqueue_style('wisecart-admin-settings', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart-admin-settings.css', [], '1.3.0');
-        wp_enqueue_style('wp-color-picker');
-        wp_enqueue_script('wisecart-admin-script', WISECAMPAIGN_DIR_URL . 'includes/js/wisecart-admin.js', ['jquery', 'wp-color-picker'], '1.2.0', true);
+        $icons = ['truck' => '🚚', 'gift' => '🎁', 'tag' => '🏷️'];
+        $subtotal = (float) $cart->get_displayed_subtotal();
+        $max = end($goals)['threshold'];
+        $next = null;
+        $reached = [];
+        foreach ($goals as $i => $goal) {
+            $current = $goal['current'] ?? $subtotal;
+            $goals[$i]['reached'] = $current >= $goal['threshold'];
+            if ($goals[$i]['reached']) {
+                $reached[] = $goal['label'];
+            } elseif (!$next) {
+                $next = $goal + ['remaining' => $goal['threshold'] - $current];
+            }
+        }
 
-        wp_localize_script('wisecart-admin-script', 'wiseCartAdmin', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('wisecart_save_action'),
-        ]);
+        if ($next) {
+            $message = $icons[$next['icon']] . ' ' . sprintf(
+                /* translators: 1: amount still needed, 2: reward name */
+                __('Add %1$s more to get %2$s', 'wisecampaign'),
+                '<span class="wisecart-progress-amount">' . wc_price($next['remaining']) . '</span>',
+                '<strong>' . esc_html($next['label']) . '</strong>'
+            );
+        } else {
+            /* translators: %s: names of the unlocked rewards */
+            $message = '🎉 ' . sprintf(__('You unlocked %s!', 'wisecampaign'), '<strong>' . esc_html(implode(', ', $reached)) . '</strong>');
+        }
+        ?>
+        <div class="wisecart-progress<?php echo $next ? '' : ' is-complete'; ?>">
+            <p class="wisecart-progress-message"><?php echo wp_kses_post($message); ?></p>
+            <div class="wisecart-progress-track">
+                <span class="wisecart-progress-fill" style="width: <?php echo esc_attr(min(100, round($subtotal / $max * 100, 2))); ?>%;"></span>
+                <?php foreach ($goals as $goal) : ?>
+                    <span class="wisecart-progress-marker<?php echo $goal['reached'] ? ' is-reached' : ''; ?>" style="left: <?php echo esc_attr(round($goal['threshold'] / $max * 100, 2)); ?>%;" title="<?php echo esc_attr($goal['label']); ?>"><?php echo $icons[$goal['icon']]; ?></span>
+                <?php endforeach; ?>
+            </div>
+            <?php if (count($goals) > 1) : ?>
+                <div class="wisecart-progress-goals">
+                    <?php foreach ($goals as $goal) : ?>
+                        <span class="wisecart-progress-goal<?php echo $goal['reached'] ? ' is-reached' : ''; ?>"><?php echo $goal['reached'] ? '✓' : $icons[$goal['icon']]; ?> <?php echo esc_html($goal['label']); ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * Coupon and fee lines (Discount Manager adds its discounts as negative fees), the savings and the total.
+     * Shows nothing when the cart has neither, because the total would equal the subtotal.
+     */
+    public function render_totals_adjustments()
+    {
+        $cart = WC()->cart;
+        if (!$cart || (empty($cart->get_coupons()) && empty($cart->get_fees()))) {
+            return;
+        }
+
+        $incl_tax = $cart->display_prices_including_tax();
+        $savings = 0;
+        ?>
+        <div class="wisecart-adjustments">
+            <?php foreach ($cart->get_coupons() as $code => $coupon) :
+                $savings += (float) $cart->get_coupon_discount_amount($code, !$incl_tax);
+                ?>
+                <div class="wisecart-adjustment is-saving">
+                    <span><?php wc_cart_totals_coupon_label($coupon); ?></span>
+                    <span><?php wc_cart_totals_coupon_html($coupon); ?></span>
+                </div>
+            <?php endforeach; ?>
+            <?php foreach ($cart->get_fees() as $fee) :
+                $amount = $incl_tax ? (float) $fee->total + (float) $fee->tax : (float) $fee->total;
+                if ($amount < 0) {
+                    $savings -= $amount;
+                }
+                ?>
+                <div class="wisecart-adjustment<?php echo $amount < 0 ? ' is-saving' : ''; ?>">
+                    <span><?php echo esc_html($fee->name); ?></span>
+                    <span><?php wc_cart_totals_fee_html($fee); ?></span>
+                </div>
+            <?php endforeach; ?>
+            <?php
+            // Total before shipping: items after coupons, plus fees.
+            $total = (float) $cart->get_cart_contents_total() + (float) $cart->get_fee_total();
+            if ($incl_tax) {
+                $total += (float) $cart->get_cart_contents_tax() + (float) $cart->get_fee_tax();
+            }
+            ?>
+            <div class="wisecart-grand-total">
+                <strong><?php esc_html_e('Total', 'wisecampaign'); ?></strong>
+                <strong><?php echo wc_price(max(0, $total)); ?></strong>
+            </div>
+            <?php if ($savings > 0) : ?>
+                <div class="wisecart-savings">
+                    <?php
+                    /* translators: %s: amount saved */
+                    printf(esc_html__('🎉 You save %s on this order', 'wisecampaign'), wp_kses_post(wc_price($savings)));
+                    ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($cart->needs_shipping()) : ?>
+                <p class="wisecart-shipping-note"><?php esc_html_e('Shipping is calculated at checkout.', 'wisecampaign'); ?></p>
+            <?php endif; ?>
+        </div>
+        <?php
     }
 
     public function print_dynamic_styles()
@@ -274,7 +534,7 @@ class WiseCart
             return;
         }
 
-        $version = '3.4.0';
+        $version = '3.5.0';
         wp_enqueue_style( 'wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart.css', [], $version );
         wp_enqueue_script( 'wisecampaign-wisecart', WISECAMPAIGN_DIR_URL . 'includes/js/wisecart.js', [ 'jquery', 'wc-cart-fragments' ], $version, true );
         
@@ -329,6 +589,11 @@ class WiseCart
 
     public function get_cart_content_html()
     {
+        // Discounts added as fees (for example by Discount Manager) only exist after the totals are calculated.
+        if (WC()->cart && !WC()->cart->is_empty() && !did_action('woocommerce_after_calculate_totals')) {
+            WC()->cart->calculate_totals();
+        }
+
         ob_start();
         $template_path = WISECAMPAIGN_DIR_PATH . 'includes/features/templates/wise-cart-content.php';
         if (file_exists($template_path)) {
@@ -505,26 +770,6 @@ class WiseCart
             }
             wp_send_json_error(['message' => $messages]);
         }
-    }
-
-    public function ajax_save_settings()
-    {
-        if (!isset($_POST['wisecart_settings_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['wisecart_settings_nonce'])), 'wisecart_save_action')) {
-            wp_send_json_error(['message' => 'Security check failed.'], 403);
-            return;
-        }
-
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'You do not have permission to save settings.'], 403);
-            return;
-        }
-
-        $posted_data = isset($_POST[$this->options_key]) && is_array($_POST[$this->options_key]) ? wp_unslash($_POST[$this->options_key]) : [];
-        $sanitized_options = $this->sanitize_options($posted_data);
-
-        update_option($this->options_key, $sanitized_options);
-
-        wp_send_json_success(['message' => 'Settings Saved!']);
     }
 
     public function track_wisecart_order_success( $order_id )

@@ -24,6 +24,14 @@ $cart = WC()->cart;
     </div>
 
     <?php if ($cart && !$cart->is_empty()): ?>
+        <?php
+        /**
+         * Above the cart items: wiseCart's progress bar, then promotions from other plugins.
+         *
+         * @param WC_Cart $cart
+         */
+        do_action('wisecart_before_items', $cart);
+        ?>
         <form class="wisecart-form">
             <div class="wisecart-body">
                 <?php
@@ -61,6 +69,7 @@ $cart = WC()->cart;
                                     <span class="wisecart-item-price"><?php echo WC()->cart->get_product_price($_product); ?></span>
                                 <?php endif; ?>
                             </div>
+                            <?php do_action('wisecart_after_item_details', $cart_item, $cart_item_key); ?>
                         </div>
 
                         <?php if ($wiseCart->get_option('wc_show_delete_buttons') === 'yes'): ?>
@@ -91,12 +100,18 @@ $cart = WC()->cart;
                     </div>
                 <?php endif; ?>
 
+                <?php do_action('wisecart_before_totals', $cart); ?>
+
                 <?php if ($wiseCart->get_option('wc_show_order_subtotal') === 'yes'): ?>
                     <div class="wisecart-totals">
                         <strong><?php esc_html_e('Subtotal:', 'woocommerce'); ?></strong>
                         <span><?php wc_cart_totals_subtotal_html(); ?></span>
                     </div>
                 <?php endif; ?>
+
+                <?php if ($wiseCart->get_option('wc_show_discounts') === 'yes') {
+                    $wiseCart->render_totals_adjustments();
+                } ?>
 
                 <div class="wisecart-actions">
                     <a href="<?php echo esc_url(wc_get_checkout_url()); ?>"
