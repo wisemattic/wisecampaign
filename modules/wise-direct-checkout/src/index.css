@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* NOTE: @tailwind base (Preflight) is intentionally excluded here.
+   It resets global browser styles and bleeds into the theme's design.
+   Only utilities and components are used to avoid CSS conflicts. */
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind's --tw-* variable defaults normally ship with `@tailwind base`, which is
+   excluded above. Without them every transform, gradient, ring and filter utility
+   resolves to an invalid value, so they are re-declared here, scoped to the app
+   with zero specificity. */
+:where(#wise-direct-checkout-app, #wise-direct-checkout-app *, #wise-direct-checkout-app *::before, #wise-direct-checkout-app *::after) {
+    --tw-border-spacing-x: 0;
+    --tw-border-spacing-y: 0;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-rotate: 0;
+    --tw-skew-x: 0;
+    --tw-skew-y: 0;
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+    --tw-pan-x:  ;
+    --tw-pan-y:  ;
+    --tw-pinch-zoom:  ;
+    --tw-scroll-snap-strictness: proximity;
+    --tw-gradient-from-position:  ;
+    --tw-gradient-via-position:  ;
+    --tw-gradient-to-position:  ;
+    --tw-ordinal:  ;
+    --tw-slashed-zero:  ;
+    --tw-numeric-figure:  ;
+    --tw-numeric-spacing:  ;
+    --tw-numeric-fraction:  ;
+    --tw-ring-inset:  ;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-color: rgb(59 130 246 / 0.5);
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-colored: 0 0 #0000;
+    --tw-blur:  ;
+    --tw-brightness:  ;
+    --tw-contrast:  ;
+    --tw-grayscale:  ;
+    --tw-hue-rotate:  ;
+    --tw-invert:  ;
+    --tw-saturate:  ;
+    --tw-sepia:  ;
+    --tw-drop-shadow:  ;
+    --tw-backdrop-blur:  ;
+    --tw-backdrop-brightness:  ;
+    --tw-backdrop-contrast:  ;
+    --tw-backdrop-grayscale:  ;
+    --tw-backdrop-hue-rotate:  ;
+    --tw-backdrop-invert:  ;
+    --tw-backdrop-opacity:  ;
+    --tw-backdrop-saturate:  ;
+    --tw-backdrop-sepia:  ;
+    --tw-contain-size:  ;
+    --tw-contain-layout:  ;
+    --tw-contain-paint:  ;
+    --tw-contain-style:;
+}
+
+#wise-direct-checkout-app {
+    --wise-purple: 139, 92, 246;
+    --wise-dark: 30, 27, 75;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    display: block;
+    width: 100%;
+    clear: both;
+}
+
+/* Scoped Reset to replace missing Tailwind Preflight without bleeding
+   Using :where() to keep specificity low so Tailwind utilities can override these defaults */
+:where(#wise-direct-checkout-app) *,
+:where(#wise-direct-checkout-app) *::before,
+:where(#wise-direct-checkout-app) *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+:where(#wise-direct-checkout-app) button,
+:where(#wise-direct-checkout-app) [type='button'],
+:where(#wise-direct-checkout-app) [type='reset'],
+:where(#wise-direct-checkout-app) [type='submit'] {
+    background-color: transparent;
+    background-image: none;
+    cursor: pointer;
+    text-transform: none;
+    -webkit-appearance: button;
+}
+
+:where(#wise-direct-checkout-app) input,
+:where(#wise-direct-checkout-app) select,
+:where(#wise-direct-checkout-app) textarea {
+    font-family: inherit;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+}
+
+/* Custom scrollbar scoped to the Direct Checkout app */
+#wise-direct-checkout-app ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+#wise-direct-checkout-app ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#wise-direct-checkout-app ::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+#wise-direct-checkout-app ::-webkit-scrollbar-thumb:hover {
+    background: #cbd5e1;
+}
+
+@keyframes wdcFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wdc-fade-in {
+    animation: wdcFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes wdcSlideUp {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.wdc-slide-up {
+    animation: wdcSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Template samples and the live preview read the same CSS variables the storefront uses. */
+#wise-direct-checkout-app .wisecampaign-buy-now-button {
+    font-family: inherit;
+    font-size: 15px;
+}
+
+#wise-direct-checkout-app .wdc-sample-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+    max-width: 100%;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+#wise-direct-checkout-app .wdc-sample-btn .wisecampaign-dc-icon {
+    width: 1em;
+    height: 1em;
+}
