@@ -198,7 +198,11 @@ export default function App() {
             {/* Top Header */}
             <header className="pt-3 pb-3 bg-white border-0 border-b border-solid border-slate-200 flex items-center justify-between px-6 shrink-0 relative z-20 shadow-sm">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-200 shrink-0">W</div>
+                    <img
+                        src={`${window.wiseModuleData?.pluginUrl || '/wp-content/plugins/wisecampaign/'}images/fe/wisecampaign-icon.png`}
+                        alt=""
+                        className="w-9 h-9 rounded-xl object-contain shrink-0"
+                    />
                     <span className="font-bold text-lg tracking-tight text-[#0F172A]">WiseCampaign</span>
                     <div className="h-6 w-[1px] bg-slate-200 mx-2" />
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-md text-xs font-bold text-blue-600">

@@ -286,12 +286,9 @@ const GettingStarted = () => {
                     {/* Left: Logo + Title + Subtitle */}
                     <div className="flex items-center gap-3.5">
                         <img
-                            src={(window.wiseModuleData?.pluginUrl || '/wp-content/plugins/wisecampaign/') + 'images/fe/wc_logo.png'}
+                            src={(window.wiseModuleData?.pluginUrl || '/wp-content/plugins/wisecampaign/') + 'images/fe/wisecampaign-icon.png'}
                             alt="WiseCampaign"
-                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shadow-sm shrink-0"
-                            onError={(e) => {
-                                e.target.src = 'http://wise.local/wp-content/plugins/wisecampaign/images/fe/wc_logo.png';
-                            }}
+                            className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl object-contain shrink-0"
                         />
                         <div>
                             <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
