@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Play,
     FileText,
@@ -22,6 +22,43 @@ import {
     ArrowRight
 } from "lucide-react";
 
+// A module's item in the WiseCampaign admin menu
+const menuItem = (slug) =>
+    document.querySelector(`#toplevel_page_wisecampaign_getting_started .wp-submenu a[href$="page=${slug}"]`)?.closest("li");
+
+/**
+ * Shows or hides a module's admin menu item right away, so the page does not need a reload.
+ * Turned-on items go back to their usual place: before the next module in the menu.
+ */
+const syncAdminMenu = (modules, id, enabled) => {
+    const module = modules.find((m) => m.id === id);
+    const existing = menuItem(module.menuSlug);
+    if (!enabled) {
+        existing?.remove();
+        return;
+    }
+    if (existing) return;
+
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = `admin.php?page=${module.menuSlug}`;
+    link.textContent = module.menuTitle;
+    li.appendChild(link);
+
+    // Menu order as registered in includes/Classes/Menu.php
+    const order = ["banner", "checkout", "socialproof", "wisecart", "stockbar", "wisevideo", "producttable", "discountmanager"];
+    const slugOf = (mid) => modules.find((m) => m.id === mid).menuSlug;
+    const index = order.indexOf(id);
+    const next = order.slice(index + 1).map((mid) => menuItem(slugOf(mid))).find(Boolean);
+    if (next) {
+        next.before(li);
+        return;
+    }
+    const previous = order.slice(0, index).reverse().map((mid) => menuItem(slugOf(mid))).find(Boolean)
+        || menuItem("wisecampaign_getting_started");
+    previous?.after(li);
+};
+
 const GettingStarted = () => {
     const isPro = window.wiseModuleData?.pro?.isLicenseActive || false;
     const version = window.wiseModuleData?.version || "1.3.1";
@@ -40,141 +77,172 @@ const GettingStarted = () => {
     const defaultModules = [
         {
             id: "banner",
+            menuSlug: "wise_banner_v2",
+            menuTitle: "wiseBanner",
             title: "WiseBanner",
             desc: "High-converting banners with countdowns and animated CTAs.",
             icon: Target,
             iconColor: "text-rose-500",
             iconBg: "bg-rose-50 border border-rose-100",
-            active: true,
             activeColor: "bg-[#F97316]",
             linkColor: "text-[#F97316] hover:text-orange-600",
             link: "admin.php?page=wise_banner_v2"
         },
         {
             id: "stockbar",
+            menuSlug: "wise_stock_bar",
+            menuTitle: "StockBar",
             title: "StockBar",
             desc: "Real-time stock urgency to move inventory faster.",
             icon: BarChart2,
             iconColor: "text-teal-600",
             iconBg: "bg-teal-50 border border-teal-100",
-            active: isPro ? true : false,
             activeColor: "bg-emerald-500",
             linkColor: "text-emerald-600 hover:text-emerald-700",
             link: "admin.php?page=wise_stock_bar"
         },
         {
             id: "checkout",
+            menuSlug: "wisecampaign_checkout",
+            menuTitle: "Direct Checkout",
             title: "Direct Checkout",
             desc: "Bypass the cart for lightning-fast purchasing.",
             icon: Zap,
             iconColor: "text-purple-600",
             iconBg: "bg-purple-50 border border-purple-100",
-            active: true,
             activeColor: "bg-[#7C3AED]",
             linkColor: "text-[#7C3AED] hover:text-purple-700",
             link: "admin.php?page=wisecampaign_checkout"
         },
         {
             id: "socialproof",
+            menuSlug: "wisecampaign_notification",
+            menuTitle: "Sales Notification",
             title: "Social Proof",
             desc: "Real-time sales notifications to build instant trust.",
             icon: Bell,
             iconColor: "text-amber-600",
             iconBg: "bg-amber-50 border border-amber-100",
-            active: isPro ? true : false,
             activeColor: "bg-amber-500",
             linkColor: "text-amber-600 hover:text-amber-700",
             link: "admin.php?page=wisecampaign_notification"
         },
         {
             id: "wisecart",
+            menuSlug: "wisecampaign_cart",
+            menuTitle: "wiseCart",
             title: "WiseCart",
             desc: "Premium mini-cart experience for quick access.",
             icon: ShoppingCart,
             iconColor: "text-indigo-500",
             iconBg: "bg-indigo-50 border border-indigo-100",
-            active: isPro ? true : false,
             activeColor: "bg-indigo-500",
             linkColor: "text-indigo-600 hover:text-indigo-700",
             link: "admin.php?page=wisecampaign_cart"
         },
         {
             id: "wisevideo",
+            menuSlug: "wise_video_commerce",
+            menuTitle: "WiseVideo Commerce",
             title: "WiseVideo",
             desc: "High-impact video galleries and product video replacements.",
             icon: Clapperboard,
             iconColor: "text-slate-700",
             iconBg: "bg-slate-100 border border-slate-200",
-            active: isPro ? true : false,
             activeColor: "bg-blue-600",
             linkColor: "text-blue-600 hover:text-blue-700",
             link: "admin.php?page=wise_video_commerce"
         },
         {
             id: "producttable",
+            menuSlug: "wise_product_table",
+            menuTitle: "Product Table",
             title: "Product Table",
             desc: "Fast, responsive product tables with quick ordering and custom filters.",
             icon: Table,
             iconColor: "text-cyan-600",
             iconBg: "bg-cyan-50 border border-cyan-100",
-            active: isPro ? true : false,
             activeColor: "bg-cyan-600",
             linkColor: "text-cyan-600 hover:text-cyan-700",
             link: "admin.php?page=wise_product_table"
         },
         {
             id: "discountmanager",
+            menuSlug: "wisecampaign_discount_manager",
+            menuTitle: "Discount Manager",
             title: "Discount Manager",
             desc: "Advanced conditional discounts, BOGO, bulk rules, and spend rewards.",
             icon: BadgePercent,
             iconColor: "text-emerald-600",
             iconBg: "bg-emerald-50 border border-emerald-100",
-            active: isPro ? true : false,
             activeColor: "bg-emerald-600",
             linkColor: "text-emerald-600 hover:text-emerald-700",
             link: isPro ? "admin.php?page=wisecampaign_discount_manager" : "https://wisemattic.com/wisecampaign/pricing"
         }
     ];
 
-    // Active modules state with localStorage persistence
-    const [modules, setModules] = useState(() => {
+    // Which modules are on. Saved on the server (includes/Classes/Modules.php); every module is on until turned off.
+    const [states, setStates] = useState(() => {
+        const fallback = Object.fromEntries(defaultModules.map((m) => [m.id, true]));
         try {
-            const saved = localStorage.getItem("wisecampaign_modules_state");
-            if (saved) {
-                const states = JSON.parse(saved);
-                return defaultModules.map((m) => ({
-                    ...m,
-                    active: states[m.id] !== undefined ? states[m.id] : (isPro ? true : m.active)
-                }));
-            }
+            const saved = JSON.parse(document.getElementById("getting-started-app")?.dataset.modules || "{}");
+            return { ...fallback, ...saved };
         } catch (e) {
-            // fallback
+            return fallback;
         }
-        return defaultModules;
     });
+    const [savingId, setSavingId] = useState(null);
+    const [saveError, setSaveError] = useState("");
 
+    // Older versions kept the switches in the browser only
+    useEffect(() => {
+        try {
+            localStorage.removeItem("wisecampaign_modules_state");
+        } catch (e) {
+            // Ignore storage errors
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!saveError) return undefined;
+        const timer = setTimeout(() => setSaveError(""), 5000);
+        return () => clearTimeout(timer);
+    }, [saveError]);
+
+    const modules = defaultModules.map((m) => ({ ...m, active: !!states[m.id] }));
     const activeCount = modules.filter((m) => m.active).length;
 
-    const toggleModule = (id) => {
-        setModules((prev) => {
-            const next = prev.map((m) =>
-                m.id === id ? { ...m, active: !m.active } : m
-            );
-            try {
-                const states = {};
-                next.forEach((m) => {
-                    states[m.id] = m.active;
-                });
-                localStorage.setItem(
-                    "wisecampaign_modules_state",
-                    JSON.stringify(states)
-                );
-            } catch (e) {
-                // Ignore storage errors
+    // Discount Manager has an admin page only with an active Pro license
+    const hasMenuPage = (id) => id !== "discountmanager" || isPro;
+
+    const setModule = async (id, enabled) => {
+        setStates((prev) => ({ ...prev, [id]: enabled }));
+        setSavingId(id);
+        setSaveError("");
+        try {
+            const res = await fetch(`${window.wiseModuleData?.apiUrl || "/wp-json/wisecampaign/v1/"}modules`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(window.wiseModuleData?.nonce ? { "X-WP-Nonce": window.wiseModuleData.nonce } : {}),
+                },
+                body: JSON.stringify({ id, enabled }),
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(payload?.message || "Could not save. Please try again.");
+            setStates(payload.modules);
+            if (hasMenuPage(id)) {
+                syncAdminMenu(modules, id, enabled);
             }
-            return next;
-        });
+        } catch (e) {
+            setStates((prev) => ({ ...prev, [id]: !enabled }));
+            setSaveError(e.message || "Could not save. Please try again.");
+        } finally {
+            setSavingId(null);
+        }
     };
+
+    const toggleModule = (id) => setModule(id, !states[id]);
 
     // FAQ state
     const [openFaq, setOpenFaq] = useState(null);
@@ -375,6 +443,14 @@ const GettingStarted = () => {
                                     {activeCount} of {modules.length} active
                                 </span>
                             </div>
+                            <p className="text-[11px] sm:text-xs text-slate-500 -mt-2 mb-4">
+                                Turn off what you don't use. A module that is off leaves the menu and stops loading on your store.
+                            </p>
+                            {saveError && (
+                                <p role="alert" className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2 -mt-1 mb-4">
+                                    {saveError}
+                                </p>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                 {modules.map((m) => {
@@ -387,7 +463,7 @@ const GettingStarted = () => {
                                             <div>
                                                 {/* Top Row: Icon + Title + Switch */}
                                                 <div className="flex items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-2.5">
+                                                    <div className={`flex items-center gap-2.5 transition-opacity ${m.active ? "" : "opacity-50 grayscale"}`}>
                                                         <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${m.iconBg}`}>
                                                             <IconComponent className={`w-4 h-4 ${m.iconColor}`} />
                                                         </div>
@@ -402,7 +478,8 @@ const GettingStarted = () => {
                                                         role="switch"
                                                         aria-checked={m.active}
                                                         onClick={() => toggleModule(m.id)}
-                                                        className="wc-toggle-btn"
+                                                        disabled={savingId === m.id}
+                                                        className={`wc-toggle-btn ${savingId === m.id ? "wc-toggle-saving" : ""}`}
                                                         style={{
                                                             backgroundColor: m.active
                                                                 ? m.id === "banner"
@@ -432,19 +509,25 @@ const GettingStarted = () => {
                                                 </div>
 
                                                 {/* Description */}
-                                                <p className="text-[11px] sm:text-xs text-slate-500 mt-2 leading-relaxed">
+                                                <p className={`text-[11px] sm:text-xs text-slate-500 mt-2 leading-relaxed transition-opacity ${m.active ? "" : "opacity-60"}`}>
                                                     {m.desc}
                                                 </p>
                                             </div>
 
                                             {/* Configure Link */}
                                             <div className="mt-3">
-                                                <a
-                                                    href={m.link}
-                                                    className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold transition-colors ${m.linkColor}`}
-                                                >
-                                                    Configure →
-                                                </a>
+                                                {m.active ? (
+                                                    <a
+                                                        href={m.link}
+                                                        className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold transition-colors ${m.linkColor}`}
+                                                    >
+                                                        Configure →
+                                                    </a>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-slate-400">
+                                                        Turned off
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -515,12 +598,18 @@ const GettingStarted = () => {
                             {/* Checklist Content */}
                             <div className="space-y-3">
                                 <div className="space-y-2.5">
-                                    {/* Step 1: Checked */}
+                                    {/* Step 1: done while the wiseBanner module is on */}
                                     <div className="flex items-center gap-2.5">
-                                        <div className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-sm">
-                                            <Check className="w-3 h-3 stroke-[3]" />
-                                        </div>
-                                        <span className="text-xs font-medium text-slate-400 line-through">
+                                        {states.banner ? (
+                                            <div className="w-5 h-5 rounded-full bg-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-sm">
+                                                <Check className="w-3 h-3 stroke-[3]" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-5 h-5 rounded-full border-2 border-slate-300 text-slate-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                                                1
+                                            </div>
+                                        )}
+                                        <span className={`text-xs ${states.banner ? "font-medium text-slate-400 line-through" : "font-semibold text-slate-800"}`}>
                                             Activate wiseBanner module
                                         </span>
                                     </div>
@@ -557,13 +646,24 @@ const GettingStarted = () => {
                                 </div>
 
                                 {/* Continue Setup CTA */}
-                                <a
-                                    href="admin.php?page=wise_banner_v2"
-                                    className="w-full mt-2 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] text-white font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 text-xs"
-                                >
-                                    <span>Continue Setup</span>
-                                    <ArrowRight className="w-3.5 h-3.5" />
-                                </a>
+                                {states.banner ? (
+                                    <a
+                                        href="admin.php?page=wise_banner_v2"
+                                        className="w-full mt-2 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] text-white font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 text-xs"
+                                    >
+                                        <span>Continue Setup</span>
+                                        <ArrowRight className="w-3.5 h-3.5" />
+                                    </a>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setModule("banner", true)}
+                                        disabled={savingId === "banner"}
+                                        className="w-full mt-2 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] text-white font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-all shadow-md shadow-purple-500/20 text-xs cursor-pointer"
+                                    >
+                                        <span>Turn On wiseBanner</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -613,6 +713,16 @@ const GettingStarted = () => {
                             </div>
 
                             {/* CTA Button */}
+                            {isPro && !states.discountmanager ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setModule("discountmanager", true)}
+                                    disabled={savingId === "discountmanager"}
+                                    className="w-full mt-4 py-2.5 bg-[#059669] hover:bg-[#047857] active:scale-[0.98] text-white font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-950/40 text-xs cursor-pointer"
+                                >
+                                    <span>Turn On Discount Manager</span>
+                                </button>
+                            ) : (
                             <a
                                 href={
                                     isPro
@@ -626,6 +736,7 @@ const GettingStarted = () => {
                                 <span>Manage Discounts</span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                             </a>
+                            )}
                         </div>
 
                         {/* 3. HELP & COMMUNITY CARD */}

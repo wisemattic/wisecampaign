@@ -14,6 +14,8 @@ class Menu
     public function __construct()
     {
         add_action('admin_menu', [$this, 'wisecampaign_admin_menu']);
+        // After the module pages and Pro's Discount Manager (10), before Pro's License (50)
+        add_action('admin_menu', [$this, 'add_analytics_menu'], 40);
         add_action('admin_menu', [$this, 'add_help_and_upgrade_menus'], 999); // Run after Pro plugin menus
         add_action('admin_head', [$this, 'add_menu_link_styles']);
         add_filter('plugin_action_links_wisecampaign/wisecampaign.php', [$this, 'add_plugin_action_links']);
@@ -95,62 +97,79 @@ class Menu
         $icon_path = WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
         add_menu_page('WiseCampaign', 'WiseCampaign', 'manage_options', 'wisecampaign_getting_started', [$this, 'getting_started_page'], $icon_path, 30);
         add_submenu_page('wisecampaign_getting_started', 'Getting Started', 'Getting Started', 'manage_options', 'wisecampaign_getting_started', [$this, 'getting_started_page']);
-        add_submenu_page('wisecampaign_getting_started', 'wiseBanner', 'wiseBanner', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page']);
 
-        $this->add_wc_dependent_submenu(
-            'wisecampaign_getting_started',
-            __('Direct Checkout', 'wisecampaign'),
-            __('Direct Checkout', 'wisecampaign'),
-            'wisecampaign_checkout',
-            'wisecampaign_direct_checkout_settings_page'
-        );
+        // Modules turned off on the Getting Started page get no menu item and no admin page
+        if (Modules::is_enabled('banner')) {
+            add_submenu_page('wisecampaign_getting_started', 'wiseBanner', 'wiseBanner', 'manage_options', 'wise_banner_v2', [$this, 'wise_banner_v2_page']);
+        }
+
+        if (Modules::is_enabled('checkout')) {
+            $this->add_wc_dependent_submenu(
+                'wisecampaign_getting_started',
+                __('Direct Checkout', 'wisecampaign'),
+                __('Direct Checkout', 'wisecampaign'),
+                'wisecampaign_checkout',
+                [$this, 'wise_direct_checkout_page']
+            );
+        }
 
         // Works without WooCommerce too: it then shows simulated orders only.
-        add_submenu_page(
-            'wisecampaign_getting_started',
-            __('Sales Notification', 'wisecampaign'),
-            __('Sales Notification', 'wisecampaign'),
-            'manage_options',
-            'wisecampaign_notification',
-            [SalesNotification::getInstance(), 'render_admin_page']
-        );
+        if (Modules::is_enabled('socialproof')) {
+            add_submenu_page(
+                'wisecampaign_getting_started',
+                __('Sales Notification', 'wisecampaign'),
+                __('Sales Notification', 'wisecampaign'),
+                'manage_options',
+                'wisecampaign_notification',
+                [$this, 'wise_sales_notification_page']
+            );
+        }
 
-        $this->add_wc_dependent_submenu(
-            'wisecampaign_getting_started',
-            __('wiseCart', 'wisecampaign'),
-            __('wiseCart', 'wisecampaign'),
-            'wisecampaign_cart',
-        [$this, 'wisecampaign_cart_page']
-        );
+        if (Modules::is_enabled('wisecart')) {
+            $this->add_wc_dependent_submenu(
+                'wisecampaign_getting_started',
+                __('wiseCart', 'wisecampaign'),
+                __('wiseCart', 'wisecampaign'),
+                'wisecampaign_cart',
+                [$this, 'wisecampaign_cart_page']
+            );
+        }
+
         // wiseStockBar (Modular)
-        add_submenu_page(
-            'wisecampaign_getting_started',
-            'StockBar',
-            'StockBar',
-            'manage_options',
-            'wise_stock_bar',
-            [$this, 'wise_stock_bar_page']
-        );
+        if (Modules::is_enabled('stockbar')) {
+            add_submenu_page(
+                'wisecampaign_getting_started',
+                'StockBar',
+                'StockBar',
+                'manage_options',
+                'wise_stock_bar',
+                [$this, 'wise_stock_bar_page']
+            );
+        }
 
         // WiseVideo Commerce (Modular)
-        add_submenu_page(
-            'wisecampaign_getting_started',
-            'WiseVideo Commerce',
-            'WiseVideo Commerce',
-            'manage_options',
-            'wise_video_commerce',
-            [$this, 'wise_video_commerce_page']
-        );
+        if (Modules::is_enabled('wisevideo')) {
+            add_submenu_page(
+                'wisecampaign_getting_started',
+                'WiseVideo Commerce',
+                'WiseVideo Commerce',
+                'manage_options',
+                'wise_video_commerce',
+                [$this, 'wise_video_commerce_page']
+            );
+        }
 
         // Wise Product Table (Modular)
-        add_submenu_page(
-            'wisecampaign_getting_started',
-            'Product Table',
-            'Product Table',
-            'manage_options',
-            'wise_product_table',
-            [$this, 'wise_product_table_page']
-        );
+        if (Modules::is_enabled('producttable')) {
+            add_submenu_page(
+                'wisecampaign_getting_started',
+                'Product Table',
+                'Product Table',
+                'manage_options',
+                'wise_product_table',
+                [$this, 'wise_product_table_page']
+            );
+        }
     }
 
     /**
@@ -200,11 +219,6 @@ class Menu
     {
         ?>
         <style>
-            html, body, #wpwrap {
-                overflow: hidden !important;
-                height: 100% !important;
-            }
-
             #wpbody-content {
                 padding-bottom: 0 !important;
             }
@@ -247,11 +261,6 @@ class Menu
     {
         ?>
         <style>
-            html, body, #wpwrap {
-                overflow: hidden !important;
-                height: 100% !important;
-            }
-
             #wpbody-content {
                 padding-bottom: 0 !important;
             }
@@ -282,6 +291,45 @@ class Menu
             }
         </style>
         <div id="wise-product-table-app"></div>
+<?php
+    }
+
+    public function add_analytics_menu()
+    {
+        add_submenu_page('wisecampaign_getting_started', __('Analytics', 'wisecampaign'), __('Analytics', 'wisecampaign'), 'manage_options', 'wisecampaign_analytics', [$this, 'wise_analytics_page']);
+    }
+
+    /**
+     * Render the Analytics modular React app (modules/wise-analytics)
+     */
+    public function wise_analytics_page()
+    {
+        ?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            #wise-analytics-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-analytics-app"></div>
 <?php
     }
  
@@ -321,7 +369,87 @@ class Menu
                 display: none !important;
             }
         </style>
-        <div id="getting-started-app"></div>
+        <div id="getting-started-app" data-modules="<?php echo esc_attr(wp_json_encode(Modules::get_states())); ?>"></div>
+        <?php
+    }
+
+    /**
+     * Render the Direct Checkout modular React app
+     */
+    public function wise_direct_checkout_page()
+    {
+?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-direct-checkout-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-direct-checkout-app"></div>
+        <?php
+    }
+
+    /**
+     * Render the Sales Notification modular React app
+     */
+    public function wise_sales_notification_page()
+    {
+?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-sales-notification-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-sales-notification-app"></div>
         <?php
     }
 
@@ -514,27 +642,46 @@ class Menu
     {
     }
 
+    /**
+     * Render the wiseCart modular React app
+     */
     function wisecampaign_cart_page()
     {
 ?>
-        <div class="wrap wisecart-settings-wrap">
-            <form id="wisecart-settings-form" method="post">
-                <?php
-        wp_nonce_field('wisecart_save_action', 'wisecart_settings_nonce');
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
 
-        do_settings_sections('wisecampaign_cart');
-?>
-                <div class="wisecart-settings-actions">
-                    <button type="submit" id="wisecart-save-btn" class="button button-primary">
-                        <?php _e('Save Changes', 'wisecampaign'); ?>
-                    </button>
-                    <span class="wisecart-save-feedback"></span>
-                    <span class="spinner"></span>
-                </div>
-            </form>
-        </div>
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-cart-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-cart-app"></div>
         <?php
     }
+
     function wisecampaign_menu_page()
     {
         echo '<h1>WiseCampaign Menu Page</h1>';
