@@ -1,0 +1,503 @@
+/*
+ * =================================================================
+ * Product Table (storefront and admin preview)
+ * Design settings arrive as CSS variables on .wpt (modules/wise-product-table/src/ProductTable.jsx).
+ * =================================================================
+ */
+.wpt {
+    --wpt-control-h: 38px;
+    width: 100%;
+    margin-bottom: 24px;
+    color: var(--wpt-text, #475569);
+    font-size: var(--wpt-font, 14px);
+    line-height: 1.45;
+    text-align: left;
+}
+
+.wpt *,
+.wpt *::before,
+.wpt *::after {
+    box-sizing: border-box;
+}
+
+.wpt .wpt-muted {
+    color: var(--wpt-text, #475569);
+    opacity: 0.7;
+    font-size: 0.92em;
+}
+
+/* -----------------------------------------------------------------
+ * Toolbar: filters, reset, search
+ * ----------------------------------------------------------------- */
+.wpt .wpt-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.wpt .wpt-select,
+.wpt .wpt-search,
+.wpt .wpt-qty {
+    height: var(--wpt-control-h);
+    min-height: 0;
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid var(--wpt-border, #e2e8f0);
+    border-radius: var(--wpt-radius, 8px);
+    background-color: var(--wpt-row-bg, #ffffff);
+    color: var(--wpt-text, #475569);
+    font: inherit;
+    font-size: 0.95em;
+    line-height: normal;
+    box-shadow: none;
+}
+
+.wpt .wpt-select {
+    max-width: 200px;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%2394a3b8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: right 11px center;
+    background-repeat: no-repeat;
+    background-size: 10px 7px;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.wpt .wpt-toolbar__end {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.wpt .wpt-search {
+    flex: 0 1 280px;
+    min-width: 160px;
+}
+
+.wpt .wpt-select:focus,
+.wpt .wpt-search:focus,
+.wpt .wpt-qty:focus {
+    outline: 2px solid var(--wpt-accent, #0f172a);
+    outline-offset: 1px;
+}
+
+.wpt .wpt-reset {
+    height: var(--wpt-control-h);
+    margin: 0;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--wpt-radius, 8px);
+    background: transparent;
+    color: var(--wpt-link, #2563eb);
+    font: inherit;
+    font-size: 0.92em;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* -----------------------------------------------------------------
+ * Table
+ * ----------------------------------------------------------------- */
+.wpt .wpt-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--wpt-border, #e2e8f0);
+    border-radius: var(--wpt-box-radius, 12px);
+    background: var(--wpt-row-bg, #ffffff);
+}
+
+.wpt .wpt-table {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: transparent;
+}
+
+.wpt .wpt-table th,
+.wpt .wpt-table td {
+    padding: var(--wpt-pad, 12px);
+    border: 0;
+    border-bottom: 1px solid var(--wpt-border, #e2e8f0);
+    border-right: 1px solid var(--wpt-v-border, transparent);
+    background: transparent;
+    color: inherit;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.wpt .wpt-table th:last-child,
+.wpt .wpt-table td:last-child {
+    border-right: 0;
+}
+
+.wpt .wpt-table thead th {
+    background: var(--wpt-header-bg, #f8fafc);
+    color: var(--wpt-header-text, #1e293b);
+    font-size: var(--wpt-header-font, 12px);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: var(--wpt-header-case, uppercase);
+    white-space: nowrap;
+}
+
+.wpt .wpt-table tbody tr {
+    background: var(--wpt-row-bg, #ffffff);
+}
+
+.wpt .wpt-table tbody tr:nth-child(even) {
+    background: var(--wpt-row-alt, #f8fafc);
+}
+
+.wpt .wpt-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.wpt .wpt-sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+
+.wpt .wpt-sort {
+    width: 8px;
+    height: 12px;
+}
+
+.wpt .wpt-col-check {
+    width: 36px;
+}
+
+.wpt .wpt-col-image {
+    width: 72px;
+}
+
+.wpt .wpt-col-buy {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.wpt .wpt-table td.wpt-col-sku,
+.wpt .wpt-table td.wpt-col-stock {
+    white-space: nowrap;
+}
+
+.wpt .wpt-check {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--wpt-accent, #0f172a);
+    cursor: pointer;
+}
+
+.wpt .wpt-thumb {
+    display: block;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: calc(var(--wpt-box-radius, 12px) * 0.66);
+    background: var(--wpt-row-alt, #f8fafc);
+}
+
+.wpt .wpt-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    object-fit: cover;
+}
+
+/* Themes underline content links (Storefront: .hentry .entry-content a), hence the longer selectors */
+.wpt .wpt-scroll a.wpt-name,
+.wpt .wpt-card a.wpt-name {
+    color: var(--wpt-link, #2563eb);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.wpt .wpt-scroll a.wpt-name:hover,
+.wpt .wpt-card a.wpt-name:hover {
+    text-decoration: underline;
+}
+
+.wpt .wpt-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.92em;
+}
+
+.wpt .wpt-price {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.wpt .wpt-price del {
+    margin-right: 4px;
+    font-weight: 400;
+    opacity: 0.55;
+}
+
+.wpt .wpt-price ins {
+    text-decoration: none;
+}
+
+.wpt .wpt-stock {
+    color: #16a34a;
+    font-size: 0.92em;
+    font-weight: 600;
+}
+
+.wpt .wpt-stock.is-out {
+    color: #dc2626;
+}
+
+/* -----------------------------------------------------------------
+ * Buy controls
+ * ----------------------------------------------------------------- */
+.wpt .wpt-buy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wpt .wpt-variations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.wpt .wpt-variations .wpt-select {
+    max-width: 150px;
+    height: 34px;
+}
+
+.wpt .wpt-buy__row {
+    display: flex;
+    gap: 6px;
+}
+
+.wpt .wpt-qty {
+    width: 64px;
+    padding: 0 6px;
+    text-align: center;
+}
+
+.wpt .wpt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--wpt-control-h);
+    margin: 0;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--wpt-radius, 8px);
+    background: var(--wpt-accent, #0f172a);
+    color: var(--wpt-accent-text, #ffffff);
+    font: inherit;
+    font-size: 0.92em;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.wpt .wpt-btn:hover:not([disabled]) {
+    filter: brightness(1.12);
+    color: var(--wpt-accent-text, #ffffff);
+}
+
+.wpt .wpt-btn:active:not([disabled]) {
+    transform: scale(0.97);
+}
+
+.wpt .wpt-btn[disabled],
+.wpt .wpt-btn--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.wpt .wpt-btn.is-busy[disabled] {
+    opacity: 0.7;
+    cursor: progress;
+}
+
+.wpt .wpt-btn.is-added {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.wpt .wpt-btn--ghost {
+    border: 1px solid var(--wpt-accent, #0f172a);
+    background: transparent;
+    color: var(--wpt-accent, #0f172a);
+}
+
+.wpt .wpt-btn--ghost:hover:not([disabled]) {
+    color: var(--wpt-accent, #0f172a);
+}
+
+.wpt .wpt-note {
+    font-size: 0.85em;
+    white-space: normal;
+    opacity: 0.8;
+}
+
+.wpt .wpt-note--error {
+    color: #dc2626;
+    opacity: 1;
+}
+
+.wpt .wpt-note a {
+    color: inherit;
+    font-weight: 600;
+}
+
+/* -----------------------------------------------------------------
+ * Add selected, empty state, footer
+ * ----------------------------------------------------------------- */
+.wpt .wpt-bulk {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: var(--wpt-control-h);
+}
+
+.wpt .wpt-bulk--above {
+    min-height: 0;
+}
+
+.wpt .wpt-bulk--below {
+    margin-top: 12px;
+}
+
+.wpt .wpt-empty {
+    padding: 40px 16px;
+    border: 1px dashed var(--wpt-border, #e2e8f0);
+    border-radius: var(--wpt-box-radius, 12px);
+    text-align: center;
+    opacity: 0.8;
+}
+
+.wpt .wpt-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.wpt .wpt-pages {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wpt .wpt-page {
+    min-width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0 8px;
+    border: 1px solid var(--wpt-border, #e2e8f0);
+    border-radius: var(--wpt-radius, 8px);
+    background: var(--wpt-row-bg, #ffffff);
+    color: var(--wpt-text, #475569);
+    font: inherit;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wpt .wpt-page.is-current {
+    border-color: var(--wpt-accent, #0f172a);
+    background: var(--wpt-accent, #0f172a);
+    color: var(--wpt-accent-text, #ffffff);
+}
+
+.wpt .wpt-page[disabled] {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------
+ * Cards (narrow screens or a narrow column)
+ * ----------------------------------------------------------------- */
+/* One card per row on phones, more side by side when there is room */
+.wpt .wpt-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 10px;
+}
+
+.wpt .wpt-card {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: var(--wpt-pad, 12px);
+    border: 1px solid var(--wpt-border, #e2e8f0);
+    border-radius: var(--wpt-box-radius, 12px);
+    background: var(--wpt-row-bg, #ffffff);
+}
+
+.wpt .wpt-card__check {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.wpt .wpt-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding-right: 20px;
+}
+
+/* Buttons line up at the bottom of cards in the same row */
+.wpt .wpt-card .wpt-buy {
+    margin-top: auto;
+    padding-top: 6px;
+}
+
+.wpt .wpt-card .wpt-btn {
+    flex: 1;
+}
+
+.wpt .wpt-card__line:empty {
+    display: none;
+}
+
+.wpt.wpt--cards .wpt-search {
+    flex: 1 1 100%;
+    order: -1;
+}
+
+/* Shown to admins when the table can't display */
+.wpt-admin-note {
+    padding: 10px 14px;
+    border: 1px dashed #f59e0b;
+    border-radius: 8px;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 14px;
+}
