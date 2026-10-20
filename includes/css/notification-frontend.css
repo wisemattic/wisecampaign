@@ -200,3 +200,22 @@
     object-fit: contain;
     background: #fff;
 }
+
+/* Small screens: the 380px popup plus its corner offset is wider than a phone, so it spans the screen instead. */
+@media (max-width: 480px) {
+    #wisecampaign-notification-container[class*="position-"] {
+        left: 12px;
+        right: 12px;
+    }
+
+    #wisecampaign-notification-container .wisecampaign-notification-popup[data-template] {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #wisecampaign-notification-container .wisecampaign-notification-popup[data-template] img {
+        width: 72px;
+        height: 72px;
+        margin-right: 14px;
+    }
+}

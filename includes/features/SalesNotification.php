@@ -15,210 +15,276 @@ class SalesNotification
 
     public function __construct()
     {
-        add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'admin_enqueue']);
-        add_action('wp_ajax_wisecampaign_toggle_status', [$this, 'ajax_toggle_notification_status']);
-        add_action('wp_ajax_wisecampaign_save_all_settings', [$this, 'ajax_save_all_settings']);
-        add_action('wp_ajax_wisecampaign_reset_settings', [$this, 'ajax_reset_settings']);
+        add_action('rest_api_init', [$this, 'register_rest_routes']);
 
         add_action('wp_enqueue_scripts', [$this, 'frontend_enqueue']);
         add_action('wp_footer', [$this, 'render_frontend_container']);
     }
 
-    public function render_admin_page()
+    /**
+     * =================================================================
+     * ADMIN APP (React module: modules/wise-sales-notification)
+     * =================================================================
+     */
+
+    /**
+     * The live preview draws the real storefront popup, so it needs the storefront stylesheet and every font.
+     */
+    public function admin_enqueue($hook)
     {
-        $sample_notification = $this->get_sample_notification_data();
-        $settings = get_option($this->option_name, []);
-        $enabled = isset($settings['enabled']) ? $settings['enabled'] : '1';
-        $is_pro = $this->is_pro_active();
-        ?>
-        <div class="wisecampaign-sales-notification-admin" style="max-width: 1200px; margin-top: 20px;">
-            <div class="wisecampaign-header-banner">
-                <div class="wisecampaign-header-title">
-                    <h1 style="margin: 0 0 4px 0; font-size: 22px; font-weight: 800; color: #0f172a;"><?php esc_html_e('Sales Notification (Social Proof)', 'wisecampaign'); ?></h1>
-                    <p style="margin: 0; color: #64748b; font-size: 13px;"><?php esc_html_e('Boost buyer trust and create authentic purchase urgency with real-time popup notifications.', 'wisecampaign'); ?></p>
-                </div>
-                <div class="wisecampaign-header-actions" style="display: flex; align-items: center; gap: 14px;">
-                    <label class="wisecampaign-toggle-label" title="<?php esc_attr_e('Enable/Disable Sales Notification', 'wisecampaign'); ?>" style="display: inline-flex; align-items: center;">
-                        <input type="checkbox" id="wisecampaign-toggle-enabled" <?php checked('1', $enabled); ?> />
-                        <span class="wisecampaign-toggle-slider"></span>
-                    </label>
-                    <span id="wisecampaign-status-feedback" class="wisecampaign-feedback-message"></span>
-                    <?php if ($is_pro) : ?>
-                        <div class="wisecampaign-pro-active-badge">
-                            <span class="dashicons dashicons-yes-alt"></span>
-                            <span><?php esc_html_e('PRO Activated', 'wisecampaign'); ?></span>
-                        </div>
-                    <?php else : ?>
-                        <a href="https://wisemattic.com/wisecampaign/pricing" target="_blank" class="wisecampaign-upgrade-pill">
-                            <span class="dashicons dashicons-star-filled"></span>
-                            <span><?php esc_html_e('Upgrade to PRO', 'wisecampaign'); ?></span>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <form action="options.php" method="post" id="wisecampaign-settings-form" autocomplete="off">
-                <input type="hidden" name="<?php echo esc_attr($this->option_name); ?>[enabled]" id="wisecampaign-hidden-enabled" value="<?php echo esc_attr($enabled); ?>" />
-                <?php settings_fields('wisecampaign_sales_notification_settings_group'); ?>
-
-                <div class="wisecampaign-admin-main">
-                    <aside class="wisecampaign-admin-sidebar">
-                        <nav class="wisecampaign-tabs" role="tablist">
-                            <button type="button" class="wisecampaign-tab active" data-tab="settings" aria-selected="true" aria-controls="wisecampaign-tab-settings" id="tab-settings"><?php _e('Settings & Content', 'wisecampaign'); ?></button>
-                            <button type="button" class="wisecampaign-tab" data-tab="templates" aria-selected="false" aria-controls="wisecampaign-tab-templates" id="tab-templates"><?php _e('Templates', 'wisecampaign'); ?></button>
-                        </nav>
-
-                        <section class="wisecampaign-tab-content" id="wisecampaign-tab-settings" role="tabpanel" aria-labelledby="tab-settings" style="display: block;">
-                            <div class="wisecampaign-settings-sections">
-                                <div class="wisecampaign-settings-card">
-                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
-                                        <span><?php _e('Content & Source', 'wisecampaign'); ?></span>
-                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Content Section">&#9660;</button>
-                                    </div>
-                                    <div class="wisecampaign-settings-card-body">
-                                        <?php
-                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section');
-                                        ?>
-                                    </div>
-                                </div>
-                                <div class="wisecampaign-settings-card">
-                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
-                                        <span><?php _e('Appearance', 'wisecampaign'); ?></span>
-                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Appearance Section">&#9660;</button>
-                                    </div>
-                                    <div class="wisecampaign-settings-card-body">
-                                        <?php
-                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section');
-                                        ?>
-                                    </div>
-                                </div>
-                                <div class="wisecampaign-settings-card">
-                                    <div class="wisecampaign-settings-card-header" data-toggle="collapse">
-                                        <span><?php _e('Visibility & Timing', 'wisecampaign'); ?></span>
-                                        <button type="button" class="wisecampaign-card-toggle" aria-label="Toggle Visibility Section">&#9660;</button>
-                                    </div>
-                                    <div class="wisecampaign-settings-card-body">
-                                        <?php
-                                        do_settings_fields('wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section');
-                                        ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="wisecampaign-tab-content" id="wisecampaign-tab-templates" role="tabpanel" aria-labelledby="tab-templates" style="display:none;">
-                            <h3 style="margin-top: 0; font-size: 15px; font-weight: 700; color: #1e293b;"><?php _e('Choose a Template Style', 'wisecampaign'); ?></h3>
-                            <div class="wisecampaign-template-list">
-                                <?php $this->field_cb_template(); ?>
-                            </div>
-                        </section>
-                    </aside>
-
-                    <main class="wisecampaign-admin-preview">
-                        <div class="wisecampaign-live-preview-title"><?php _e('Live Preview', 'wisecampaign'); ?></div>
-                        <div id="wisecampaign-notification-preview" class="wisecampaign-notification-popup" data-template="<?php echo esc_attr($settings['template'] ?? 'template_1'); ?>">
-                            <img src="<?php echo esc_url($sample_notification['product_image']); ?>" alt="Product" class="<?php echo esc_attr(!empty($sample_notification['image_type']) ? 'is-' . $sample_notification['image_type'] : ''); ?>">
-                            <div class="notification-content">
-                                <div class="notification-body">
-                                    <span class="buyer-info">
-                                        <span class="buyer-name"><?php echo esc_html($sample_notification['buyer']); ?></span>
-                                        <?php _e('just purchased', 'wisecampaign'); ?>
-                                    </span>
-                                    <div class="product-name"><?php echo esc_html($sample_notification['product_name']); ?></div>
-                                    <div class="location-info">
-                                        <?php _e('From:', 'wisecampaign'); ?>
-                                        <span class="location"><?php echo esc_html($sample_notification['location']); ?></span>
-                                    </div>
-                                </div>
-                                <div class="notification-footer">
-                                    <span class="timestamp"><?php echo esc_html($sample_notification['time']); ?></span>
-                                    <span class="brand-credit" style="<?php echo (isset($settings['hide_branding']) && $settings['hide_branding'] === '1' && $is_pro) ? 'display: none;' : ''; ?>">
-                                        <a href="https://wisemattic.com/wisecampaign/" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
-                                            <?php _e('by', 'wisecampaign'); ?> <b>wiseCampaign</b>
-                                        </a>
-                                    </span>
-                                </div>
-
-                            </div>
-                        </div>
-                        <div class="wisecampaign-admin-actions">
-                            <button type="button" class="wisecampaign-btn reset" id="wisecampaign-reset-button"><?php _e('Reset', 'wisecampaign'); ?></button>
-                            <button type="submit" class="wisecampaign-btn save" id="wisecampaign-set-now-button" form="wisecampaign-settings-form"><?php _e('Save Changes', 'wisecampaign'); ?></button>
-                            <span id="wisecampaign-form-feedback" class="wisecampaign-feedback-message"></span>
-                        </div>
-                    </main>
-                </div>
-            </form>
-
-            <!-- Feature Request Section -->
-            <div class="wisecampaign-feature-request-section" style="margin-top: 30px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); overflow: hidden;">
-                <div class="wisecampaign-feature-request-content" style="display: flex; align-items: center; padding: 24px; gap: 20px;">
-                    <div class="wisecampaign-feature-request-icon" style="flex-shrink: 0; width: 48px; height: 48px; background-color: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2563eb;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14,2 14,8 20,8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10,9 9,9 8,9" />
-                        </svg>
-                    </div>
-                    <div class="wisecampaign-feature-request-text" style="flex-grow: 1;">
-                        <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #0f172a;"><?php esc_html_e('Have a Feature Request?', 'wisecampaign'); ?></h3>
-                        <p style="margin: 0; color: #64748b; font-size: 13px; line-height: 1.5;"><?php esc_html_e('We\'d love to hear your ideas for improving wiseCampaign! Share your suggestions and vote on existing feature requests.', 'wisecampaign'); ?></p>
-                    </div>
-                    <div class="wisecampaign-feature-request-action" style="flex-shrink: 0;">
-                        <a href="https://wisecampaign.canny.io/feature-requests" target="_blank" class="button button-primary button-large" style="display: inline-flex; align-items: center; gap: 6px; background-color: #2563eb; border-color: #2563eb; color: #fff; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; text-decoration: none;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                <polyline points="15,3 21,3 21,9" />
-                                <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
-                            <?php esc_html_e('Submit Feature Request', 'wisecampaign'); ?>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <?php
+        if (strpos($hook, 'wisecampaign_notification') === false) {
+            return;
+        }
+        wp_enqueue_style('wisecampaign-notification-frontend-css', WISECAMPAIGN_DIR_URL . 'includes/css/notification-frontend.css', [], WISECAMPAIGN_VERSION);
+        $families = array_map(function ($font) {
+            return 'family=' . urlencode($font) . ':wght@400;600;700';
+        }, $this->get_fonts());
+        wp_enqueue_style('wisecampaign-notification-admin-fonts', 'https://fonts.googleapis.com/css2?' . implode('&', $families) . '&display=swap', [], null);
     }
 
-
-    public function register_settings()
+    private function get_fonts()
     {
-        register_setting('wisecampaign_sales_notification_settings_group', $this->option_name);
+        return ['Poppins', 'Roboto', 'Open Sans', 'Lato'];
+    }
 
-        add_settings_section('wisecampaign_sn_appearance_section', __('Appearance', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
-        add_settings_field('sn_position', __('', 'wisecampaign'), [$this, 'field_cb_position'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['label_for' => __('Sales Pop Up Position', 'wisecampaign')]);
-        add_settings_field('sn_bg_color', __('', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'background_color', 'default' => '#FFFFFF', 'label_for' => __('Background Color', 'wisecampaign')]);
-        add_settings_field('sn_border_color', __('', 'wisecampaign'), [$this, 'field_cb_color'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_color', 'default' => '#E85653', 'label_for' => __('Border Color', 'wisecampaign')]);
-        add_settings_field('sn_border_width', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_width', 'default' => 0, 'min' => 0, 'max' => 20, 'label_for' => __('Border Width', 'wisecampaign')]);
-        add_settings_field('sn_border_radius', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'border_radius', 'default' => 10, 'min' => 0, 'max' => 100, 'label_for' => __('Border Radius', 'wisecampaign')]);
-        add_settings_field('sn_image_radius', __('', 'wisecampaign'), [$this, 'field_cb_slider'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'image_radius', 'default' => 8, 'min' => 0, 'max' => 50, 'label_for' => __('Image Radius', 'wisecampaign')]);
-        add_settings_field('sn_font_family', __('', 'wisecampaign'), [$this, 'field_cb_font'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['label_for' => __('Font Family', 'wisecampaign')]);
-        add_settings_field('sn_hide_branding', __('', 'wisecampaign'), [$this, 'field_cb_hide_branding'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_appearance_section', ['id' => 'hide_branding', 'label_for' => __('Hide Branding Watermark', 'wisecampaign')]);
+    public function register_rest_routes()
+    {
+        $permission = function () {
+            return current_user_can('manage_options');
+        };
 
-        add_settings_section('wisecampaign_sn_content_section', __('Content & Source', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
+        register_rest_route('wisecampaign/v1', '/sales-notification', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'rest_get_settings'],
+                'permission_callback' => $permission,
+            ],
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'rest_save_settings'],
+                'permission_callback' => $permission,
+            ],
+        ]);
 
-        add_settings_field('sn_random', __('', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['id' => 'random_show', 'label_for' => __('Order Show Random', 'wisecampaign')]);
-        add_settings_field('sn_source', __('', 'wisecampaign'), [$this, 'field_cb_source'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Order Source', 'wisecampaign')]);
-        add_settings_field('sn_selected_orders', __('', 'wisecampaign'), [$this, 'field_cb_selected_orders'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Select Orders', 'wisecampaign')]);
+        register_rest_route('wisecampaign/v1', '/sales-notification/status', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'rest_set_status'],
+            'permission_callback' => $permission,
+        ]);
 
-        // Virtual Orders PRO fields
-        add_settings_field('sn_virtual_names', __('', 'wisecampaign'), [$this, 'field_cb_virtual_names'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Buyer Names', 'wisecampaign')]);
-        add_settings_field('sn_virtual_locations', __('', 'wisecampaign'), [$this, 'field_cb_virtual_locations'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Locations', 'wisecampaign')]);
-        add_settings_field('sn_virtual_products_mode', __('', 'wisecampaign'), [$this, 'field_cb_virtual_products_mode'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Products to Promote', 'wisecampaign')]);
-        add_settings_field('sn_virtual_custom_products', __('', 'wisecampaign'), [$this, 'field_cb_virtual_custom_products'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Custom Products', 'wisecampaign')]);
-        add_settings_field('sn_virtual_selected_products', __('', 'wisecampaign'), [$this, 'field_cb_virtual_selected_products'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Select Products', 'wisecampaign')]);
-        add_settings_field('sn_virtual_image_type', __('', 'wisecampaign'), [$this, 'field_cb_virtual_image_type'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Notification Image', 'wisecampaign')]);
-        add_settings_field('sn_virtual_custom_images', __('', 'wisecampaign'), [$this, 'field_cb_virtual_custom_images'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_content_section', ['label_for' => __('Product Photos / Logos', 'wisecampaign')]);
+        register_rest_route('wisecampaign/v1', '/sales-notification/reset', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'rest_reset_settings'],
+            'permission_callback' => $permission,
+        ]);
+    }
 
-        add_settings_section('wisecampaign_sn_visibility_section', __('Visibility & Timing', 'wisecampaign'), null, 'wisecampaign_sales_notification_page');
-        add_settings_field('sn_visibility', __('', 'wisecampaign'), [$this, 'field_cb_visibility'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['label_for' => __('Visibility', 'wisecampaign')]);
-        add_settings_field('sn_specific_pages', __('', 'wisecampaign'), [$this, 'field_cb_specific_pages'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['label_for' => __('Select Pages', 'wisecampaign')]);
-        add_settings_field('sn_loop', __('', 'wisecampaign'), [$this, 'field_cb_toggle'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'loop', 'label_for' => __('Loop', 'wisecampaign')]);
-        add_settings_field('sn_display_time', __('', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'display_time', 'default' => 5, 'label' => 'Sec', 'label_for' => __('Display Time', 'wisecampaign')]);
-        add_settings_field('sn_delay_time', __('', 'wisecampaign'), [$this, 'field_cb_timing'], 'wisecampaign_sales_notification_page', 'wisecampaign_sn_visibility_section', ['id' => 'delay_time', 'default' => 5, 'label' => 'Sec', 'label_for' => __('Next pop up delay', 'wisecampaign')]);
+    /**
+     * Settings plus everything the admin app needs to build the live preview.
+     */
+    public function rest_get_settings()
+    {
+        $has_wc = $this->has_wc();
+        $settings = $this->get_settings_for_admin();
+        $placeholder = function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src() : WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png';
+
+        $pages = array_map(function ($page) {
+            return ['id' => $page->ID, 'title' => $page->post_title];
+        }, get_pages(['post_status' => 'publish']));
+
+        $custom_images = [];
+        foreach ($settings['virtual_custom_images'] as $image_id) {
+            $thumb = wp_get_attachment_image_url($image_id, 'thumbnail');
+            if ($thumb) {
+                $custom_images[] = [
+                    'id'    => $image_id,
+                    'thumb' => $thumb,
+                    'url'   => wp_get_attachment_image_url($image_id, 'medium') ?: $thumb,
+                ];
+            }
+        }
+
+        $response = rest_ensure_response([
+            'settings'         => $settings,
+            'defaults'         => $this->get_default_settings(),
+            'isPro'            => $this->is_pro_active(),
+            'hasWc'            => $has_wc,
+            'avatars'          => $this->get_avatar_urls(),
+            'placeholderImage' => $placeholder,
+            'pages'            => $pages,
+            'orders'           => $has_wc ? $this->get_admin_orders($placeholder) : [],
+            'products'         => $has_wc ? $this->get_admin_products($placeholder) : [],
+            'customImages'     => $custom_images,
+        ]);
+        // Some hosts cache REST responses; settings and license status must always be fresh.
+        $response->header('Cache-Control', 'no-store');
+        return $response;
+    }
+
+    public function rest_save_settings(\WP_REST_Request $request)
+    {
+        $current = get_option($this->option_name, []);
+        $settings = $this->sanitize_settings($request->get_json_params());
+        // On/off has its own endpoint, so saving the form never flips it.
+        $settings['enabled'] = isset($current['enabled']) ? $current['enabled'] : '1';
+        update_option($this->option_name, $settings);
+
+        return rest_ensure_response(['success' => true, 'settings' => $this->get_settings_for_admin()]);
+    }
+
+    public function rest_set_status(\WP_REST_Request $request)
+    {
+        $options = get_option($this->option_name, []);
+        $options['enabled'] = filter_var($request->get_param('enabled'), FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+        update_option($this->option_name, $options);
+
+        return rest_ensure_response(['success' => true, 'enabled' => $options['enabled']]);
+    }
+
+    public function rest_reset_settings()
+    {
+        update_option($this->option_name, $this->get_default_settings());
+        return $this->rest_get_settings();
+    }
+
+    /**
+     * Saved settings merged over the defaults, with the source and products mode the storefront will really use.
+     */
+    private function get_settings_for_admin()
+    {
+        $saved = get_option($this->option_name, []);
+        $settings = array_merge($this->get_default_settings(), is_array($saved) ? $saved : []);
+        $settings['source'] = $this->get_source($settings);
+        $settings['virtual_products_mode'] = $this->get_products_mode($settings);
+        foreach (['selected_orders', 'virtual_selected_products', 'virtual_custom_images', 'specific_pages'] as $key) {
+            $settings[$key] = array_values(array_map('intval', (array) $settings[$key]));
+        }
+        return $settings;
+    }
+
+    /**
+     * Latest orders with the same fields get_notification_data() shows, so the preview matches the storefront.
+     */
+    private function get_admin_orders($placeholder)
+    {
+        $query = new \WC_Order_Query(['limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
+        $orders = [];
+        foreach ($query->get_orders() as $order) {
+            $items = [];
+            foreach ($order->get_items() as $item) {
+                $product = $item->get_product();
+                if (!$product) {
+                    continue;
+                }
+                $items[] = [
+                    'name'  => $item->get_name(),
+                    'image' => wp_get_attachment_url($product->get_image_id()) ?: $placeholder,
+                    'url'   => get_permalink($product->get_id()),
+                ];
+            }
+            $created = $order->get_date_created();
+            $orders[] = [
+                'id'       => $order->get_id(),
+                'label'    => '#' . $order->get_id() . ' – ' . trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name()),
+                'status'   => $order->get_status(),
+                'buyer'    => $order->get_billing_first_name(),
+                'location' => $order->get_billing_city() . ', ' . (WC()->countries->countries[$order->get_billing_country()] ?? $order->get_billing_country()),
+                'time'     => $created ? human_time_diff(strtotime($created->date('Y-m-d H:i:s')), current_time('timestamp')) . ' ago' : '',
+                'items'    => $items,
+            ];
+        }
+        return $orders;
+    }
+
+    private function get_admin_products($placeholder)
+    {
+        $products = wc_get_products(['limit' => 100, 'status' => 'publish', 'orderby' => 'title', 'order' => 'ASC']);
+        return array_map(function ($product) use ($placeholder) {
+            return [
+                'id'    => $product->get_id(),
+                'name'  => $product->get_name(),
+                'price' => wp_strip_all_tags(wc_price($product->get_price())),
+                'image' => wp_get_attachment_url($product->get_image_id()) ?: $placeholder,
+                'url'   => get_permalink($product->get_id()),
+            ];
+        }, $products);
+    }
+
+    /**
+     * Sanitizes a full settings payload. PRO-only values fall back for free users.
+     */
+    private function sanitize_settings($input)
+    {
+        $input = is_array($input) ? $input : [];
+        $defaults = $this->get_default_settings();
+        $is_pro = $this->is_pro_active();
+
+        // Reads a scalar field as a string; anything else (arrays, objects) counts as missing.
+        $str = function ($key) use ($input, $defaults) {
+            return isset($input[$key]) && is_scalar($input[$key]) ? (string) $input[$key] : (string) $defaults[$key];
+        };
+        $enum = function ($key, $allowed) use ($str, $defaults) {
+            $value = $str($key);
+            return in_array($value, $allowed, true) ? $value : $defaults[$key];
+        };
+        $int = function ($key, $min, $max) use ($str) {
+            return max($min, min($max, intval($str($key))));
+        };
+        $bool = function ($key) use ($input) {
+            return filter_var($input[$key] ?? false, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+        };
+        $ids = function ($key) use ($input) {
+            return isset($input[$key]) && is_array($input[$key]) ? array_values(array_filter(array_map('intval', array_filter($input[$key], 'is_scalar')))) : [];
+        };
+        $color = function ($key) use ($str, $defaults) {
+            return sanitize_hex_color($str($key)) ?: $defaults[$key];
+        };
+
+        $settings = [
+            'template'                  => $enum('template', ['template_1', 'template_2', 'template_3', 'template_4', 'template_5', 'template_6']),
+            'position'                  => $enum('position', ['bottom-left', 'bottom-right', 'top-left', 'top-right']),
+            'background_color'          => $color('background_color'),
+            'border_color'              => $color('border_color'),
+            'border_width'              => $int('border_width', 0, 20),
+            'border_radius'             => $int('border_radius', 0, 100),
+            'image_radius'              => $int('image_radius', 0, 50),
+            'font_family'               => $enum('font_family', $this->get_fonts()),
+            'hide_branding'             => $bool('hide_branding'),
+            'random_show'               => $bool('random_show'),
+            'source'                    => $enum('source', ['recent_orders', 'selected_orders', 'virtual_orders']),
+            'selected_orders'           => $ids('selected_orders'),
+            'virtual_names'             => sanitize_textarea_field($str('virtual_names')),
+            'virtual_locations'         => sanitize_textarea_field($str('virtual_locations')),
+            'virtual_products_mode'     => $enum('virtual_products_mode', ['all_products', 'selected_products', 'custom_products']),
+            'virtual_selected_products' => $ids('virtual_selected_products'),
+            'virtual_custom_products'   => sanitize_textarea_field($str('virtual_custom_products')),
+            'virtual_image_type'        => $enum('virtual_image_type', ['product', 'buyer']),
+            'virtual_custom_images'     => array_values(array_filter($ids('virtual_custom_images'), 'wp_attachment_is_image')),
+            'visibility'                => $enum('visibility', ['all_pages', 'specific_pages']),
+            'specific_pages'            => $ids('specific_pages'),
+            'loop'                      => $bool('loop'),
+            'display_time'              => $int('display_time', 1, 300),
+            'delay_time'                => $int('delay_time', 1, 300),
+        ];
+
+        $settings['virtual_products_mode'] = $this->get_products_mode($settings);
+        $settings['source'] = $this->get_source($settings);
+
+        // PRO feature validation
+        if (!$is_pro) {
+            if ($settings['source'] === 'virtual_orders' && $this->has_wc()) {
+                $settings['source'] = 'recent_orders';
+            }
+            $settings['hide_branding'] = '0';
+
+            $pro_templates = ['template_3', 'template_4', 'template_5', 'template_6'];
+            if (in_array($settings['template'], $pro_templates, true)) {
+                $settings['template'] = 'template_1';
+            }
+        }
+
+        return $settings;
     }
 
     public function is_pro_active()
@@ -285,543 +351,6 @@ class SalesNotification
         return isset($options[$key]) ? $options[$key] : $default;
     }
 
-    public function field_cb_toggle($args)
-    {
-        $value = $this->get_option($args['id'], '0');
-        $id_attr = 'wisecampaign-toggle-' . esc_attr($args['id']);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-toggle">
-            <div class="wisecampaign-field-label">
-                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <label class="wisecampaign-toggle-label">
-                    <input type="checkbox" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="1" <?php checked('1', $value); ?>/>
-                    <span class="wisecampaign-toggle-slider"></span>
-                </label>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_template()
-    {
-        $value = $this->get_option('template', 'template_1');
-        $is_pro = $this->is_pro_active();
-
-        $templates = [
-            [
-                'id' => 'template_1',
-                'name' => __('Classic Card', 'wisecampaign'),
-                'is_pro' => false,
-                'desc' => __('Clean rounded card with square thumbnail', 'wisecampaign'),
-                'type' => 'classic',
-            ],
-            [
-                'id' => 'template_2',
-                'name' => __('Modern Pill', 'wisecampaign'),
-                'is_pro' => false,
-                'desc' => __('Capsule pill layout with circular avatar', 'wisecampaign'),
-                'type' => 'pill',
-            ],
-            [
-                'id' => 'template_3',
-                'name' => __('Frosted Glass', 'wisecampaign'),
-                'is_pro' => true,
-                'desc' => __('Translucent glassmorphism with blur glow', 'wisecampaign'),
-                'type' => 'glass',
-            ],
-            [
-                'id' => 'template_4',
-                'name' => __('Minimalist Micro', 'wisecampaign'),
-                'is_pro' => true,
-                'desc' => __('Compact, high-density mobile card', 'wisecampaign'),
-                'type' => 'micro',
-            ],
-            [
-                'id' => 'template_5',
-                'name' => __('Gradient Accent', 'wisecampaign'),
-                'is_pro' => true,
-                'desc' => __('Vibrant dual-color left border stripe', 'wisecampaign'),
-                'type' => 'gradient',
-            ],
-            [
-                'id' => 'template_6',
-                'name' => __('Dark Mode Neo', 'wisecampaign'),
-                'is_pro' => true,
-                'desc' => __('Deep slate dark theme with cyan accent', 'wisecampaign'),
-                'type' => 'dark',
-            ],
-        ];
-        ?>
-        <div class="wisecampaign-template-grid">
-            <?php foreach ($templates as $tmpl) : 
-                $locked = $tmpl['is_pro'] && !$is_pro;
-                $selected = ($value === $tmpl['id']) && !$locked;
-            ?>
-                <div class="template-card <?php echo $selected ? 'selected' : ''; ?> <?php echo $locked ? 'pro-locked' : ''; ?>" 
-                     data-template="<?php echo esc_attr($tmpl['id']); ?>" 
-                     data-is-pro="<?php echo $tmpl['is_pro'] ? '1' : '0'; ?>">
-                    
-                    <div class="template-card-header">
-                        <span class="template-card-title"><?php echo esc_html($tmpl['name']); ?></span>
-                        <?php if ($tmpl['is_pro'] && !$is_pro) : ?>
-                            <span class="wc-pro-badge"><?php esc_html_e('PRO', 'wisecampaign'); ?></span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="template-card-preview preview-<?php echo esc_attr($tmpl['type']); ?>">
-                        <div class="mini-popup">
-                            <div class="mini-img"></div>
-                            <div class="mini-content">
-                                <div class="mini-line mini-line-sm"></div>
-                                <div class="mini-line mini-line-lg"></div>
-                                <div class="mini-line mini-line-md"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="radio" name="<?php echo esc_attr($this->option_name); ?>[template]" value="<?php echo esc_attr($tmpl['id']); ?>" <?php checked($value, $tmpl['id']); ?> <?php echo $locked ? 'disabled' : ''; ?> />
-                    <span class="template-card-desc"><?php echo esc_html($tmpl['desc']); ?></span>
-                </div>
-            <?php endforeach; ?>
-        </div>
-        <?php
-    }
-
-
-    public function field_cb_slider($args)
-    {
-        $value = $this->get_option($args['id'], $args['default']);
-        $id_attr = 'wisecampaign-slider-' . esc_attr($args['id']);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-slider">
-            <div class="wisecampaign-field-label">
-                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <div class="slider-wrapper">
-                    <input type="range" class="slider-input" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" min="<?php echo esc_attr($args['min']); ?>" max="<?php echo esc_attr($args['max']); ?>">
-                    <input type="number" class="slider-value" value="<?php echo esc_attr($value); ?>" min="<?php echo esc_attr($args['min']); ?>" max="<?php echo esc_attr($args['max']); ?>">
-                    <span class="unit">px</span>
-                </div>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_font($args)
-    {
-        $value = $this->get_option('font_family', 'Poppins');
-        $fonts = ['Poppins' => 'Poppins', 'Roboto' => 'Roboto'];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-font">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-font-family"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <select id="wisecampaign-font-family" name="<?php echo esc_attr($this->option_name); ?>[font_family]">
-                    <?php foreach ($fonts as $key => $label) : ?>
-                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_hide_branding($args)
-    {
-        $is_pro = $this->is_pro_active();
-        $value = $this->get_option('hide_branding', '0');
-        $id_attr = 'wisecampaign-toggle-hide_branding';
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-toggle wisecampaign-field-hide-branding">
-            <div class="wisecampaign-field-label">
-                <label for="<?php echo $id_attr; ?>">
-                    <?php echo esc_html($args['label_for']); ?>
-                    <?php if (!$is_pro) : ?>
-                        <span class="wc-pro-badge" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle;">PRO</span>
-                    <?php endif; ?>
-                </label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <label class="wisecampaign-toggle-label">
-                    <input type="checkbox" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name); ?>[hide_branding]" value="1" <?php checked('1', $value); ?> <?php echo (!$is_pro ? 'disabled' : ''); ?> />
-                    <span class="wisecampaign-toggle-slider"></span>
-                </label>
-                <p class="description"><?php esc_html_e('Remove the "by wiseCampaign" watermark link from all sales notification popups on your storefront.', 'wisecampaign'); ?></p>
-                <?php if (!$is_pro) : ?>
-                    <p class="description" style="color: #d97706; margin-top: 4px;"><span class="dashicons dashicons-lock" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span> <?php printf(esc_html__('Removing branding watermark is a %s feature.', 'wisecampaign'), '<a href="https://wisemattic.com/wisecampaign/pricing" target="_blank">PRO</a>'); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-    }
-
-
-    public function field_cb_visibility($args)
-    {
-        $value = $this->get_option('visibility', 'all_pages');
-        $options = ['all_pages' => 'Show on every page', 'specific_pages' => 'Specific pages'];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-visibility">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign_visibility_select"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <select id="wisecampaign_visibility_select" name="<?php echo esc_attr($this->option_name); ?>[visibility]">
-                    <?php foreach ($options as $key => $label) : ?>
-                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_specific_pages($args)
-    {
-        $selected_pages = $this->get_option('specific_pages', []);
-        $pages = get_pages(['post_status' => 'publish']);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-specific-pages">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-specific-pages-select"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <?php if (empty($pages)) : ?>
-                    <p>No pages found.</p>
-                <?php else : ?>
-                    <select id="wisecampaign-specific-pages-select" name="<?php echo esc_attr($this->option_name); ?>[specific_pages][]" multiple="multiple" style="height: 200px; width: 50%;">
-                        <?php foreach ($pages as $page) :
-                            $is_selected = in_array($page->ID, $selected_pages);
-                            ?>
-                            <option value="<?php echo esc_attr($page->ID); ?>" <?php selected($is_selected, true); ?>><?php echo esc_html($page->post_title); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="description">Hold CTRL (or Command on Mac) to select multiple pages.</p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_timing($args)
-    {
-        $value = $this->get_option($args['id'], $args['default']);
-        $id_attr = 'wisecampaign-timing-' . esc_attr($args['id']);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-timing">
-            <div class="wisecampaign-field-label">
-                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <input type="number" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" class="small-text">
-                <span class="unit"><?php echo esc_html($args['label']); ?></span>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_position($args)
-    {
-        $value = $this->get_option('position', 'bottom-left');
-        $positions = ['bottom-left' => 'Bottom Left', 'bottom-right' => 'Bottom Right', 'top-left' => 'Top Left', 'top-right' => 'Top Right'];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-position">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-position"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <select id="wisecampaign-position" name="<?php echo esc_attr($this->option_name); ?>[position]">
-                    <?php foreach ($positions as $key => $label) : ?>
-                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_color($args)
-    {
-        $value = $this->get_option($args['id'], $args['default']);
-        $id_attr = 'wisecampaign-color-' . esc_attr($args['id']);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-color">
-            <div class="wisecampaign-field-label">
-                <label for="<?php echo $id_attr; ?>"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <input type="text" id="<?php echo $id_attr; ?>" name="<?php echo esc_attr($this->option_name) . '[' . esc_attr($args['id']) . ']'; ?>" value="<?php echo esc_attr($value); ?>" class="wp-color-picker-field" />
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_source($args)
-    {
-        $is_pro = $this->is_pro_active();
-        $has_wc = $this->has_wc();
-        $value = $this->get_source(get_option($this->option_name, []));
-        $wc_suffix = !$has_wc ? ' ' . __('(requires WooCommerce)', 'wisecampaign') : '';
-        $sources = [
-            'recent_orders'   => __('Recent Orders', 'wisecampaign') . $wc_suffix,
-            'selected_orders' => __('Selected Orders', 'wisecampaign') . $wc_suffix,
-            'virtual_orders'  => __('Custom / Virtual Orders (Simulated)', 'wisecampaign') . (!$is_pro ? ' [PRO]' : ''),
-        ];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-source">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign_order_source_select"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <select id="wisecampaign_order_source_select" name="<?php echo esc_attr($this->option_name); ?>[source]">
-                    <?php foreach ($sources as $key => $label) :
-                        $is_wc_source = $key !== 'virtual_orders';
-                        $disabled = ((!$is_pro && !$is_wc_source) || (!$has_wc && $is_wc_source)) ? 'disabled' : '';
-                    ?>
-                        <option value="<?php echo esc_attr($key); ?>" <?php selected($key, $value); ?> <?php echo $disabled; ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <?php if ($has_wc) : ?>
-                    <p class="description"><?php esc_html_e('Choose real recent orders, select specific past orders, or generate realistic virtual orders for instant social proof.', 'wisecampaign'); ?></p>
-                <?php else : ?>
-                    <p class="description"><?php esc_html_e('WooCommerce is not active, so notifications are built from simulated orders: your own buyer names, locations and products below.', 'wisecampaign'); ?></p>
-                <?php endif; ?>
-                <?php if (!$is_pro) : ?>
-                    <p class="description" style="color: #d97706; margin-top: 4px;"><span class="dashicons dashicons-lock" style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;"></span> <?php printf(esc_html__('Virtual Orders generator is a %s feature.', 'wisecampaign'), '<a href="https://wisemattic.com/wisecampaign/pricing" target="_blank">PRO</a>'); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_selected_orders($args)
-    {
-        if (!$this->has_wc()) {
-            return;
-        }
-        $selected_orders = $this->get_option('selected_orders', []);
-        $query = new \WC_Order_Query(['limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
-        $orders = $query->get_orders();
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-selected-orders">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-selected-orders-select"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <?php if (empty($orders)) : ?>
-                    <p><?php esc_html_e('No orders found.', 'wisecampaign'); ?></p>
-                <?php else : ?>
-                    <select id="wisecampaign-selected-orders-select" name="<?php echo esc_attr($this->option_name); ?>[selected_orders][]" multiple="multiple" style="height: 180px; width: 100%;">
-                        <?php foreach ($orders as $order) :
-                            $order_id = $order->get_id();
-                            $order_label = '#' . $order_id . ' &ndash; ' . $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
-                            $is_selected = in_array($order_id, $selected_orders);
-                            ?>
-                            <option value="<?php echo esc_attr($order_id); ?>" <?php selected($is_selected, true); ?>><?php echo esc_html($order_label); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="description"><?php esc_html_e('Hold CTRL (or Command on Mac) to select multiple orders.', 'wisecampaign'); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_names($args)
-    {
-        $default = "Sarah M., Alex K., David R., Emily W., Michael B., Jessica T., James H., Olivia P., Daniel S., Sophia L.";
-        $value = $this->get_option('virtual_names', $default);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-names">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-virtual-names"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <textarea id="wisecampaign-virtual-names" name="<?php echo esc_attr($this->option_name); ?>[virtual_names]" rows="3" placeholder="<?php esc_attr_e('Enter buyer names separated by commas (e.g. Sarah M., Alex K., David R.)', 'wisecampaign'); ?>"><?php echo esc_textarea($value); ?></textarea>
-                <p class="description"><?php esc_html_e('Enter customer names separated by commas. Notifications will cycle randomly through these names.', 'wisecampaign'); ?></p>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_locations($args)
-    {
-        $default = "New York, USA\nLondon, UK\nToronto, Canada\nSydney, Australia\nBerlin, Germany\nParis, France\nLos Angeles, USA\nMadrid, Spain";
-        $value = $this->get_option('virtual_locations', $default);
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-locations">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-virtual-locations"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <textarea id="wisecampaign-virtual-locations" name="<?php echo esc_attr($this->option_name); ?>[virtual_locations]" rows="4" placeholder="<?php esc_attr_e('Enter locations, one per line (e.g. New York, USA)', 'wisecampaign'); ?>"><?php echo esc_textarea($value); ?></textarea>
-                <p class="description"><?php esc_html_e('Enter city/country locations, one per line or separated by commas.', 'wisecampaign'); ?></p>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_products_mode($args)
-    {
-        $value = $this->get_products_mode(get_option($this->option_name, []));
-        $modes = $this->has_wc() ? [
-            'all_products'      => __('All In-Stock Products', 'wisecampaign'),
-            'selected_products' => __('Specific Selected Products', 'wisecampaign'),
-            'custom_products'   => __('Custom Products (enter your own)', 'wisecampaign'),
-        ] : [
-            'custom_products'   => __('Custom Products (enter your own)', 'wisecampaign'),
-        ];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-products-mode">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-virtual-products-mode"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <select id="wisecampaign-virtual-products-mode" name="<?php echo esc_attr($this->option_name); ?>[virtual_products_mode]">
-                    <?php foreach ($modes as $k => $label) : ?>
-                        <option value="<?php echo esc_attr($k); ?>" <?php selected($k, $value); ?>><?php echo esc_html($label); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="description"><?php echo $this->has_wc()
-                    ? esc_html__('Showcase all published products, only hand-picked products, or products you type in yourself.', 'wisecampaign')
-                    : esc_html__('Without WooCommerce, type in the products or services you want to promote below.', 'wisecampaign'); ?></p>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_custom_products($args)
-    {
-        $value = $this->get_option('virtual_custom_products', '');
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-custom-products">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-virtual-custom-products"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <textarea id="wisecampaign-virtual-custom-products" name="<?php echo esc_attr($this->option_name); ?>[virtual_custom_products]" rows="4" placeholder="<?php esc_attr_e("Pro Plan | https://example.com/pricing\nOnline Course\nConsultation Call | https://example.com/book", 'wisecampaign'); ?>"><?php echo esc_textarea($value); ?></textarea>
-                <p class="description"><?php esc_html_e('One product per line. Add " | " and a link to make the notification clickable, for example: Pro Plan | https://example.com/pricing', 'wisecampaign'); ?></p>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_selected_products($args)
-    {
-        if (!$this->has_wc()) {
-            return;
-        }
-        $selected_products = $this->get_option('virtual_selected_products', []);
-        $products = function_exists('wc_get_products') ? wc_get_products(['limit' => 100, 'status' => 'publish', 'orderby' => 'title', 'order' => 'ASC']) : [];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-selected-products">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-virtual-products-select"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <?php if (empty($products)) : ?>
-                    <p><?php esc_html_e('No WooCommerce products found.', 'wisecampaign'); ?></p>
-                <?php else : ?>
-                    <select id="wisecampaign-virtual-products-select" name="<?php echo esc_attr($this->option_name); ?>[virtual_selected_products][]" multiple="multiple" style="height: 180px; width: 100%;">
-                        <?php foreach ($products as $p) :
-                            $pid = $p->get_id();
-                            $p_label = '#' . $pid . ' – ' . $p->get_name() . ' (' . wc_price($p->get_price()) . ')';
-                            $is_sel = in_array($pid, (array)$selected_products);
-                            ?>
-                            <option value="<?php echo esc_attr($pid); ?>" <?php selected($is_sel, true); ?>><?php echo esc_html(wp_strip_all_tags($p_label)); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="description"><?php esc_html_e('Hold CTRL (or Command on Mac) to select multiple products.', 'wisecampaign'); ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_image_type($args)
-    {
-        $value = $this->get_option('virtual_image_type', 'product');
-        $avatars = array_slice($this->get_avatar_urls(), 0, 3);
-        $options = [
-            'product' => [
-                'label' => __('Product Photo', 'wisecampaign'),
-                'desc'  => __('Product images, or your own photos and logos', 'wisecampaign'),
-            ],
-            'buyer' => [
-                'label' => __('Buyer Avatar', 'wisecampaign'),
-                'desc'  => __('Friendly cartoon avatar for each buyer', 'wisecampaign'),
-            ],
-        ];
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-image-type">
-            <div class="wisecampaign-field-label">
-                <label><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <div class="wisecampaign-image-type-options" role="radiogroup">
-                    <?php foreach ($options as $key => $option) : ?>
-                        <label class="wisecampaign-image-type-option<?php echo $value === $key ? ' selected' : ''; ?>">
-                            <input type="radio" name="<?php echo esc_attr($this->option_name); ?>[virtual_image_type]" value="<?php echo esc_attr($key); ?>" <?php checked($key, $value); ?> />
-                            <span class="wisecampaign-image-type-visual">
-                                <?php if ($key === 'buyer') : ?>
-                                    <?php foreach ($avatars as $avatar) : ?>
-                                        <img src="<?php echo esc_url($avatar); ?>" alt="" />
-                                    <?php endforeach; ?>
-                                <?php else : ?>
-                                    <span class="dashicons dashicons-format-image"></span>
-                                <?php endif; ?>
-                            </span>
-                            <span class="wisecampaign-image-type-text">
-                                <strong><?php echo esc_html($option['label']); ?></strong>
-                                <small><?php echo esc_html($option['desc']); ?></small>
-                            </span>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-        <?php
-    }
-
-    public function field_cb_virtual_custom_images($args)
-    {
-        $image_ids = array_filter(array_map('intval', (array) $this->get_option('virtual_custom_images', [])));
-        ?>
-        <div class="wisecampaign-field-group wisecampaign-field-virtual-custom-images">
-            <div class="wisecampaign-field-label">
-                <label for="wisecampaign-add-virtual-images"><?php echo esc_html($args['label_for']); ?></label>
-            </div>
-            <div class="wisecampaign-field-control">
-                <div class="wisecampaign-image-gallery" id="wisecampaign-virtual-images">
-                    <?php foreach ($image_ids as $image_id) :
-                        $thumb = wp_get_attachment_image_url($image_id, 'thumbnail');
-                        if (!$thumb) {
-                            continue;
-                        }
-                        ?>
-                        <div class="wisecampaign-image-gallery-item" data-id="<?php echo esc_attr($image_id); ?>" data-url="<?php echo esc_url(wp_get_attachment_image_url($image_id, 'medium') ?: $thumb); ?>">
-                            <img src="<?php echo esc_url($thumb); ?>" alt="" />
-                            <button type="button" class="wisecampaign-image-gallery-remove" aria-label="<?php esc_attr_e('Remove image', 'wisecampaign'); ?>">&times;</button>
-                            <input type="hidden" name="<?php echo esc_attr($this->option_name); ?>[virtual_custom_images][]" value="<?php echo esc_attr($image_id); ?>" />
-                        </div>
-                    <?php endforeach; ?>
-                    <button type="button" class="wisecampaign-image-gallery-add" id="wisecampaign-add-virtual-images">
-                        <span class="dashicons dashicons-plus-alt2"></span>
-                        <span><?php esc_html_e('Add Images', 'wisecampaign'); ?></span>
-                    </button>
-                </div>
-                <p class="description"><?php echo $this->has_wc()
-                    ? esc_html__('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to use each product\'s WooCommerce image.', 'wisecampaign')
-                    : esc_html__('Optional. Upload product photos or brand logos to show in the notifications (drag to reorder). Leave empty to show buyer avatars.', 'wisecampaign'); ?></p>
-            </div>
-        </div>
-        <?php
-    }
-
     /**
      * Bundled cartoon buyer avatars (Open Peeps, CC0).
      */
@@ -836,7 +365,7 @@ class SalesNotification
 
     /**
      * The same buyer name always gets the same avatar. The admin live preview
-     * (notification-admin.js) uses the same djb2 hash, so keep the two in sync.
+     * (modules/wise-sales-notification/src/preview.js) uses the same djb2 hash, so keep the two in sync.
      */
     private function get_avatar_for_name($name, $avatars)
     {
@@ -884,172 +413,6 @@ class SalesNotification
         return ['url' => WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png', 'type' => 'product'];
     }
 
-    public function admin_enqueue($hook)
-    {
-        if ('wisecampaign_page_wisecampaign_notification' !== $hook) {
-            return;
-        }
-        $this->enqueue_google_fonts();
-        wp_enqueue_style('wp-color-picker');
-        wp_enqueue_style('wisecampaign-notification-admin-css', WISECAMPAIGN_DIR_URL . 'includes/css/notification-admin.css');
-        wp_add_inline_style('wisecampaign-notification-admin-css', $this->get_dynamic_admin_css());
-        wp_enqueue_script('wp-color-picker');
-        wp_enqueue_media();
-        wp_enqueue_script('wisecampaign-notification-admin-js', WISECAMPAIGN_DIR_URL . 'includes/js/notification-admin.js', ['jquery', 'wp-color-picker', 'jquery-ui-sortable'], false, true);
-        $sample = $this->get_sample_notification_data();
-        wp_localize_script('wisecampaign-notification-admin-js', 'wiseCampaignAdmin', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'toggle_nonce' => wp_create_nonce('wisecampaign_toggle_status_nonce'),
-            'save_nonce' => wp_create_nonce('wisecampaign_save_settings_nonce'),
-            'reset_nonce' => wp_create_nonce('wisecampaign_reset_settings_nonce'),
-            'avatars' => $this->get_avatar_urls(),
-            'sample_product_image' => $sample['product_photo'] ?? $sample['product_image'],
-            'i18n' => [
-                'media_title' => __('Product Photos / Logos', 'wisecampaign'),
-                'media_button' => __('Use these images', 'wisecampaign'),
-                'remove_image' => __('Remove image', 'wisecampaign'),
-            ],
-        ]);
-    }
-
-    public function ajax_save_all_settings()
-    {
-        check_ajax_referer('wisecampaign_save_settings_nonce', 'nonce');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied.']);
-        }
-
-        $form_data = [];
-        if (isset($_POST['form_data'])) {
-            parse_str($_POST['form_data'], $form_data);
-        }
-        $new_options = isset($form_data[$this->option_name]) ? $form_data[$this->option_name] : [];
-        $all_settings = get_option($this->option_name, []);
-
-        $settings_manifest = [
-            'template' => 'key',
-            'position' => 'key',
-            'background_color' => 'color',
-            'border_color' => 'color',
-            'border_width' => 'int',
-            'border_radius' => 'int',
-            'image_radius' => 'int',
-            'font_family' => 'text',
-            'hide_branding' => 'bool',
-            'random_show' => 'bool',
-            'source' => 'key',
-            'selected_orders' => 'array_int',
-            'virtual_names' => 'textarea',
-            'virtual_locations' => 'textarea',
-            'virtual_products_mode' => 'key',
-            'virtual_selected_products' => 'array_int',
-            'virtual_custom_products' => 'textarea',
-            'virtual_image_type' => 'key',
-            'virtual_custom_images' => 'array_int',
-            'visibility' => 'key',
-            'specific_pages' => 'array_int',
-            'loop' => 'bool',
-            'display_time' => 'int',
-            'delay_time' => 'int'
-        ];
-
-        $is_pro = $this->is_pro_active();
-
-        foreach ($settings_manifest as $key => $type) {
-            $value = isset($new_options[$key]) ? $new_options[$key] : null;
-            switch ($type) {
-                case 'int':
-                    if ($value !== null) {
-                        $all_settings[$key] = intval($value);
-                    }
-                    break;
-                case 'color':
-                    if ($value !== null) {
-                        $all_settings[$key] = sanitize_hex_color($value);
-                    }
-                    break;
-                case 'bool':
-                    $all_settings[$key] = ($value === '1' || $value === 1 || $value === true) ? '1' : '0';
-                    break;
-                case 'array_int':
-                    $all_settings[$key] = is_array($value) ? array_map('intval', $value) : [];
-                    break;
-                case 'textarea':
-                    if ($value !== null) {
-                        $all_settings[$key] = sanitize_textarea_field($value);
-                    }
-                    break;
-                case 'key':
-                case 'text':
-                default:
-                    if ($value !== null) {
-                        $all_settings[$key] = sanitize_text_field($value);
-                    }
-                    break;
-            }
-        }
-
-        if (!in_array($all_settings['virtual_image_type'] ?? 'product', ['product', 'buyer'], true)) {
-            $all_settings['virtual_image_type'] = 'product';
-        }
-        $all_settings['virtual_custom_images'] = array_values(array_filter(
-            (array) ($all_settings['virtual_custom_images'] ?? []),
-            'wp_attachment_is_image'
-        ));
-        $all_settings['virtual_products_mode'] = $this->get_products_mode($all_settings);
-        $all_settings['source'] = $this->get_source($all_settings);
-
-        // PRO feature validation
-        if (!$is_pro) {
-            if (isset($all_settings['source']) && $all_settings['source'] === 'virtual_orders') {
-                $all_settings['source'] = 'recent_orders';
-            }
-            $all_settings['hide_branding'] = '0';
-
-            $pro_templates = ['template_3', 'template_4', 'template_5', 'template_6'];
-            if (in_array($all_settings['template'] ?? '', $pro_templates, true)) {
-                $all_settings['template'] = 'template_1';
-            }
-        }
-
-        update_option($this->option_name, $all_settings);
-        wp_send_json_success(['message' => 'Settings saved.']);
-
-
-    }
-
-    public function ajax_toggle_notification_status()
-    {
-        check_ajax_referer('wisecampaign_toggle_status_nonce', 'nonce');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied.']);
-        }
-
-        $new_status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '0';
-        $options = get_option($this->option_name, []);
-        $options['enabled'] = $new_status;
-        update_option($this->option_name, $options);
-
-        wp_send_json_success(['message' => 'Status updated successfully.']);
-    }
-
-    private function get_dynamic_admin_css()
-    {
-        $bg_color = $this->get_option('background_color', '#FFFFFF');
-        $border_color = $this->get_option('border_color', '#E85653');
-        $border_width = $this->get_option('border_width', 2);
-        $border_radius = $this->get_option('border_radius', 10);
-        $font_family = $this->get_option('font_family', 'Poppins');
-
-        return ":root {
-            --notification-bg-color: " . esc_attr($bg_color) . ";
-            --notification-border-color: " . esc_attr($border_color) . ";
-            --notification-border-width: " . esc_attr($border_width) . "px;
-            --notification-border-radius: " . esc_attr($border_radius) . "px;
-            --notification-font-family: '" . esc_attr($font_family) . "', sans-serif;
-        }";
-    }
-
     public function frontend_enqueue()
     {
         $settings = get_option($this->option_name, []);
@@ -1072,7 +435,7 @@ class SalesNotification
         }
 
         $this->enqueue_google_fonts();
-        wp_enqueue_style('wisecampaign-notification-frontend-css', WISECAMPAIGN_DIR_URL . 'includes/css/notification-frontend.css');
+        wp_enqueue_style('wisecampaign-notification-frontend-css', WISECAMPAIGN_DIR_URL . 'includes/css/notification-frontend.css', [], WISECAMPAIGN_VERSION);
 
         $position_css = '';
         $position = $settings['position'] ?? 'bottom-left';
@@ -1101,22 +464,6 @@ class SalesNotification
             return;
         }
         echo '<div id="wisecampaign-notification-container"></div>';
-    }
-
-    private function get_sample_notification_data()
-    {
-        $notifications = $this->get_notification_data();
-        if (!empty($notifications)) {
-            return $notifications[0];
-        }
-        return [
-            'product_name' => 'Sample Product',
-            'product_image' => function_exists('wc_placeholder_img_src') ? wc_placeholder_img_src() : WISECAMPAIGN_DIR_URL . 'images/fe/wc_logo.png',
-            'product_url' => '#',
-            'buyer' => 'Sarah M.',
-            'time' => '5 minutes ago',
-            'location' => 'New York, USA'
-        ];
     }
 
     private function get_notification_data()
@@ -1344,19 +691,6 @@ class SalesNotification
             'display_time' => 5,
             'delay_time' => 5
         ];
-    }
-
-
-    public function ajax_reset_settings()
-    {
-        check_ajax_referer('wisecampaign_reset_settings_nonce', 'nonce');
-        if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Permission denied.']);
-        }
-
-        $defaults = $this->get_default_settings();
-        update_option($this->option_name, $defaults);
-        wp_send_json_success($defaults);
     }
 
     private function enqueue_google_fonts()
