@@ -6,7 +6,7 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           1.3.1
+ * Version:           2.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Tested up to:      7.1
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('WISECAMPAIGN_VERSION')) {
-    define('WISECAMPAIGN_VERSION', '1.3.1');
+    define('WISECAMPAIGN_VERSION', '2.0.0');
 }
 
 

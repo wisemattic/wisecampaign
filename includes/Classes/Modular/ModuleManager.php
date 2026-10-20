@@ -169,7 +169,7 @@ class ModuleManager
             wp_localize_script($localization_handle, 'wiseModuleData', [
                 'apiUrl' => rest_url('wisecampaign/v1/'),
                 'pluginUrl' => $this->plugin_url,
-                'version' => defined('WISECAMPAIGN_VERSION') ? WISECAMPAIGN_VERSION : '1.3.1',
+                'version' => defined('WISECAMPAIGN_VERSION') ? WISECAMPAIGN_VERSION : '2.0.0',
                 'nonce' => wp_create_nonce('wp_rest'),
 
                 'moduleId' => $id,

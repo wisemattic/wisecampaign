@@ -233,7 +233,7 @@ class WiseVideoCommerce {
         }
 
         $settings = $this->get_settings();
-        wp_enqueue_style('wisecampaign-video-commerce-frontend', WISECAMPAIGN_DIR_URL . 'assets/css/video-commerce-frontend.css', [], '2.0.0');
+        wp_enqueue_style('wisecampaign-video-commerce-frontend', WISECAMPAIGN_DIR_URL . 'assets/css/video-commerce-frontend.css', [], WISECAMPAIGN_VERSION);
         wp_add_inline_style('wisecampaign-video-commerce-frontend', sprintf(
             ':root{--wcvc-radius:%dpx;--wcvc-card-bg:%s;--wcvc-card-text:%s;--wcvc-btn-bg:%s;--wcvc-btn-text:%s;--wcvc-title-size:%s;--wcvc-title-color:%s;}',
             $settings['cornerRadius'],
@@ -244,7 +244,7 @@ class WiseVideoCommerce {
             esc_attr($settings['titleSize']),
             sanitize_hex_color($settings['titleColor']) ?: '#000000'
         ));
-        wp_enqueue_script('wisecampaign-video-commerce-frontend', WISECAMPAIGN_DIR_URL . 'assets/js/video-commerce-frontend.js', [], '2.0.0', true);
+        wp_enqueue_script('wisecampaign-video-commerce-frontend', WISECAMPAIGN_DIR_URL . 'assets/js/video-commerce-frontend.js', [], WISECAMPAIGN_VERSION, true);
     }
 
     /**
@@ -432,8 +432,8 @@ class WiseVideoCommerce {
         }
 
         wp_enqueue_media();
-        wp_enqueue_style('wisecampaign-video-commerce-admin', WISECAMPAIGN_DIR_URL . 'assets/css/video-commerce-admin.css', [], '2.0.0');
-        wp_enqueue_script('wisecampaign-video-commerce-admin', WISECAMPAIGN_DIR_URL . 'assets/js/video-commerce-admin.js', ['jquery', 'jquery-ui-sortable'], '2.0.0', true);
+        wp_enqueue_style('wisecampaign-video-commerce-admin', WISECAMPAIGN_DIR_URL . 'assets/css/video-commerce-admin.css', [], WISECAMPAIGN_VERSION);
+        wp_enqueue_script('wisecampaign-video-commerce-admin', WISECAMPAIGN_DIR_URL . 'assets/js/video-commerce-admin.js', ['jquery', 'jquery-ui-sortable'], WISECAMPAIGN_VERSION, true);
     }
 
     /**

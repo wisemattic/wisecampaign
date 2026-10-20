@@ -61,7 +61,7 @@ const syncAdminMenu = (modules, id, enabled) => {
 
 const GettingStarted = () => {
     const isPro = window.wiseModuleData?.pro?.isLicenseActive || false;
-    const version = window.wiseModuleData?.version || "1.3.1";
+    const version = window.wiseModuleData?.version || "2.0.0";
 
 
     // Video play state
@@ -854,15 +854,15 @@ const GettingStarted = () => {
                             <div className="space-y-2.5 text-xs text-slate-600 font-medium leading-relaxed">
                                 <div className="flex items-start gap-2">
                                     <span className="text-amber-500 shrink-0 mt-0.5">⚡</span>
-                                    <span><strong className="text-slate-800 font-semibold">Added:</strong> Banner Position controls (Top and Bottom placement) for wiseBanner v2.</span>
+                                    <span><strong className="text-slate-800 font-semibold">Added:</strong> Analytics dashboard: see the orders and revenue each module helps bring in.</span>
                                 </div>
                                 <div className="flex items-start gap-2">
                                     <span className="text-purple-500 shrink-0 mt-0.5">📌</span>
-                                    <span><strong className="text-slate-800 font-semibold">Added:</strong> Sticky (Floating) vs. Non-Sticky mode for Top and Bottom banner positions.</span>
+                                    <span><strong className="text-slate-800 font-semibold">Added:</strong> Turn modules on or off right here. Modules that are off stop loading on your store.</span>
                                 </div>
                                 <div className="flex items-start gap-2">
                                     <span className="text-indigo-500 shrink-0 mt-0.5">✨</span>
-                                    <span><strong className="text-slate-800 font-semibold">Improved:</strong> Enhanced wiseBanner editor UI with real-time live preview matching selected banner position.</span>
+                                    <span><strong className="text-slate-800 font-semibold">Improved:</strong> New dashboards with a live preview for every module, and a rebuilt Product Table.</span>
                                 </div>
                             </div>
 

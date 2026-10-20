@@ -24,7 +24,7 @@ class Register
 
         // Load dashboard CSS for the main dashboard page
         if (strpos($hook, 'wisecampaign_menu') !== false || strpos($hook, 'wisecampaign_banner') !== false) {
-            wp_enqueue_style('wisecampaign-dashboard-style', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart-admin-settings.css', [], '1.0.0');
+            wp_enqueue_style('wisecampaign-dashboard-style', WISECAMPAIGN_DIR_URL . 'includes/css/wisecart-admin-settings.css', [], WISECAMPAIGN_VERSION);
         }
     }
 

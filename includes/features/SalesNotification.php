@@ -449,7 +449,7 @@ class SalesNotification
             $position_css = 'top: 20px; right: 20px;';
         wp_add_inline_style('wisecampaign-notification-frontend-css', "#wisecampaign-notification-container { $position_css }");
 
-        wp_enqueue_script('wisecampaign-notification-frontend-js', WISECAMPAIGN_DIR_URL . 'includes/js/notification-frontend.js', [], false, true);
+        wp_enqueue_script('wisecampaign-notification-frontend-js', WISECAMPAIGN_DIR_URL . 'includes/js/notification-frontend.js', [], WISECAMPAIGN_VERSION, true);
         wp_localize_script('wisecampaign-notification-frontend-js', 'wiseCampaignFrontend', [
             'settings' => $settings,
             'notifications' => $notifications
