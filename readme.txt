@@ -24,13 +24,13 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 
 = Key Features at a Glance =
 * **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
-* **StockBar (Scarcity Trigger)** – Dynamic stock progress bar on single product pages to create purchase urgency and FOMO.
-* **Direct Checkout** – Skip the cart page and route shoppers directly to checkout to reduce cart drop-offs.
+* **StockBar (Scarcity Trigger)** – 5 stock bar templates that show items left and sold on product and shop pages, to create purchase urgency and FOMO.
+* **Direct Checkout** – A one-click Buy Now button that skips the cart and takes shoppers straight to checkout.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
-* **wiseCart (Side Mini-Cart)** – Fast slide-out mini-cart for an instant and seamless checkout experience.
+* **wiseCart (Side Mini-Cart)** – Slide-out cart with a reward progress bar, savings and checkout right inside the cart.
 * **WiseVideo Commerce** – Engage shoppers with interactive video galleries and shoppable product video widgets.
 * **Wise Product Table** – Display products in responsive, filterable tables with bulk add-to-cart functionality.
-* **Dynamic WooCommerce Discount Rules (Pro)** – Automate tiered discounts, BOGO, bulk pricing, and spend-based offers.
+* **Dynamic WooCommerce Discount Rules (Pro)** – 7 automatic discount types: BOGO, bulk pricing, bundles, spend-based offers, next-order coupons and more.
 
 ---
 
@@ -61,22 +61,47 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 [youtube https://www.youtube.com/watch?v=r0VXORmiFZ0]
 
 ### 2. StockBar – Real-Time Inventory Urgency
-* Visual progress bar displaying remaining stock levels.
-* Triggers urgency for low-stock products to drive faster purchase decisions.
-* Clean fallback logic that hides default stock text automatically.
+Show shoppers how many items are left and how many have sold, right on your product and shop pages, so they buy before it is gone.
 
-### 3. Direct Checkout – Frictionless Buying Journey
-* 1-Click direct checkout button on shop and product pages.
-* Reduces funnel friction and increases checkout completion rates.
+![StockBar: five stock bar templates for WooCommerce](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-stockbar-templates.png)
+
+* **5 templates:** High Demand Flow, Urgent Alert, Modern Minimal, Flash Sale Timer and Low Stock Badge.
+* **Live numbers per product:** write your own message with `{stock}`, `{sold}` and `{total}`.
+* **Your brand:** colors, font size and weight, and 13 icons, with a live preview while you edit.
+* **Placement:** shop pages and product pages, after the price or above or below the Add to Cart button.
+* Hides WooCommerce's "In stock" text where the bar already shows the count.
+
+👉 [StockBar guide](https://wisemattic.com/docs/wisecampaign/stockbar/how-to-add-stockbar-on-woocoomerce-products/)
+
+### 3. Direct Checkout – One-Click Buy Now
+Add a **Buy Now** button that puts the product in the cart and takes the shopper straight to checkout. Fewer steps, fewer abandoned carts.
+
+![Direct Checkout: Buy Now button styles, animations and hover effects](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-buy-now-button-styles.png)
+
+* Buy Now on product pages and in the shop grid.
+* Your button text and colors, with one-click color presets.
+* Send shoppers to the checkout, the cart or any page you choose.
+* **Pro:** 7 more button styles, icons, 8 attention animations, 5 hover effects and 5 product page placements, including a Buy Now-only store.
+
+👉 [Direct Checkout guide](https://wisemattic.com/docs/wisecampaign/direct-checkout/)
 
 ### 4. Live Sales Notifications – Automated Social Proof
 * Realistic, non-intrusive recent sales alert popups.
 * Highly customizable display timing, positions, and mobile visibility.
 * Simulated orders (Pro) can show product photos, your own uploaded photos and logos, or friendly cartoon buyer avatars.
 
-### 5. wiseCart – Modern Interactive Mini-Cart
-* Floating side-cart drawer that lets shoppers review items instantly.
-* Quick quantity adjustments without full page reloads.
+### 5. wiseCart – A Slide-Out Cart That Grows Every Order
+Replace the cart page with a cart that slides out on any page. Shoppers see their items, their next reward and what they save, without leaving the page.
+
+![wiseCart: slide-out cart with a reward progress bar and savings](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-wisecart-slide-out-cart.png)
+
+* **Reward progress bar:** "Add $1.00 more to get 10% off", toward free shipping or a Discount Manager spend reward.
+* Discount lines and a "You save" total on every order.
+* Change quantities, remove items and apply coupons without a page reload.
+* Checkout inside the cart, so Buy Now and checkout links open right there.
+* 6 button positions, 3 button styles, your colors, and an order success message.
+
+👉 [wiseCart guide](https://wisemattic.com/docs/wisecampaign/wisecart/)
 
 ### 6. WiseVideo Commerce – Shoppable Video Reels
 * Interactive video widgets and shoppable product video embeds.
@@ -92,18 +117,23 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 
 == 🔥 Pro Version: Advanced Discount Rules ==
 
-Take your promotion strategy to the next level with advanced discount rules that go beyond simple coupons:
+Take your promotion strategy to the next level with automatic discounts that need no coupon codes. Discounts apply on their own in the cart, with sale badges, product page messages and cart notices that tell shoppers how to qualify.
+
 [youtube https://www.youtube.com/watch?v=dEB2NjmsAn0]
 
-![wiseCampaign Pro Discount Demo](https://wisemattic.com/wp-content/uploads/2025/09/woo-discount-manager-wiseCampaign.gif)
+![Discount Manager: seven WooCommerce discount types](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-discount-manager-types.png)
 
-* ✅ **Spend-Based Discounts:** e.g., "Spend $100, Get 15% Off".
-* ✅ **BOGO & Buy X Get Y:** Automated free or discounted companion items.
-* ✅ **Tiered & Bulk Pricing:** Quantity-based discount tables on product pages.
-* ✅ **Free Gift Rules:** Automatically append gifts to cart when rules are met.
-* ✅ **Next Order Coupon Generator:** Keep customers returning with automated loyalty discounts.
+* ✅ **Simple:** a percentage or fixed discount on products, categories or the whole store.
+* ✅ **Spend & save:** e.g., "Spend $100, Get 10% Off".
+* ✅ **Buy X, get Y free:** classic BOGO deals.
+* ✅ **Buy X for a fixed price:** bundles such as "3 for $45".
+* ✅ **Buy X, save Y:** a discount for buying a set quantity.
+* ✅ **Bulk pricing:** tiered prices with a price table on the product page.
+* ✅ **Next-order coupon:** a personal coupon after every order, in a thank-you popup and by email.
 
-👉 [Explore All Pro Features & Pricing](https://wisemattic.com/wisecampaign/pricing)
+Target products, categories or user roles, set a minimum order value, and schedule offers with dates and a countdown. See the revenue and discount of every rule in Analytics.
+
+👉 [Discount Manager guide](https://wisemattic.com/docs/wisecampaign/woocommerce-discount-manager/) | [Explore All Pro Features & Pricing](https://wisemattic.com/wisecampaign/pricing)
 
 ---
 
@@ -157,16 +187,41 @@ A. No. wiseCampaign is performance-optimized and utilizes modular asset loading 
 A. None at all. Everything is managed through an intuitive WordPress dashboard and visual settings.
 
 == Screenshots ==
-1. Dynamic top-bar banner with live countdown timer and CTA button.
-2. Stock scarcity progress bar on product detail page.
-3. Automated recent sales notification popups.
-4. One-click direct checkout flow.
-5. Floating mini-cart drawer.
-6. WiseVideo Commerce shoppable video reels and product video widgets.
-7. Wise Product Table responsive catalog order sheet.
-8. Pro dynamic discount rule builder dashboard.
-9. Mobile vs. desktop display targeting controls.
-10. Visual style customizer settings.
+1. Shop page with StockBar scarcity bars and one-click Buy Now buttons under each product.
+2. Product page with StockBar showing items left, items sold and percent claimed, next to the Buy Now button.
+3. StockBar templates: choose from 5 ready-made stock bar designs.
+4. StockBar editor with settings on the left and a live product page preview on the right.
+5. StockBar status switch, last 30 days stats and the active template.
+6. WooCommerce Inventory tab with stock tracking turned on, which StockBar uses for its live numbers.
+7. Direct Checkout editor with a live preview of the Buy Now button.
+8. Direct Checkout Animation tab with attention animations and hover effects (Pro).
+9. After Buy Now, the wiseCart drawer opens straight on its checkout form.
+10. wiseCart slide-out cart with a reward progress bar: "Add $1.00 more to get 10% off your order".
+11. wiseCart after the reward unlocks, with the discount line and the "You save" total.
+12. wiseCart editor with a live cart drawer preview.
+13. wiseCart Settings tab with add to cart behavior and cart page replacement.
+14. wiseCart Order Success screen preview and cart button position settings.
+15. Discount Manager switch on the Getting Started page (Pro).
+16. Discount Manager list with seven discounts (Pro).
+17. Add new discount window with the seven discount types (Pro).
+18. Add new discount window with Bulk pricing selected and its examples (Pro).
+19. Simple discount: "15% OFF" badges on Accessories in the shop (Pro).
+20. Simple discount: product price reduced from $64.00 to $54.40 with the offer notice (Pro).
+21. Simple discount: cart with the discounted prices for two accessories (Pro).
+22. Spend-based discount form: spend $100, get 10% off (Pro).
+23. Spend-based discount: "Spend over $100.00 and get 10% off" offer on the product page (Pro).
+24. Spend-based discount applied in the cart (Pro).
+25. Free products discount: "Buy 2, get 1 free" badge and offer on the product page (Pro).
+26. Free products discount applied in the cart: buy 2 tees, get 1 free (Pro).
+27. Buy X for a fixed price: "3 for $45" badge and bundle offer on the product page (Pro).
+28. Buy X for a fixed price applied in the cart: any 3 mugs for $45 (Pro).
+29. Buy X Get Y discount: "Buy 2, save 20%" badge and offer on the product page (Pro).
+30. Bulk pricing table on the product page with three quantity tiers (Pro).
+31. Bulk pricing discount applied in the cart (Pro).
+32. Next order coupon message on the product page: "Order today and get 15% off your next order" (Pro).
+33. Next order coupon thank-you popup with the coupon code (Pro).
+34. Next order coupon inline box on the Order Received page (Pro).
+35. License page with an active wiseCampaign Pro license.
 
 == Privacy Policy ==
 wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic telemetry data only upon explicit user opt-in via admin notice to help diagnose issues and improve features. 
