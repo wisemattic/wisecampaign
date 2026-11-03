@@ -1,6 +1,6 @@
 === wiseCampaign – WooCommerce Flash Sale, Countdown Timer, Discount Rules & Sales Notification ===
 Contributors: wisemattic, mehadi13
-Tags: woocommerce discount, flash sale, countdown timer, sales notification, dynamic pricing
+Tags: woocommerce discount, flash sale, countdown timer, exit intent popup, sales notification
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -11,11 +11,11 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 
-Boost WooCommerce sales with high-converting flash sale banners, countdown timers, direct checkout, stock progress bars, and dynamic discounts.
+Boost WooCommerce sales with flash sale banners, exit-intent popups, countdown timers, direct checkout, stock bars and dynamic discounts.
 
 == Description ==
 
-Turn your store visitors into buyers with **wiseCampaign**, the all-in-one WooCommerce marketing and conversion booster plugin. Create urgency, run scheduled flash sales, automate dynamic discounts, and reduce cart abandonment, all without writing a single line of code.
+Turn your store visitors into buyers with **wiseCampaign**, the all-in-one WooCommerce marketing and conversion booster plugin. Create urgency, run scheduled flash sales, win back leaving visitors with exit-intent popups, automate dynamic discounts, and reduce cart abandonment, all without writing a single line of code.
 
 Whether you run Black Friday sales, seasonal promotions, or daily flash deals, wiseCampaign equips your WooCommerce store with battle-tested conversion tools.
 
@@ -23,7 +23,8 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 [youtube https://youtu.be/5ni6b6IdEjE]
 
 = Key Features at a Glance =
-* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners and an exit-intent popup, with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
+* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
+* **Exit-Intent Popup (New)** – Show a last-chance coupon popup when visitors are about to leave, on desktop and mobile. 26 ready-made designs, once per visit, never on checkout.
 * **StockBar (Scarcity Trigger)** – 5 stock bar templates that show items left and sold on product and shop pages, to create purchase urgency and FOMO.
 * **Direct Checkout** – A one-click Buy Now button that skips the cart and takes shoppers straight to checkout.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
@@ -41,7 +42,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 
 == Why Choose wiseCampaign Over Other Plugins? ==
 
-* **All-in-One Marketing Suite:** Replace 4 to 5 separate plugins (Notification Popup, Countdown Bar, Stock Scarcity, Direct Checkout) with one clean plugin.
+* **All-in-One Marketing Suite:** Replace 4 to 5 separate plugins (Notification Popup, Exit-Intent Popup, Countdown Bar, Stock Scarcity, Direct Checkout) with one clean plugin.
 * **Zero Speed Impact:** Ultra-lightweight codebase built with scoped styling to ensure zero theme conflicts and blazing-fast site speed.
 * **Granular Display Rules:** Show specific campaigns based on device (Mobile/Desktop), specific pages, or target user roles.
 * **Easy Customizer Integration:** Real-time visual customizer to match your store branding in seconds.
@@ -55,13 +56,28 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * Built-in urgency countdown timer for limited-time offers.
 * "Click-to-Copy" coupon code functionality with toast feedback.
 * Targeted display on specific products, shop pages, or sitewide.
-* Exit-intent popup that shows a last-chance offer when visitors are about to leave: when the cursor heads for the browser tabs on desktop, or on a quick scroll back up on phones. It runs alongside the bar and never opens on checkout.
-* Template gallery with live previews, including animated Flash Sale, Halloween, Black Friday, Christmas, New Year, Valentine's Day and Eid collections (Pro). Every template has a matching popup design.
+* Template gallery with live previews, including animated Flash Sale, Halloween, Black Friday, Christmas, New Year, Valentine's Day and Eid collections (Pro). Every template has a matching exit-intent popup design.
 * Built-in banner analytics: impressions, clicks, click-through rate, coupon copies and dismissals, plus attributed orders and revenue (Pro).
 
 [youtube https://www.youtube.com/watch?v=r0VXORmiFZ0]
 
-### 2. StockBar – Real-Time Inventory Urgency
+### 2. Exit-Intent Popup – Win Back Visitors Before They Leave
+Most visitors leave without buying. The exit-intent popup catches them at the last moment with a coupon or a special offer, and turns more of your traffic into orders.
+
+[youtube https://youtu.be/_zuAtyrDoyg]
+
+![Exit-intent popup with a coupon code and countdown on a WooCommerce store](https://wisemattic.com/wp-content/uploads/2026/11/wisebanner-exit-popup-desktop.jpg)
+
+* **Desktop exit intent:** opens when the cursor heads for the browser tabs, address bar or close button.
+* **Mobile exit intent:** opens on a quick scroll back up, or after a delay you choose. Turn it off for phones any time.
+* **Coupon popup:** click-to-copy coupon code, countdown timer and a button that can copy the code and close the popup.
+* **26 ready-made designs** that match your banner: Basic (free), plus Flash Sale, Halloween, Black Friday, Christmas, New Year, Valentine's Day and Eid (Pro).
+* **Polite by default:** at most once per visit, your own "show again after" days, a "No thanks" link, and never on the checkout page.
+* **Runs alongside your banner**, with its own display pages and its own row in Analytics.
+
+👉 [Exit-intent popup guide](https://wisemattic.com/docs/wisecampaign/settings/exit-intent-popup/)
+
+### 3. StockBar – Real-Time Inventory Urgency
 Show shoppers how many items are left and how many have sold, right on your product and shop pages, so they buy before it is gone.
 
 ![StockBar: five stock bar templates for WooCommerce](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-stockbar-templates.png)
@@ -74,7 +90,7 @@ Show shoppers how many items are left and how many have sold, right on your prod
 
 👉 [StockBar guide](https://wisemattic.com/docs/wisecampaign/stockbar/how-to-add-stockbar-on-woocoomerce-products/)
 
-### 3. Direct Checkout – One-Click Buy Now
+### 4. Direct Checkout – One-Click Buy Now
 Add a **Buy Now** button that puts the product in the cart and takes the shopper straight to checkout. Fewer steps, fewer abandoned carts.
 
 ![Direct Checkout: Buy Now button styles, animations and hover effects](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-buy-now-button-styles.png)
@@ -86,12 +102,12 @@ Add a **Buy Now** button that puts the product in the cart and takes the shopper
 
 👉 [Direct Checkout guide](https://wisemattic.com/docs/wisecampaign/direct-checkout/)
 
-### 4. Live Sales Notifications – Automated Social Proof
+### 5. Live Sales Notifications – Automated Social Proof
 * Realistic, non-intrusive recent sales alert popups.
 * Highly customizable display timing, positions, and mobile visibility.
 * Simulated orders (Pro) can show product photos, your own uploaded photos and logos, or friendly cartoon buyer avatars.
 
-### 5. wiseCart – A Slide-Out Cart That Grows Every Order
+### 6. wiseCart – A Slide-Out Cart That Grows Every Order
 Replace the cart page with a cart that slides out on any page. Shoppers see their items, their next reward and what they save, without leaving the page.
 
 ![wiseCart: slide-out cart with a reward progress bar and savings](https://wisemattic.com/wp-content/uploads/2026/10/wisecampaign-readme-wisecart-slide-out-cart.png)
@@ -104,12 +120,12 @@ Replace the cart page with a cart that slides out on any page. Shoppers see thei
 
 👉 [wiseCart guide](https://wisemattic.com/docs/wisecampaign/wisecart/)
 
-### 6. WiseVideo Commerce – Shoppable Video Reels
+### 7. WiseVideo Commerce – Shoppable Video Reels
 * Interactive video widgets and shoppable product video embeds.
 * Engage buyers with video demonstrations directly on product pages.
 * Boosts user engagement, watch time, and conversion rates.
 
-### 7. Wise Product Table – Interactive Product Catalog
+### 8. Wise Product Table – Interactive Product Catalog
 * Responsive, searchable, and filterable product table layouts.
 * Bulk add-to-cart actions for fast wholesale and multi-item orders.
 * Perfect for B2B catalogs, restaurant menus, and large product inventories.
@@ -176,10 +192,16 @@ A. You need WordPress 5.4+ and WooCommerce active on your website. PHP 7.4 or hi
 A. Yes. You can target campaigns sitewide, restrict them to specific products/pages, or target devices (desktop or mobile).
 
 = Q. What features are included in the free version? =
-A. The free version includes wiseBanner, StockBar, Direct Checkout, Sales Notifications, and wiseCart.
+A. The free version includes wiseBanner with the exit-intent popup (Basic templates), StockBar, Direct Checkout, Sales Notifications, and wiseCart.
 
 = Q. What extra features are available in the Pro version? =
-A. Pro unlocks the WooCommerce Dynamic Discount Manager (BOGO, bulk pricing, tiered discounts, spend-based rules), advanced targeting filters, premium pre-built templates, and deeper styling controls.
+A. Pro unlocks the WooCommerce Dynamic Discount Manager (BOGO, bulk pricing, tiered discounts, spend-based rules), advanced targeting filters, premium pre-built templates for the banner and the exit-intent popup, and deeper styling controls.
+
+= Q. Does wiseCampaign have an exit-intent popup? =
+A. Yes. Go to **WiseCampaign → wiseBanner** and click **Exit Popup**. Pick a template, add your offer and coupon code, and turn it on. It works with the free Basic templates. See the [exit-intent popup guide](https://wisemattic.com/docs/wisecampaign/settings/exit-intent-popup/).
+
+= Q. Will the exit-intent popup annoy my visitors? =
+A. It opens only when a visitor is about to leave, not when the page loads, and at most once per visit. You choose how many days to wait before it shows again, visitors who use the offer won't see it for 30 days, and it never opens on the checkout page.
 
 = Q. Will wiseCampaign slow down my site? =
 A. No. wiseCampaign is performance-optimized and utilizes modular asset loading with scoped CSS resets to keep page load times fast.
@@ -223,6 +245,11 @@ A. None at all. Everything is managed through an intuitive WordPress dashboard a
 33. Next order coupon thank-you popup with the coupon code (Pro).
 34. Next order coupon inline box on the Order Received page (Pro).
 35. License page with an active wiseCampaign Pro license.
+36. Exit-intent popup on a store: a coupon code, countdown and button, shown as the visitor is about to leave.
+37. Exit-intent popup on a phone, opened by a quick scroll back up.
+38. wiseBanner editor on the Exit Popup tab, with the popup text, coupon code and a live preview.
+39. Popup templates that match the banner designs, here the Christmas collection (Pro).
+40. Popup behavior settings: phones and tablets, mobile trigger and how often the popup may show.
 
 == Privacy Policy ==
 wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic telemetry data only upon explicit user opt-in via admin notice to help diagnose issues and improve features. 
