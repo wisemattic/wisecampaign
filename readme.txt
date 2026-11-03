@@ -4,7 +4,7 @@ Tags: woocommerce discount, flash sale, countdown timer, sales notification, dyn
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 WC requires at least: 4.0
 WC tested up to: 11.2
 License: GPLv2 or later
@@ -23,7 +23,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 [youtube https://youtu.be/5ni6b6IdEjE]
 
 = Key Features at a Glance =
-* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
+* **wiseBanner (Top Bar Campaign)** – Sticky top/bottom promotional banners and an exit-intent popup, with real-time countdown timers, coupon copy triggers, CTA buttons, seasonal templates and built-in analytics.
 * **StockBar (Scarcity Trigger)** – 5 stock bar templates that show items left and sold on product and shop pages, to create purchase urgency and FOMO.
 * **Direct Checkout** – A one-click Buy Now button that skips the cart and takes shoppers straight to checkout.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
@@ -55,7 +55,8 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * Built-in urgency countdown timer for limited-time offers.
 * "Click-to-Copy" coupon code functionality with toast feedback.
 * Targeted display on specific products, shop pages, or sitewide.
-* Template gallery with live previews, including animated Halloween, Black Friday and New Year collections (Pro).
+* Exit-intent popup that shows a last-chance offer when visitors are about to leave: when the cursor heads for the browser tabs on desktop, or on a quick scroll back up on phones. It runs alongside the bar and never opens on checkout.
+* Template gallery with live previews, including animated Flash Sale, Halloween, Black Friday, Christmas, New Year, Valentine's Day and Eid collections (Pro). Every template has a matching popup design.
 * Built-in banner analytics: impressions, clicks, click-through rate, coupon copies and dismissals, plus attributed orders and revenue (Pro).
 
 [youtube https://www.youtube.com/watch?v=r0VXORmiFZ0]
@@ -228,7 +229,7 @@ wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic teleme
 
 Appsero SDK *does not gather any data by default* and will not transmit information without your consent. Learn more at [Appsero Privacy Policy](https://appsero.com/privacy-policy/).
 
-wiseBanner analytics are stored only in your own WordPress database as daily totals (impressions, clicks, coupon copies and dismissals per banner template and device type). No IP addresses, personal data or per-visitor records are stored, and nothing is sent to third-party services. When a visitor clicks the banner button, a first-party cookie (`wise_banner_ref`, valid for 7 days) records the banner and the click time so that a resulting WooCommerce order can be attributed to the banner; the cookie is removed once an order is attributed.
+wiseBanner analytics are stored only in your own WordPress database as daily totals (impressions, clicks, coupon copies and dismissals per banner template and device type). No IP addresses, personal data or per-visitor records are stored, and nothing is sent to third-party services. The exit-intent popup remembers in the visitor's own browser storage when it was last shown, so it does not show again too soon; this is never sent anywhere. When a visitor clicks the banner button, a first-party cookie (`wise_banner_ref`, valid for 7 days) records the banner and the click time so that a resulting WooCommerce order can be attributed to the banner; the cookie is removed once an order is attributed.
 
 = Credits =
 * Buyer avatars: "Open Peeps" by Pablo Stanley, CC0 1.0 (public domain), generated with DiceBear.
@@ -241,6 +242,14 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v2.1.0 =
+- Added: wiseBanner exit-intent popup. It shows a last-chance offer when a visitor is about to leave: on desktop when the cursor heads for the browser tabs or the close button, on phones and tablets on a quick scroll back up (or after a delay). It runs alongside the banner, with its own template, text and display pages. Free with the Basic templates.
+- Added: Every wiseBanner template has a matching popup design, with text written for visitors who are about to leave. Without a button link, the popup's button copies the coupon code and closes the popup so the visitor keeps shopping.
+- Added: Popup settings to show it on phones or not, choose the mobile trigger, and choose when it may show again (next visit, or after 1, 3, 7 or 30 days). It shows at most once per visit, stays away for 30 days after a click or a copied code, and never opens on the checkout page.
+- Added: 12 new wiseBanner templates (Pro) for the banner and the popup: Flash Sale (Lightning Deal, Rocket Launch, Beat the Clock), Christmas (Snowy Village, Cozy Christmas, Santa's Sleigh), Valentine's Day (Heart Balloons, Love Letter, Rose Garden) and Eid (Mosque Skyline, Lantern Night, Golden Crescent). Flash Sale countdowns start again every day; the others count down to the next holiday.
+- Improved: wiseBanner Analytics lists the popup in its own row. Popup impressions are counted when the popup opens.
+- Fixed: Saving in the wiseBanner editor before it had finished loading could replace your design with the default one.
+
 = v2.0.0 =
 - Added: Analytics dashboard (wiseCampaign > Analytics) that shows how each module helps your sales: views, clicks and adds to cart per module, the orders and revenue wiseCampaign took part in, average order value compared with other orders, a daily revenue chart, and numbers per product table and per Discount Manager rule. Orders and revenue are part of Pro. Only daily totals are stored, on your own server.
 - Added: A performance card in every module dashboard with that module's last 30 days.
@@ -412,6 +421,9 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Initial release
 
 == Upgrade Notice ==
+
+= 2.1.0 =
+Adds an exit-intent popup to wiseBanner (free with the Basic templates) and 12 new templates for Flash Sale, Christmas, Valentine's Day and Eid. If you use wiseCampaign Pro, update it to 2.1.0 as well.
 
 = 2.0.0 =
 A big update: a new Analytics dashboard, on/off switches for every module, a rebuilt Product Table and new dashboards for every module. If you use wiseCampaign Pro, update it to 2.0.0 as well.
