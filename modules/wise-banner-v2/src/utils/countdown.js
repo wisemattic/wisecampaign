@@ -85,3 +85,43 @@ export const getUpcomingNewYear = () => {
     const year = inFirstWeek ? now.getFullYear() : now.getFullYear() + 1;
     return { year, endDate: `${year}-01-07` };
 };
+
+const hasEnded = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59) < new Date();
+
+// The next date with this month (0-based) and day that hasn't ended yet.
+const nextYearly = (month, day) => {
+    const now = new Date();
+    const date = new Date(now.getFullYear(), month, day);
+    if (hasEnded(date)) date.setFullYear(date.getFullYear() + 1);
+    return toDateString(date);
+};
+
+/** Next Christmas Day, as YYYY-MM-DD. */
+export const getUpcomingChristmas = () => nextYearly(11, 25);
+
+/** Next Valentine's Day, as YYYY-MM-DD. */
+export const getUpcomingValentines = () => nextYearly(1, 14);
+
+// Expected Eid al-Fitr and Eid al-Adha dates. They follow the lunar calendar and can
+// move by a day with the moon sighting, so merchants can still set their own end date.
+const EID_DATES = [
+    '2026-03-20', '2026-05-27', '2027-03-10', '2027-05-17', '2028-02-27', '2028-05-05',
+    '2029-02-14', '2029-04-24', '2030-02-05', '2030-04-13', '2031-01-25', '2031-04-02'
+];
+// Eid sales usually run through the holiday, so the countdown ends two days after Eid.
+const EID_SALE_DAYS = 2;
+
+/** End of the next Eid sale, as YYYY-MM-DD (two weeks from now past the known dates). */
+export const getUpcomingEid = () => {
+    for (const eid of EID_DATES) {
+        const [year, month, day] = eid.split('-').map(Number);
+        const end = new Date(year, month - 1, day + EID_SALE_DAYS);
+        if (!hasEnded(end)) return toDateString(end);
+    }
+    const fallback = new Date();
+    fallback.setDate(fallback.getDate() + 14);
+    return toDateString(fallback);
+};
+
+/** Today, as YYYY-MM-DD: an evergreen flash sale counts down to tonight and restarts daily. */
+export const getToday = () => toDateString(new Date());

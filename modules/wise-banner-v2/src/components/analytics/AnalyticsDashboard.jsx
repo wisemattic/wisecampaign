@@ -495,14 +495,22 @@ const AnalyticsDashboard = ({ apiUrl, nonce, isPro, templates, onUpgrade }) => {
                                             </thead>
                                             <tbody style={{ fontVariantNumeric: 'tabular-nums' }}>
                                                 {data.templates.map((row) => {
-                                                    const info = templateInfo[row.id];
-                                                    const isLive = row.id === data.activeBannerId;
+                                                    // Popup stats use "popup-<template id>"; show them under the template with a tag.
+                                                    const popupPrefix = data.popupPrefix || 'popup-';
+                                                    const isPopupRow = row.id.startsWith(popupPrefix);
+                                                    const info = templateInfo[isPopupRow ? row.id.slice(popupPrefix.length) : row.id];
+                                                    const isLive = row.id === data.activeBannerId || (isPopupRow && row.id === data.activePopupId);
                                                     return (
                                                         <tr key={row.id} className="border-t border-slate-100">
                                                             <td className="py-3 pr-3">
                                                                 <div className="flex items-center gap-2.5 min-w-[160px]">
                                                                     <span className="flex w-9 h-7 rounded-md overflow-hidden shrink-0 border border-slate-100">{info?.icon}</span>
                                                                     <span className="font-semibold text-slate-800">{info?.name || row.id}</span>
+                                                                    {isPopupRow && (
+                                                                        <span className="text-[9px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                                                            Exit popup
+                                                                        </span>
+                                                                    )}
                                                                     {isLive && (
                                                                         <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">
                                                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Live
@@ -558,7 +566,7 @@ const AnalyticsDashboard = ({ apiUrl, nonce, isPro, templates, onUpgrade }) => {
 
                             <Card title="How it's measured">
                                 <ul className="m-0 p-0 list-none space-y-2.5 text-[11px] text-slate-500 leading-relaxed">
-                                    <li className="flex gap-2"><Eye size={14} className="text-slate-400 shrink-0 mt-0.5" /> An impression is a page view that showed the banner. Bots are ignored.</li>
+                                    <li className="flex gap-2"><Eye size={14} className="text-slate-400 shrink-0 mt-0.5" /> An impression is a page view that showed the banner, or an exit popup that opened. Bots are ignored.</li>
                                     <li className="flex gap-2"><MousePointerClick size={14} className="text-slate-400 shrink-0 mt-0.5" /> Clicks count the banner button. Orders count when a visitor buys within 7 days of clicking.</li>
                                     <li className="flex gap-2"><TrendingUp size={14} className="text-slate-400 shrink-0 mt-0.5" /> Only daily totals are stored on your own server. No personal data, no third-party services.</li>
                                 </ul>
