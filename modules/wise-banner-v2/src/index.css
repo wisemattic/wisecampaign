@@ -472,9 +472,75 @@
     to { background-position: -120% 0; }
 }
 
+/* ------------------------------------------------------------------
+   Christmas, Valentine's Day, Eid and Flash Sale packs
+   (they reuse the display fonts above and share some keyframes)
+   ------------------------------------------------------------------ */
+@keyframes wb-xm-snow {
+    0% { transform: translate(0, 0); opacity: 0; }
+    10% { opacity: 0.9; }
+    100% { transform: translate(14px, 190px); opacity: 0.15; }
+}
+
+@keyframes wb-vd-beat {
+    0%, 40%, 100% { transform: scale(1); }
+    15% { transform: scale(1.08); }
+    28% { transform: scale(1.03); }
+}
+
+@keyframes wb-eid-glow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes wb-fs-speed {
+    0% { transform: translateX(-100%); opacity: 0; }
+    15% { opacity: 1; }
+    100% { transform: translateX(600%); opacity: 0; }
+}
+
+@keyframes wb-fs-burst {
+    0%, 100% { transform: rotate(-8deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.05); }
+}
+
+@keyframes wb-fs-flame {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(0.94, 1.1); }
+}
+
+@keyframes wb-fs-shake {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(0.6px, -0.6px); }
+    75% { transform: translate(-0.6px, 0.6px); }
+}
+
+/* ------------------------------------------------------------------
+   Exit-intent popup
+   ------------------------------------------------------------------ */
+#wise-banner-v2-app .wb-popup-backdrop {
+    animation: wb-popup-fade 0.3s ease-out both;
+}
+
+#wise-banner-v2-app .wb-popup-card {
+    animation: wb-popup-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes wb-popup-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes wb-popup-in {
+    from { opacity: 0; transform: translateY(24px) scale(0.94); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
     #wise-banner-v2-app .wb-season-banner,
-    #wise-banner-v2-app .wb-season-banner * {
+    #wise-banner-v2-app .wb-season-banner *,
+    #wise-banner-v2-app .wb-popup-backdrop,
+    #wise-banner-v2-app .wb-popup-card {
         animation: none !important;
     }
 }

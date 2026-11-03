@@ -33,6 +33,8 @@ class BannerAnalytics
     // Events the storefront may report; conversions are only recorded server-side.
     const CLIENT_EVENTS = ['view', 'visitor', 'click', 'copy', 'close'];
     const DEVICES = ['desktop', 'tablet', 'mobile'];
+    // Popup stats are stored under "popup-<template id>".
+    const POPUP_PREFIX = 'popup-';
     const RANGES = [7, 30, 90, 365];
 
     public function __construct()
@@ -174,9 +176,8 @@ class BannerAnalytics
             return new WP_REST_Response(null, 400);
         }
 
-        // Only count events for the banner that is actually live.
-        $active = get_option('wc-wisebanner-v2-active', []);
-        if (empty($active['isActive']) || empty($active['id']) || sanitize_key($active['id']) !== $banner_id) {
+        // Only count events for the bar or popup that is actually live.
+        if (!in_array($banner_id, $this->live_banner_ids(), true)) {
             return new WP_REST_Response(null, 204);
         }
 
@@ -191,6 +192,35 @@ class BannerAnalytics
         $this->increment($event, $banner_id, $device);
 
         return new WP_REST_Response(null, 204);
+    }
+
+    /**
+     * Analytics id of the live popup. The prefix keeps popup numbers apart from the bar's
+     * when both use the same template.
+     */
+    public static function popup_banner_id($template_id)
+    {
+        return self::POPUP_PREFIX . sanitize_key($template_id);
+    }
+
+    private function active_bar_id()
+    {
+        $active = get_option('wc-wisebanner-v2-active', []);
+        return !empty($active['isActive']) && !empty($active['id']) ? sanitize_key($active['id']) : '';
+    }
+
+    private function active_popup_id()
+    {
+        if (!class_exists(WiseBannerV2::class) || !WiseBannerV2::getInstance()->is_popup_live()) {
+            return '';
+        }
+        $popup = get_option(WiseBannerV2::POPUP_OPTION, []);
+        return self::popup_banner_id($popup['id']);
+    }
+
+    private function live_banner_ids()
+    {
+        return array_values(array_filter([$this->active_bar_id(), $this->active_popup_id()]));
     }
 
     private function is_bot()
@@ -464,6 +494,8 @@ class BannerAnalytics
             'devices' => $devices,
             'templates' => array_values($templates),
             'activeBannerId' => isset($active['id']) ? sanitize_key($active['id']) : '',
+            'activePopupId' => $this->active_popup_id(),
+            'popupPrefix' => self::POPUP_PREFIX,
             'trackingSince' => $wpdb->get_var("SELECT MIN(stat_date) FROM {$table}"),
             'settings' => $this->get_settings(),
             'hasWooCommerce' => function_exists('get_woocommerce_currency'),

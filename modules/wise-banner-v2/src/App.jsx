@@ -32,14 +32,29 @@ import {
     Sparkles,
     Check,
     Lock,
-    BarChart3
+    BarChart3,
+    PanelTop,
+    MousePointerClick
 } from 'lucide-react';
 import SeasonalBanner from './templates/seasonal/SeasonalBanner';
 import { SEASONAL_PACKS } from './templates/seasonal/packs';
 import { HalloweenSwatch } from './templates/halloween/HalloweenArt';
+import { POPUP_DEFAULTS, getPopupTemplateOverrides } from './templates/popupTemplates';
 import ScaledPreview from './components/ScaledPreview';
 import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
-import { getTimeLeft, getUpcomingHalloween, getUpcomingBlackFriday, getUpcomingNewYear } from './utils/countdown';
+import PopupShell from './components/popup/PopupShell';
+import PopupContent, { getPopupWidth } from './components/popup/PopupContent';
+import StorefrontPopup from './components/popup/StorefrontPopup';
+import {
+    getTimeLeft,
+    getUpcomingHalloween,
+    getUpcomingBlackFriday,
+    getUpcomingNewYear,
+    getUpcomingChristmas,
+    getUpcomingValentines,
+    getUpcomingEid,
+    getToday
+} from './utils/countdown';
 import { copyText } from './utils/clipboard';
 import { createTracker } from './utils/analytics';
 
@@ -123,9 +138,13 @@ const LAYOUT_STYLE_KEYS = [
 const TEMPLATE_CATEGORIES = [
     { id: 'all', label: 'All Templates' },
     { id: 'basic', label: 'Basic' },
+    { id: 'flashsale', label: 'Flash Sale', icon: '⚡' },
     { id: 'halloween', label: 'Halloween', icon: '🎃' },
     { id: 'blackfriday', label: 'Black Friday', icon: '🛍️' },
-    { id: 'newyear', label: 'New Year', icon: '🎆' }
+    { id: 'christmas', label: 'Christmas', icon: '🎄' },
+    { id: 'newyear', label: 'New Year', icon: '🎆' },
+    { id: 'valentine', label: "Valentine's", icon: '💘' },
+    { id: 'eid', label: 'Eid', icon: '🌙' }
 ];
 
 const NEW_YEAR = getUpcomingNewYear();
@@ -179,6 +198,50 @@ const NEW_YEAR_BASE = {
     endDate: NEW_YEAR.endDate,
     headlineSize: '32px',
     subHeadlineSize: '20px'
+};
+
+const CHRISTMAS_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'christmas',
+    endDate: getUpcomingChristmas(),
+    daysLabel: 'Days',
+    hoursLabel: 'Hrs',
+    minutesLabel: 'Min',
+    secondsLabel: 'Sec'
+};
+
+const VALENTINE_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'valentine',
+    endDate: getUpcomingValentines(),
+    headlineSize: '32px',
+    subHeadlineSize: '20px'
+};
+
+const EID_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'eid',
+    endDate: getUpcomingEid(),
+    headlineSize: '32px',
+    subHeadlineSize: '20px'
+};
+
+// Evergreen: counts down to midnight and starts again every day.
+const FLASH_SALE_BASE = {
+    ...SEASONAL_BASE,
+    layout: 'flashsale',
+    endDate: getToday(),
+    endTime: '23:59',
+    enableRecursion: true,
+    recurrenceAmount: 24,
+    recurrenceUnit: 'hours',
+    headlineSize: '38px',
+    subHeadlineSize: '20px',
+    daysLabel: 'Days',
+    hoursLabel: 'Hrs',
+    minutesLabel: 'Min',
+    secondsLabel: 'Sec',
+    ctaAnimation: 'shimmer'
 };
 
 const EmojiSwatch = ({ background, emoji }) => (
@@ -298,6 +361,94 @@ const TEMPLATES = [
                 <div className="w-10 h-3 bg-yellow-400 rounded-sm ml-2"></div>
             </div>
         )
+    },
+    {
+        id: 'flashsale-lightning',
+        name: 'Lightning Deal',
+        style: 'Flash Sale',
+        category: 'flashsale',
+        isPro: true,
+        description: 'Black and electric yellow with a crackling lightning bolt and racing speed lines.',
+        config: {
+            ...FLASH_SALE_BASE,
+            scene: 'lightning',
+            bgGradient: 'linear-gradient(90deg, #0A0A0A 0%, #18181B 55%, #27272A 100%)',
+            subHeadline: 'Flash Sale ⚡',
+            subHeadlineColor: '#FDE68A',
+            headline: 'Lightning Deals',
+            headlineHighlight: 'Today Only',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FACC15',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'UP TO',
+            bogoText: '60% OFF',
+            badgeBgColor: '#FACC15',
+            badgeTextColor: '#0A0A0A',
+            ctaText: 'Grab It Now',
+            ctaBg: '#FACC15',
+            ctaTextColor: '#0A0A0A',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #0A0A0A 0%, #3F3F46 100%)" emoji="⚡" />
+    },
+    {
+        id: 'flashsale-rocket',
+        name: 'Rocket Launch',
+        style: 'Flash Sale',
+        category: 'flashsale',
+        isPro: true,
+        description: 'Indigo night sky with a rocket blasting off, smoke trail and a starburst price sticker.',
+        config: {
+            ...FLASH_SALE_BASE,
+            scene: 'rocket',
+            bgGradient: 'linear-gradient(90deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
+            subHeadline: 'Prices Are Blasting Off 🚀',
+            subHeadlineColor: '#C7D2FE',
+            headline: 'Flash Sale',
+            headlineHighlight: 'Up to 50% Off',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FDE047',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '50% OFF',
+            badgeBgColor: '#F43F5E',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Shop the Sale',
+            ctaBg: '#F43F5E',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #1E1B4B 0%, #4338CA 100%)" emoji="🚀" />
+    },
+    {
+        id: 'flashsale-stopwatch',
+        name: 'Beat the Clock',
+        style: 'Flash Sale',
+        category: 'flashsale',
+        isPro: true,
+        description: 'Hot orange urgency with a ticking stopwatch and a flickering hot-deal flame.',
+        config: {
+            ...FLASH_SALE_BASE,
+            scene: 'stopwatch',
+            bgGradient: 'linear-gradient(90deg, #7C2D12 0%, #C2410C 50%, #EA580C 100%)',
+            subHeadline: "Hurry, Time's Running Out ⏱️",
+            subHeadlineColor: '#FED7AA',
+            headline: 'Beat the Clock',
+            headlineHighlight: 'Save Big',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FEF08A',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'FLAT',
+            bogoText: '40% OFF',
+            badgeBgColor: '#1C1917',
+            badgeTextColor: '#FDE047',
+            ctaText: 'Shop Before It Ends',
+            ctaBg: '#1C1917',
+            ctaTextColor: '#FFFFFF',
+            ctaAnimation: 'pulse',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #7C2D12 0%, #EA580C 100%)" emoji="⏱️" />
     },
     {
         id: 'halloween-haunted-night',
@@ -472,6 +623,93 @@ const TEMPLATES = [
         icon: <EmojiSwatch background="linear-gradient(135deg, #05051A 0%, #3B0764 100%)" emoji="⚡" />
     },
     {
+        id: 'christmas-snowy-village',
+        name: 'Snowy Village',
+        style: 'Christmas',
+        category: 'christmas',
+        isPro: true,
+        description: 'A snowy night village with glowing windows, falling snow and twinkling string lights.',
+        config: {
+            ...CHRISTMAS_BASE,
+            scene: 'village',
+            bgGradient: 'linear-gradient(90deg, #0B1E3F 0%, #12305E 50%, #1B3F73 100%)',
+            subHeadline: 'The Christmas Sale is Here 🎄',
+            subHeadlineColor: '#BFDBFE',
+            headline: 'Merry Deals on',
+            headlineHighlight: 'Everything',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FDE68A',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'UP TO',
+            bogoText: '50% OFF',
+            badgeBgColor: '#DC2626',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Shop Gifts',
+            ctaBg: '#DC2626',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #0B1E3F 0%, #1B3F73 100%)" emoji="🏘️" />
+    },
+    {
+        id: 'christmas-cozy-tree',
+        name: 'Cozy Christmas',
+        style: 'Christmas',
+        category: 'christmas',
+        isPro: true,
+        description: 'Festive red with a decorated tree, wrapped gifts and a swinging bauble price tag.',
+        config: {
+            ...CHRISTMAS_BASE,
+            scene: 'tree',
+            bgGradient: 'linear-gradient(90deg, #7F1D1D 0%, #B91C1C 50%, #991B1B 100%)',
+            subHeadline: 'Ho Ho Ho! 🎅',
+            subHeadlineColor: '#FECACA',
+            headline: 'Holiday Savings',
+            headlineHighlight: 'Under the Tree',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FCD34D',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '30% OFF',
+            badgeBgColor: '#15803D',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Unwrap the Deals',
+            ctaBg: '#FCD34D',
+            ctaTextColor: '#7F1D1D',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%)" emoji="🎄" />
+    },
+    {
+        id: 'christmas-santa-sleigh',
+        name: "Santa's Sleigh",
+        style: 'Christmas',
+        category: 'christmas',
+        isPro: true,
+        description: "Santa's sleigh and reindeer crossing a full moon over a snowy pine forest.",
+        config: {
+            ...CHRISTMAS_BASE,
+            scene: 'sleigh',
+            bgGradient: 'linear-gradient(90deg, #052E2B 0%, #064E3B 50%, #065F46 100%)',
+            subHeadline: "Santa's on His Way 🦌",
+            subHeadlineColor: '#A7F3D0',
+            headline: 'Sleigh the Season',
+            headlineHighlight: 'With Big Savings',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#F5C542',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'FLAT',
+            bogoText: '40% OFF',
+            badgeBgColor: '#F5C542',
+            badgeTextColor: '#3B2A05',
+            ctaText: 'Shop Now',
+            ctaBg: '#DC2626',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #052E2B 0%, #065F46 100%)" emoji="🛷" />
+    },
+    {
         id: 'newyear-midnight-fireworks',
         name: 'Midnight Fireworks',
         style: 'New Year',
@@ -557,6 +795,180 @@ const TEMPLATES = [
             bgEffect: 'none'
         },
         icon: <EmojiSwatch background="linear-gradient(135deg, #2B0F1C 0%, #5E1F3A 100%)" emoji="🥂" />
+    },
+    {
+        id: 'valentine-heart-balloons',
+        name: 'Heart Balloons',
+        style: "Valentine's",
+        category: 'valentine',
+        isPro: true,
+        description: 'Hot pink with floating heart balloons, rising hearts and a beating heart badge.',
+        config: {
+            ...VALENTINE_BASE,
+            scene: 'balloons',
+            bgGradient: 'linear-gradient(90deg, #831843 0%, #BE185D 50%, #DB2777 100%)',
+            subHeadline: "Valentine's Day Sale 💘",
+            subHeadlineColor: '#FBCFE8',
+            headline: 'Fall in Love with',
+            headlineHighlight: 'Our Deals',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FDE68A',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '25% OFF',
+            badgeBgColor: '#FFFFFF',
+            badgeTextColor: '#BE185D',
+            ctaText: 'Shop Gifts',
+            ctaBg: '#FFFFFF',
+            ctaTextColor: '#BE185D',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #831843 0%, #DB2777 100%)" emoji="🎈" />
+    },
+    {
+        id: 'valentine-love-letter',
+        name: 'Love Letter',
+        style: "Valentine's",
+        category: 'valentine',
+        isPro: true,
+        description: 'Deep wine tones with an opened love letter, a wax heart seal and drifting hearts.',
+        config: {
+            ...VALENTINE_BASE,
+            scene: 'letter',
+            bgGradient: 'linear-gradient(90deg, #3B0A1E 0%, #5B1030 50%, #7A1538 100%)',
+            subHeadline: 'Sealed with Love 💌',
+            subHeadlineColor: '#FBCFE8',
+            headline: 'Sweet Deals for',
+            headlineHighlight: 'Your Sweetheart',
+            headlineColor: '#FFF1F2',
+            highlightColor: '#F9A8D4',
+            timerTextColor: '#FFF1F2',
+            badgeTopText: 'UP TO',
+            bogoText: '40% OFF',
+            badgeBgColor: '#F43F5E',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Find the Perfect Gift',
+            ctaBg: '#F43F5E',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #3B0A1E 0%, #7A1538 100%)" emoji="💌" />
+    },
+    {
+        id: 'valentine-rose-garden',
+        name: 'Rose Garden',
+        style: "Valentine's",
+        category: 'valentine',
+        isPro: true,
+        description: 'A soft blush design with a bouquet of red roses for an elegant, light look.',
+        config: {
+            ...VALENTINE_BASE,
+            scene: 'roses',
+            bgGradient: 'linear-gradient(90deg, #FFF1F2 0%, #FFE4E6 50%, #FECDD3 100%)',
+            subHeadline: 'Love Is in the Air 🌹',
+            subHeadlineColor: '#BE123C',
+            headline: 'Romantic Deals on',
+            headlineHighlight: 'Every Gift',
+            headlineColor: '#881337',
+            highlightColor: '#E11D48',
+            timerTextColor: '#881337',
+            badgeTopText: 'FLAT',
+            bogoText: '30% OFF',
+            badgeBgColor: '#BE123C',
+            badgeTextColor: '#FFFFFF',
+            ctaText: 'Shop Romance',
+            ctaBg: '#BE123C',
+            ctaTextColor: '#FFFFFF',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #FFE4E6 0%, #FDA4AF 100%)" emoji="🌹" />
+    },
+    {
+        id: 'eid-mosque-skyline',
+        name: 'Mosque Skyline',
+        style: 'Eid',
+        category: 'eid',
+        isPro: true,
+        description: 'Night blue with a mosque skyline, a golden crescent and softly swaying lanterns.',
+        config: {
+            ...EID_BASE,
+            scene: 'mosque',
+            bgGradient: 'linear-gradient(90deg, #0A1F3D 0%, #0F2F57 50%, #143B6B 100%)',
+            subHeadline: 'Eid Mubarak 🌙',
+            subHeadlineColor: '#C7D7F0',
+            headline: 'Celebrate Eid with',
+            headlineHighlight: 'Special Savings',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#F5C542',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'UP TO',
+            bogoText: '40% OFF',
+            badgeBgColor: '#E9C46A',
+            badgeTextColor: '#0A1F3D',
+            ctaText: 'Shop the Eid Sale',
+            ctaBg: '#E9C46A',
+            ctaTextColor: '#0A1F3D',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #0A1F3D 0%, #143B6B 100%)" emoji="🕌" />
+    },
+    {
+        id: 'eid-lantern-night',
+        name: 'Lantern Night',
+        style: 'Eid',
+        category: 'eid',
+        isPro: true,
+        description: 'Royal purple with glowing lanterns, a geometric pattern and a gold-framed arch.',
+        config: {
+            ...EID_BASE,
+            scene: 'lanterns',
+            bgGradient: 'linear-gradient(90deg, #1E0B3B 0%, #2E1065 50%, #3B0F7A 100%)',
+            subHeadline: 'The Eid Sale is Live ✨',
+            subHeadlineColor: '#DDD6FE',
+            headline: 'Light Up Your Eid',
+            headlineHighlight: 'With Big Deals',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FBBF24',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'SAVE',
+            bogoText: '30% OFF',
+            badgeBgColor: '#F59E0B',
+            badgeTextColor: '#1E0B3B',
+            ctaText: 'Shop Now',
+            ctaBg: '#F59E0B',
+            ctaTextColor: '#1E0B3B',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #1E0B3B 0%, #3B0F7A 100%)" emoji="🏮" />
+    },
+    {
+        id: 'eid-golden-crescent',
+        name: 'Golden Crescent',
+        style: 'Eid',
+        category: 'eid',
+        isPro: true,
+        description: 'Emerald green with a large golden crescent, desert dunes and a palm silhouette.',
+        config: {
+            ...EID_BASE,
+            scene: 'crescent',
+            bgGradient: 'linear-gradient(90deg, #022C22 0%, #064E3B 50%, #065F46 100%)',
+            subHeadline: 'Blessed Eid Offers 🤲',
+            subHeadlineColor: '#A7F3D0',
+            headline: 'Eid Mubarak,',
+            headlineHighlight: 'Save More',
+            headlineColor: '#FFFFFF',
+            highlightColor: '#FDE68A',
+            timerTextColor: '#FFFFFF',
+            badgeTopText: 'FLAT',
+            bogoText: '25% OFF',
+            badgeBgColor: '#FDE68A',
+            badgeTextColor: '#064E3B',
+            ctaText: 'Celebrate & Save',
+            ctaBg: '#FDE68A',
+            ctaTextColor: '#064E3B',
+            bgEffect: 'none'
+        },
+        icon: <EmojiSwatch background="linear-gradient(135deg, #022C22 0%, #065F46 100%)" emoji="🌙" />
     }
 ];
 
@@ -577,27 +989,70 @@ const buildTemplateConfig = (current, template) => {
     };
 };
 
+// The exit-intent popup is a second, separate design that runs next to the bar.
+const POPUP_BASE_CONFIG = { ...DEFAULT_CONFIG, ...POPUP_DEFAULTS };
+
+// Same template, laid out as a popup: the banner design plus popup sizing and "before you go" copy.
+// Behavior settings (status, triggers, frequency), the coupon code and the button link are kept.
+const buildPopupTemplateConfig = (current, template) => {
+    const nextLayout = template.config.layout || 'classic';
+    const layoutChanged = (current.layout || 'classic') !== nextLayout;
+    const styleDefaults = layoutChanged
+        ? LAYOUT_STYLE_KEYS.reduce((acc, key) => ({ ...acc, [key]: POPUP_BASE_CONFIG[key] }), {})
+        : {};
+    const { ctaUrl, couponCode, isActive } = current;
+
+    return {
+        ...current,
+        ...styleDefaults,
+        ...template.config,
+        ...getPopupTemplateOverrides(template),
+        ctaUrl,
+        couponCode,
+        isActive,
+        id: template.id,
+        name: template.name,
+        layout: nextLayout
+    };
+};
+
+const DEFAULT_POPUP_CONFIG = buildPopupTemplateConfig(POPUP_BASE_CONFIG, TEMPLATES[0]);
+
+const DEFAULT_DISPLAY_SETTINGS = {
+    displayOnAllPages: true,
+    displayOnHomePage: false,
+    selectedPages: []
+};
+
+
 function App() {
     const [activeTab, setActiveTab] = useState('design');
     const [appView, setAppView] = useState('editor');
     const [device, setDevice] = useState('desktop');
     const [showTemplateModal, setShowTemplateModal] = useState(false);
     const [templateCategory, setTemplateCategory] = useState('all');
-    const [selectedTemplateId, setSelectedTemplateId] = useState('holiday-gradient');
+    // The editor works on one design at a time: the bar or the exit-intent popup.
+    // `config` / `displaySettings` always point at the design being edited.
+    const [editingSlot, setEditingSlot] = useState('bar');
+    const isPopupSlot = editingSlot === 'popup';
 
-    const [config, setConfig] = useState(DEFAULT_CONFIG);
+    const [barConfig, setBarConfig] = useState(DEFAULT_CONFIG);
+    const [popupConfig, setPopupConfig] = useState(DEFAULT_POPUP_CONFIG);
+    const config = isPopupSlot ? popupConfig : barConfig;
+    const setConfig = isPopupSlot ? setPopupConfig : setBarConfig;
+    const selectedTemplateId = config.id;
 
-    const [displaySettings, setDisplaySettings] = useState({
-        displayOnAllPages: true,
-        displayOnHomePage: false,
-        selectedPages: []
-    });
+    const [barDisplay, setBarDisplay] = useState(DEFAULT_DISPLAY_SETTINGS);
+    const [popupDisplay, setPopupDisplay] = useState(DEFAULT_DISPLAY_SETTINGS);
+    const displaySettings = isPopupSlot ? popupDisplay : barDisplay;
+    const setDisplaySettings = isPopupSlot ? setPopupDisplay : setBarDisplay;
 
     // Storefront gets isPro from wiseBannerData; the admin editor starts from the license state the server checked on page load.
     const [isPro, setIsPro] = useState(Boolean(window.wiseBannerData?.isPro || window.wiseModuleData?.pro?.isLicenseActive));
     const [availablePages, setAvailablePages] = useState([]);
 
     const [isSaving, setIsSaving] = useState(false);
+    const loadedSlotsRef = React.useRef({ bar: false, popup: false });
     const [isLoading, setIsLoading] = useState(true);
     const [showStatusConfirm, setShowStatusConfirm] = useState(false);
     const [showDisabledOverlay, setShowDisabledOverlay] = useState(true);
@@ -607,6 +1062,9 @@ function App() {
     const bannerContainerRef = React.useRef(null);
 
     const isStorefront = window.wiseBannerData?.isStorefront || false;
+    // The server sends only the designs that should appear on this page.
+    const storefrontHasBar = isStorefront && Boolean(window.wiseBannerData?.config);
+    const storefrontPopup = isStorefront ? (window.wiseBannerData?.popup || null) : null;
 
     // Visitors can close banners that show a close button; remembered for the browser session.
     const getDismissKey = (cfg) => `wise-banner-v2-dismissed:${cfg?.id || ''}:${cfg?.endDate || ''}`;
@@ -644,7 +1102,7 @@ function App() {
     // One impression per page view, plus one unique visitor per browser session.
     const viewTrackedRef = React.useRef(false);
     useEffect(() => {
-        if (!track || isLoading || isDismissed || !config.isActive || viewTrackedRef.current) return;
+        if (!track || !storefrontHasBar || isLoading || isDismissed || !config.isActive || viewTrackedRef.current) return;
         viewTrackedRef.current = true;
         track('view');
         try {
@@ -673,8 +1131,7 @@ function App() {
         } else {
             // If storefront, we already have data in window.wiseBannerData.config
             if (window.wiseBannerData?.config) {
-                setConfig({ ...DEFAULT_CONFIG, ...window.wiseBannerData.config });
-                setSelectedTemplateId(window.wiseBannerData.config.id || 'holiday-gradient');
+                setBarConfig({ ...DEFAULT_CONFIG, ...window.wiseBannerData.config });
             }
             if (window.wiseBannerData?.isPro !== undefined) {
                 setIsPro(!!window.wiseBannerData.isPro);
@@ -683,9 +1140,19 @@ function App() {
         }
     }, []);
 
+    // Popup only on this page: keep the root a direct child of <body> so no theme wrapper
+    // (transforms, overflow) can trap the fixed-position popup.
+    useEffect(() => {
+        if (!storefrontPopup || storefrontHasBar) return;
+        const rootElement = document.getElementById('wise-banner-v2-app');
+        if (rootElement && rootElement.parentElement !== document.body) {
+            document.body.appendChild(rootElement);
+        }
+    }, []);
+
     // Dynamically adjust webpage body padding & placement to prevent header overflow
     useEffect(() => {
-        if (!isStorefront || isDismissed) return;
+        if (!isStorefront || !storefrontHasBar || isDismissed) return;
 
         const isSticky = isPro && config.isSticky;
         const isBottom = isPro && config.position === 'bottom';
@@ -742,19 +1209,40 @@ function App() {
             // browser would serve stale settings and license status. Always hit the server.
             const noStore = { headers, cache: 'no-store' };
 
-            // Fetch Banner Design
-            const resBanner = await fetch(`${baseUrl}banner-v2`, noStore);
-            const bannerData = await resBanner.json();
-            if (bannerData && bannerData.id) {
-                setConfig({ ...DEFAULT_CONFIG, ...bannerData });
-                setSelectedTemplateId(bannerData.id);
-            }
+            // Bar and popup designs with their display settings
+            const readJson = async (path) => {
+                try {
+                    const res = await fetch(`${baseUrl}${path}`, noStore);
+                    return res.ok ? await res.json() : null;
+                } catch (e) {
+                    return null;
+                }
+            };
+            const [bannerData, settings, popupData, popupSettings] = await Promise.all([
+                readJson('banner-v2'),
+                readJson('banner-v2/settings'),
+                readJson('banner-v2/popup'),
+                readJson('banner-v2/popup/settings')
+            ]);
 
-            // Fetch Display Settings
-            const resSettings = await fetch(`${baseUrl}banner-v2/settings`, noStore);
-            const settings = await resSettings.json();
+            // A design that failed to load must not be saved, or its defaults would overwrite it.
+            loadedSlotsRef.current = {
+                bar: Boolean(bannerData && settings),
+                popup: Boolean(popupData && popupSettings)
+            };
+
+            if (bannerData && bannerData.id) {
+                setBarConfig({ ...DEFAULT_CONFIG, ...bannerData });
+            }
             if (settings) {
-                setDisplaySettings(prev => ({ ...prev, ...settings }));
+                setBarDisplay(prev => ({ ...prev, ...settings }));
+            }
+            // Until the popup is first saved the server only knows its behavior defaults.
+            if (popupData) {
+                setPopupConfig(popupData.id ? { ...DEFAULT_POPUP_CONFIG, ...popupData } : { ...DEFAULT_POPUP_CONFIG, isActive: !!popupData.isActive });
+            }
+            if (popupSettings && !Array.isArray(popupSettings)) {
+                setPopupDisplay(prev => ({ ...prev, ...popupSettings }));
             }
 
             // Fetch License Status
@@ -776,7 +1264,21 @@ function App() {
         }
     };
 
-    const handleSave = async (configOverride = null) => {
+    // Saves the designs and their display settings: both from the Save button, only
+    // `override.slot` (with `override.config`) from a status toggle, which stays silent.
+    // A design whose settings failed to load is never saved.
+    const handleSave = async (override = null) => {
+        const silent = Boolean(override);
+        const requested = override ? [override.slot] : ['bar', 'popup'];
+        const slots = requested.filter(slot => loadedSlotsRef.current[slot]);
+        const skipped = requested.filter(slot => !loadedSlotsRef.current[slot]);
+        const slotLabel = { bar: 'banner', popup: 'popup' };
+
+        if (!slots.length) {
+            alert(`Your ${skipped.map(slot => slotLabel[slot]).join(' and ')} settings didn't load, so nothing was saved to keep them safe. Please reload the page and try again.`);
+            return false;
+        }
+
         setIsSaving(true);
         try {
             const baseUrl = window.wiseModuleData?.apiUrl || '/wp-json/wisecampaign/v1/';
@@ -786,57 +1288,57 @@ function App() {
                 'Content-Type': 'application/json',
                 ...(nonce ? { 'X-WP-Nonce': nonce } : {})
             };
+            const post = (path, body) => fetch(`${baseUrl}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
 
-            const bannerToSave = configOverride || config;
+            const requests = [];
+            if (slots.includes('bar')) {
+                const barToSave = override?.slot === 'bar' ? override.config : barConfig;
+                requests.push(['Banner', post('banner-v2', barToSave)], ['Banner display settings', post('banner-v2/settings', barDisplay)]);
+            }
+            if (slots.includes('popup')) {
+                const popupToSave = override?.slot === 'popup' ? override.config : popupConfig;
+                requests.push(['Popup', post('banner-v2/popup', popupToSave)], ['Popup display settings', post('banner-v2/popup/settings', popupDisplay)]);
+            }
 
-            // Save Banner Design
-            const resBanner = await fetch(`${baseUrl}banner-v2`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(bannerToSave)
-            });
+            const results = await Promise.all(requests.map(([, request]) => request));
+            const failed = results.findIndex(res => !res.ok);
 
-            // Save Display Settings
-            const resDisplay = await fetch(`${baseUrl}banner-v2/settings`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(displaySettings)
-            });
-
-            if (resBanner.ok && resDisplay.ok) {
-                if (!configOverride) {
-                    alert("Settings saved successfully!");
+            if (failed === -1) {
+                if (!silent) {
+                    alert(skipped.length
+                        ? `Saved, except your ${slotLabel[skipped[0]]} settings: they didn't load, so they were left as they are. Reload the page to edit them.`
+                        : "Settings saved successfully!");
                 }
                 return true;
-            } else {
-                const errorText = !resBanner.ok ? "Banner save failed" : "Display settings save failed";
-                console.error(errorText, resBanner.status, resDisplay.status);
-                if (!configOverride) {
-                    alert(`${errorText}. Please try again.`);
-                }
             }
+            const errorText = `${requests[failed][0]} save failed`;
+            console.error(errorText, results.map(res => res.status));
+            alert(`${errorText}. Please try again.`);
         } catch (error) {
             console.error("Error saving settings:", error);
-            if (!configOverride) {
-                alert("Failed to save settings: " + error.message);
-            }
+            alert("Failed to save settings: " + error.message);
         } finally {
             setIsSaving(false);
         }
         return false;
     };
 
+    const designLabel = isPopupSlot ? 'Popup' : 'Banner';
+
+    const requestStatusChange = () => {
+        if (isLoading) return;
+        setShowStatusConfirm(true);
+    };
+
     const confirmStatusChange = async () => {
         const newStatus = !config.isActive;
         const newConfig = { ...config, isActive: newStatus };
 
-        // Show loading state or similar if needed
-        const success = await handleSave(newConfig);
+        const success = await handleSave({ slot: editingSlot, config: newConfig });
         if (success) {
             setConfig(newConfig);
             setShowStatusConfirm(false);
-            // alert("Banner status updated successfully!"); // Optional, handleSave handles success if not override, wait I changed it
-            alert(`Banner ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+            alert(`${designLabel} ${newStatus ? 'activated' : 'deactivated'} successfully!`);
         }
     };
 
@@ -893,6 +1395,8 @@ function App() {
     };
 
     const activeTemplate = TEMPLATES.find(t => t.id === selectedTemplateId) || TEMPLATES[0];
+    // The popup preview shows the live bar behind it, as visitors will see both.
+    const previewBar = isPopupSlot ? (!isLoading && barConfig.isActive ? barConfig : null) : config;
     const seasonalPack = SEASONAL_PACKS[config.layout] || null;
     const isSeasonalLayout = !!seasonalPack;
     const activeSceneId = seasonalPack
@@ -908,9 +1412,28 @@ function App() {
             setShowProModal(true);
             return;
         }
-        setSelectedTemplateId(template.id);
-        setConfig(prev => buildTemplateConfig(prev, template));
+        setConfig(prev => (isPopupSlot ? buildPopupTemplateConfig(prev, template) : buildTemplateConfig(prev, template)));
         setShowTemplateModal(false);
+    };
+
+    // Popup card at its real size, as the visitor will see it.
+    const renderPopupCard = (cfg, { isMobileMode = false, isPreview = true, forcePro = false } = {}) => {
+        const pro = forcePro || isPro;
+        return (
+            <PopupContent
+                config={cfg}
+                isPro={pro}
+                isMobileMode={isMobileMode}
+                isPreview={isPreview}
+                showBranding={!pro || !cfg.hideBranding}
+                effectLayer={
+                    <BackgroundEffectLayer
+                        effect={pro ? cfg.bgEffect : 'none'}
+                        opacity={cfg.bgEffectOpacity !== undefined ? cfg.bgEffectOpacity : 60}
+                    />
+                }
+            />
+        );
     };
 
 
@@ -1431,7 +1954,21 @@ function App() {
     };
 
     if (isStorefront) {
-        if (isDismissed) return null;
+        const popup = storefrontPopup && (
+            <StorefrontPopup
+                config={{ ...DEFAULT_POPUP_CONFIG, ...storefrontPopup }}
+                tracking={window.wiseBannerData?.tracking}
+                isPro={isPro}
+                effectLayer={
+                    <BackgroundEffectLayer
+                        effect={isPro ? storefrontPopup.bgEffect : 'none'}
+                        opacity={storefrontPopup.bgEffectOpacity !== undefined ? storefrontPopup.bgEffectOpacity : 60}
+                    />
+                }
+            />
+        );
+
+        if (!storefrontHasBar || isDismissed) return popup || null;
 
         const isSticky = isPro && config.isSticky;
         const isBottom = isPro && config.position === 'bottom';
@@ -1453,10 +1990,13 @@ function App() {
         }
 
         return (
-            <div ref={bannerContainerRef} className={positionClasses} style={customStyle}>
-                <BannerContent onClose={handleDismiss} onTrack={track} />
-                {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
-            </div>
+            <>
+                <div ref={bannerContainerRef} className={positionClasses} style={customStyle}>
+                    <BannerContent onClose={handleDismiss} onTrack={track} />
+                    {globalToast && <Toast message={globalToast} onClose={() => setGlobalToast(null)} />}
+                </div>
+                {popup}
+            </>
         );
     }
 
@@ -1507,12 +2047,16 @@ function App() {
                             {config.isActive ? <AlertCircle size={32} /> : <CheckCircle2 size={32} />}
                         </div>
                         <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mb-2">
-                            {config.isActive ? 'Deactivate Banner?' : 'Activate Banner?'}
+                            {config.isActive ? `Deactivate ${designLabel}?` : `Activate ${designLabel}?`}
                         </h2>
                         <p className="text-slate-500 font-medium leading-relaxed mb-8">
-                            {config.isActive
-                                ? 'Are you sure you want to deactivate this banner? It will no longer be visible to your customers.'
-                                : 'Are you sure you want to activate this banner? It will become visible to your customers based on your display settings.'}
+                            {isPopupSlot
+                                ? (config.isActive
+                                    ? 'Visitors leaving your store will no longer see this popup. Your banner is not affected.'
+                                    : 'Visitors about to leave will see this popup once, on the pages in your display settings. Your banner keeps running as it is.')
+                                : (config.isActive
+                                    ? 'Are you sure you want to deactivate this banner? It will no longer be visible to your customers.'
+                                    : 'Are you sure you want to activate this banner? It will become visible to your customers based on your display settings.')}
                         </p>
                         <div className="flex gap-3 w-full">
                             <button
@@ -1554,9 +2098,13 @@ function App() {
                                     <Layout size={20} />
                                 </div>
                                 <div>
-                                    <h2 id="wise-template-modal-title" className="m-0 p-0 text-xl font-black text-[#0F172A] tracking-tight leading-tight">Choose a Template</h2>
+                                    <h2 id="wise-template-modal-title" className="m-0 p-0 text-xl font-black text-[#0F172A] tracking-tight leading-tight">
+                                        {isPopupSlot ? 'Choose a Popup Template' : 'Choose a Template'}
+                                    </h2>
                                     <p className="m-0 text-xs text-slate-500 font-medium mt-1">
-                                        Live previews of each design. Click a template to apply it, then fine-tune it in the editor.
+                                        {isPopupSlot
+                                            ? 'Each popup matches its banner design. Your coupon code and button link stay as they are.'
+                                            : 'Live previews of each design. Click a template to apply it, then fine-tune it in the editor.'}
                                     </p>
                                 </div>
                             </div>
@@ -1596,7 +2144,7 @@ function App() {
 
                         {/* Template List */}
                         <div className="flex-1 overflow-y-auto bg-slate-50/70 px-6 sm:px-8 py-6 custom-scrollbar">
-                            <div className="grid grid-cols-1 gap-5">
+                            <div className={`grid gap-5 ${isPopupSlot ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
                                 {visibleTemplates.map((template) => {
                                     const isSelected = selectedTemplateId === template.id;
                                     const isLocked = template.isPro && !isPro;
@@ -1627,17 +2175,30 @@ function App() {
                                                         <span className="ml-3 h-3 w-40 max-w-[40%] rounded bg-white border border-slate-200" />
                                                     </div>
 
-                                                    <ScaledPreview width={1440} lazy>
-                                                        <BannerContent cfg={buildTemplateConfig(config, template)} forcePro isPreview />
-                                                    </ScaledPreview>
+                                                    {isPopupSlot ? (
+                                                        <ScaledPreview width={600} lazy placeholderRatio={1.1}>
+                                                            {/* Dimmed page behind the popup */}
+                                                            <div className="flex items-center justify-center" style={{ padding: '44px 40px', background: 'radial-gradient(circle at 50% 35%, #475569 0%, #1E293B 75%)' }}>
+                                                                <div className="w-full" style={{ maxWidth: getPopupWidth(template.config, true) }}>
+                                                                    {renderPopupCard(buildPopupTemplateConfig(config, template), { forcePro: true })}
+                                                                </div>
+                                                            </div>
+                                                        </ScaledPreview>
+                                                    ) : (
+                                                        <>
+                                                            <ScaledPreview width={1440} lazy>
+                                                                <BannerContent cfg={buildTemplateConfig(config, template)} forcePro isPreview />
+                                                            </ScaledPreview>
 
-                                                    {/* Page skeleton under the banner */}
-                                                    <div className="px-4 py-3 flex items-center gap-3 bg-white">
-                                                        <span className="h-2 w-16 rounded-full bg-slate-100" />
-                                                        <span className="h-2 w-10 rounded-full bg-slate-100" />
-                                                        <span className="h-2 w-12 rounded-full bg-slate-100" />
-                                                        <span className="ml-auto h-2 w-20 rounded-full bg-slate-100" />
-                                                    </div>
+                                                            {/* Page skeleton under the banner */}
+                                                            <div className="px-4 py-3 flex items-center gap-3 bg-white">
+                                                                <span className="h-2 w-16 rounded-full bg-slate-100" />
+                                                                <span className="h-2 w-10 rounded-full bg-slate-100" />
+                                                                <span className="h-2 w-12 rounded-full bg-slate-100" />
+                                                                <span className="ml-auto h-2 w-20 rounded-full bg-slate-100" />
+                                                            </div>
+                                                        </>
+                                                    )}
 
                                                     {isLocked && (
                                                         <div className="absolute inset-0 flex items-center justify-center bg-slate-900/0 group-hover:bg-slate-900/45 transition-colors">
@@ -1754,8 +2315,8 @@ function App() {
                     <div className="flex items-center gap-3 pr-2">
                         <button
                             onClick={() => handleSave()}
-                            disabled={isSaving}
-                            className={`flex items-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-xl hover:bg-slate-800 transition-all text-sm font-bold shadow-lg shadow-slate-200 active:scale-95 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            disabled={isSaving || isLoading}
+                            className={`flex items-center gap-2 px-5 py-2.5 bg-[#0F172A] text-white rounded-xl hover:bg-slate-800 transition-all text-sm font-bold shadow-lg shadow-slate-200 active:scale-95 ${isSaving || isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
                             <Save size={18} className={isSaving ? 'animate-spin' : ''} />
                             {isSaving ? 'Saving...' : 'Save Changes'}
@@ -1781,18 +2342,49 @@ function App() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
                 <aside className="w-[380px] bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-y-auto relative">
+                    {/* Which design to edit: the bar or the exit-intent popup (both can run at once) */}
+                    <div className="px-5 pt-5">
+                        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/50" role="tablist" aria-label="Design to edit">
+                            {[
+                                { id: 'bar', label: 'Banner', icon: <PanelTop size={14} />, live: barConfig.isActive },
+                                { id: 'popup', label: 'Exit Popup', icon: <MousePointerClick size={14} />, live: popupConfig.isActive }
+                            ].map((slot) => (
+                                <button
+                                    key={slot.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={editingSlot === slot.id}
+                                    onClick={() => {
+                                        setEditingSlot(slot.id);
+                                        setShowTemplateModal(false);
+                                    }}
+                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${editingSlot === slot.id ? 'bg-white shadow-sm text-[#0F172A]' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    {slot.icon}
+                                    <span>{slot.label}</span>
+                                    <span
+                                        className={`w-1.5 h-1.5 rounded-full ${slot.live ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                                        title={slot.live ? 'Live' : 'Off'}
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Master Activation Toggle */}
                     <div className="p-5 border-b-4 border-slate-50 bg-slate-50/30">
                         <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-200 transition-all cursor-pointer group"
-                            onClick={() => setShowStatusConfirm(true)}>
+                            onClick={requestStatusChange}>
                             <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${config.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
                                     <Power size={20} />
                                 </div>
                                 <div>
-                                    <div className="text-sm font-black text-slate-700 uppercase tracking-tight">Banner Status</div>
+                                    <div className="text-sm font-black text-slate-700 uppercase tracking-tight">{designLabel} Status</div>
                                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-                                        {config.isActive ? <span className="text-emerald-500">Currently Active</span> : 'Feature Disabled'}
+                                        {config.isActive
+                                            ? <span className="text-emerald-500">Currently Active</span>
+                                            : (isPopupSlot ? 'Off: preview only' : 'Feature Disabled')}
                                     </div>
                                 </div>
                             </div>
@@ -1800,9 +2392,15 @@ function App() {
                                 <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${config.isActive ? 'right-1' : 'left-1'}`} />
                             </div>
                         </div>
+                        {isPopupSlot && (
+                            <p className="m-0 mt-3 px-1 text-[10px] leading-relaxed text-slate-400 font-medium">
+                                Opens once when a visitor is about to leave: the cursor heads for the browser tabs on desktop, a quick scroll up on phones. Runs alongside your banner.
+                            </p>
+                        )}
                     </div>
 
-                    <div className={`flex flex-col flex-1 transition-all duration-300 ${!config.isActive ? 'opacity-40 grayscale pointer-events-none select-none filter blur-[1px]' : ''}`}>
+                    {/* The bar must be on to edit it (existing behavior); the popup can be designed before it goes live. */}
+                    <div className={`flex flex-col flex-1 transition-all duration-300 ${!config.isActive && !isPopupSlot ? 'opacity-40 grayscale pointer-events-none select-none filter blur-[1px]' : ''}`}>
                         <div className="p-4 border-b border-slate-100">
                             <div className="flex items-center justify-between mb-4">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Template</span>
@@ -1848,7 +2446,7 @@ function App() {
                                 <div className="space-y-10 animate-fade-in">
                                     {/* Banner Text */}
                                     <section className="space-y-6">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Text</h3>
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">{designLabel} Text</h3>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Headline</label>
@@ -1913,6 +2511,7 @@ function App() {
                                                                 placeholder="ENTER CODE"
                                                             />
                                                         </div>
+                                                        {!isPopupSlot && (
                                                         <div className="space-y-2">
                                                             <label className="text-[9px] font-black text-slate-400 opacity-60 uppercase tracking-widest pl-1">Placement</label>
                                                             <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200/50">
@@ -1927,6 +2526,7 @@ function App() {
                                                                 ))}
                                                             </div>
                                                         </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
@@ -2021,6 +2621,7 @@ function App() {
                                                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
                                                     />
                                                 </div>
+                                                {!isPopupSlot && (
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Label Position</label>
                                                     <div className="flex bg-slate-100 p-1 rounded-lg">
@@ -2035,6 +2636,7 @@ function App() {
                                                         ))}
                                                     </div>
                                                 </div>
+                                                )}
                                                 </>)}
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Unit Labels</label>
@@ -2120,14 +2722,51 @@ function App() {
                                                             value={config.ctaUrl}
                                                             onChange={(e) => setConfig(prev => ({ ...prev, ctaUrl: e.target.value }))}
                                                             className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm text-blue-600"
+                                                            placeholder={isPopupSlot ? 'Leave empty to keep visitors on the page' : undefined}
                                                         />
                                                         <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
                                                     </div>
+                                                    {isPopupSlot && (
+                                                        <p className="m-0 text-[10px] text-slate-400 font-medium pl-1 leading-relaxed">
+                                                            Without a link, the button copies the coupon code and closes the popup.
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
                                         <div className="h-[1px] bg-slate-50" />
                                     </section>
+
+                                    {/* Decline link (popup only) */}
+                                    {isPopupSlot && (
+                                        <section className="space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="text-sm font-black text-[#0F172A] tracking-tight">"No Thanks" Link</h3>
+                                                    <p className="m-0 text-[10px] text-slate-400 font-medium mt-0.5">A polite way out, shown under the button</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setConfig(prev => ({ ...prev, showDecline: prev.showDecline === false }))}
+                                                    className={`w-10 h-5 rounded-full transition-all relative shrink-0 ${config.showDecline !== false ? 'bg-blue-600' : 'bg-slate-200'}`}
+                                                >
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showDecline !== false ? 'right-1' : 'left-1'}`} />
+                                                </button>
+                                            </div>
+                                            {config.showDecline !== false && (
+                                                <div className="space-y-2 animate-fade-in">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Link Text</label>
+                                                    <input
+                                                        type="text"
+                                                        value={config.declineText || ''}
+                                                        onChange={(e) => setConfig(prev => ({ ...prev, declineText: e.target.value }))}
+                                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm"
+                                                        placeholder="No thanks, I'll pay full price"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="h-[1px] bg-slate-50" />
+                                        </section>
+                                    )}
 
                                     {/* Promotional Badge */}
                                     <section className="space-y-6">
@@ -2205,7 +2844,7 @@ function App() {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {!isSeasonalLayout && (<>
+                                                {!isSeasonalLayout && !isPopupSlot && (<>
                                                 {/* Badge Horizontal Position */}
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Horizontal Position</label>
@@ -2256,7 +2895,7 @@ function App() {
 
                                     {/* Banner Background */}
                                     <section className="space-y-6">
-                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Background</h3>
+                                        <h3 className="text-sm font-black text-[#0F172A] tracking-tight">{designLabel} Background</h3>
                                         <div className="grid grid-cols-2 gap-4">
                                             {[
                                                 { id: 'gradient', name: 'Gradient', color: 'bg-gradient-to-r from-blue-700 to-blue-500' },
@@ -2927,6 +3566,107 @@ function App() {
                                         )}
                                     </div>
 
+                                    {isPopupSlot && (
+                                        <div className="space-y-3 pt-6 border-t border-slate-100">
+                                            <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Popup Behavior</h3>
+
+                                            <div className="flex items-start gap-3 p-3.5 bg-slate-50 rounded-md border border-slate-100">
+                                                <Monitor size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-black text-slate-600">Desktop: exit intent</span>
+                                                    <span className="text-[10px] text-slate-400 font-medium mt-0.5 leading-relaxed">
+                                                        Opens when the cursor leaves the page towards the tabs or the close button, after at least 3 seconds on the page.
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                onClick={() => setConfig(prev => ({ ...prev, showOnMobile: prev.showOnMobile === false }))}
+                                                className="flex items-center justify-between p-3.5 bg-white rounded-md border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group text-left shadow-sm"
+                                            >
+                                                <div className="flex items-start gap-3 pr-2">
+                                                    <Smartphone size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-black text-slate-600 group-hover:text-blue-600">Show on phones & tablets</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium mt-0.5">Touch screens have no cursor, so they use the trigger below</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`w-10 h-5 rounded-full transition-all relative shrink-0 ${config.showOnMobile !== false ? 'bg-blue-600 shadow-lg shadow-blue-200' : 'bg-slate-200'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${config.showOnMobile !== false ? 'right-1' : 'left-1'}`} />
+                                                </div>
+                                            </div>
+
+                                            {config.showOnMobile !== false && (
+                                                <div className="space-y-2 animate-fade-in">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Mobile Trigger</label>
+                                                    <div className="bg-slate-100/80 p-1 rounded-xl flex items-center gap-1 border border-slate-200/50">
+                                                        {[
+                                                            { id: 'scroll-up', label: 'Fast scroll up' },
+                                                            { id: 'delay', label: 'After a delay' }
+                                                        ].map((trigger) => (
+                                                            <button
+                                                                key={trigger.id}
+                                                                type="button"
+                                                                onClick={() => setConfig(prev => ({ ...prev, mobileTrigger: trigger.id }))}
+                                                                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer ${(config.mobileTrigger || 'scroll-up') === trigger.id ? 'bg-white shadow-sm text-[#0F172A] border border-slate-200/40' : 'text-slate-500 hover:text-slate-700'}`}
+                                                            >
+                                                                {trigger.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <p className="m-0 text-[10px] text-slate-400 font-medium pl-1 leading-relaxed">
+                                                        {(config.mobileTrigger || 'scroll-up') === 'delay'
+                                                            ? 'Opens after the visitor has spent this long on the page.'
+                                                            : `Opens when a visitor who scrolled down swipes back up quickly, usually to reach the address bar or the back button. On pages too short to scroll, it opens after ${Math.min(120, Math.max(3, parseInt(config.mobileDelay, 10) || 10))} seconds instead.`}
+                                                    </p>
+                                                    {config.mobileTrigger === 'delay' && (
+                                                        <div className="flex items-center justify-between p-2 border border-slate-200 rounded-md">
+                                                            <span className="text-xs font-bold text-slate-600">Delay</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    min="3"
+                                                                    max="120"
+                                                                    value={config.mobileDelay}
+                                                                    onChange={(e) => setConfig(prev => ({ ...prev, mobileDelay: e.target.value }))}
+                                                                    onBlur={(e) => setConfig(prev => ({ ...prev, mobileDelay: Math.min(120, Math.max(3, parseInt(e.target.value, 10) || 10)) }))}
+                                                                    className="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-center outline-none focus:border-blue-500"
+                                                                />
+                                                                <span className="text-[10px] font-bold text-slate-400">seconds</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-2 pt-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1">Show Again After</label>
+                                                <select
+                                                    value={String(config.frequencyDays ?? 1)}
+                                                    onChange={(e) => setConfig(prev => ({ ...prev, frequencyDays: parseInt(e.target.value, 10) }))}
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-blue-500 transition-all shadow-sm cursor-pointer"
+                                                >
+                                                    <option value="0">Next visit</option>
+                                                    <option value="1">1 day</option>
+                                                    <option value="3">3 days</option>
+                                                    <option value="7">7 days</option>
+                                                    <option value="30">30 days</option>
+                                                </select>
+                                                <p className="m-0 text-[10px] text-slate-400 font-medium pl-1 leading-relaxed">
+                                                    Shown at most once per visit. Visitors who click the button or copy the code won't see it again for 30 days. Testing? Use a private window to see it again.
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-start gap-2 p-2.5 bg-amber-50 rounded-lg border border-amber-100">
+                                                <AlertCircle size={12} className="text-amber-500 shrink-0 mt-0.5" />
+                                                <p className="m-0 text-[10px] text-amber-700 font-bold leading-snug">
+                                                    The popup never opens on the checkout page, so it can't get in the way of a payment.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!isPopupSlot && (<>
                                     <div className="space-y-3 pt-6 border-t border-slate-100">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Banner Position</h3>
                                         <p className="text-[10px] text-slate-400 font-medium -mt-1">
@@ -3011,6 +3751,7 @@ function App() {
                                             </div>
                                         </div>
                                     )}
+                                    </>)}
 
                                     <div className="space-y-3 pt-6 border-t border-slate-100">
                                         <h3 className="text-sm font-black text-[#0F172A] tracking-tight">Branding Settings</h3>
@@ -3055,7 +3796,27 @@ function App() {
 
                 {/* Main Preview Area */}
                 <main className="flex-1 overflow-y-auto bg-slate-50 flex flex-col relative group">
-                    {!config.isActive && showDisabledOverlay && (
+                    {isPopupSlot && !config.isActive && (
+                        <div className="sticky top-3 z-40 flex justify-center px-4 pointer-events-none">
+                            <div className="pointer-events-auto flex items-center gap-3 bg-white/95 backdrop-blur-md border border-slate-200 shadow-lg rounded-full pl-4 pr-1.5 py-1.5">
+                                <span className="flex items-center gap-2 text-[11px] font-bold text-slate-600">
+                                    <span className="w-2 h-2 rounded-full bg-slate-300" />
+                                    Preview only: the popup is off
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={requestStatusChange}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-black transition-all active:scale-95"
+                                    style={{ backgroundColor: '#059669', color: '#FFFFFF' }}
+                                >
+                                    <Power size={12} />
+                                    Activate
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {!isPopupSlot && !config.isActive && showDisabledOverlay && (
                         <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-[2px] bg-slate-900/10 transition-all duration-500">
                             <div className="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white flex flex-col items-center gap-4 max-w-sm text-center animate-in fade-in zoom-in duration-300 relative">
                                 <button
@@ -3099,7 +3860,7 @@ function App() {
                                 </div>
 
                                 {/* Phone Inner Screen */}
-                                <div className="bg-white rounded-[32px] overflow-hidden flex flex-col flex-1 shadow-inner">
+                                <div className="relative isolate bg-white rounded-[32px] overflow-hidden flex flex-col flex-1 shadow-inner">
                                     {/* Mobile Browser Address Bar */}
                                     <div className="bg-slate-100 px-3 py-1.5 border-b border-slate-200 flex items-center justify-between gap-2">
                                         <div className="flex-1 bg-white h-6 rounded-full flex items-center px-3 gap-2 border border-slate-200 shadow-sm text-[10px] text-slate-600 font-medium justify-center">
@@ -3109,8 +3870,8 @@ function App() {
                                     </div>
 
                                     {/* Top Banner (LIVE) */}
-                                    {config.position !== 'bottom' && (
-                                        <BannerContent isMobileMode={true} />
+                                    {previewBar && previewBar.position !== 'bottom' && (
+                                        <BannerContent isMobileMode={true} cfg={isPopupSlot ? previewBar : null} />
                                     )}
 
                                     {/* Mobile Storefront Skeleton */}
@@ -3159,20 +3920,27 @@ function App() {
                                     </div>
 
                                     {/* Bottom Banner (LIVE) */}
-                                    {config.position === 'bottom' && (
-                                        <BannerContent isMobileMode={true} />
+                                    {previewBar && previewBar.position === 'bottom' && (
+                                        <BannerContent isMobileMode={true} cfg={isPopupSlot ? previewBar : null} />
                                     )}
 
                                     {/* Home Indicator Bar */}
                                     <div className="py-2 bg-white flex justify-center border-t border-slate-50">
                                         <div className="w-28 h-1 bg-slate-300 rounded-full" />
                                     </div>
+
+                                    {/* Exit-intent popup (LIVE) */}
+                                    {isPopupSlot && !isLoading && (
+                                        <PopupShell isPreview isMobileMode maxWidth={getPopupWidth(config, isPro)} closeColor={config.headlineColor}>
+                                            {renderPopupCard(config, { isMobileMode: true })}
+                                        </PopupShell>
+                                    )}
                                 </div>
                             </div>
                         ) : (
                             /* Desktop Browser Shell (80% scale) */
                             <div
-                                className="w-full max-w-[1240px] transition-all duration-500 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-200 overflow-hidden flex flex-col"
+                                className="relative isolate w-full max-w-[1240px] transition-all duration-500 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-slate-200 overflow-hidden flex flex-col"
                                 style={{ zoom: 0.8 }}
                             >
                                 {/* Browser Address Bar */}
@@ -3189,8 +3957,8 @@ function App() {
                                 </div>
 
                                 {/* Top Banner Preview (LIVE) */}
-                                {config.position !== 'bottom' && (
-                                    <BannerContent isMobileMode={false} />
+                                {previewBar && previewBar.position !== 'bottom' && (
+                                    <BannerContent isMobileMode={false} cfg={isPopupSlot ? previewBar : null} />
                                 )}
 
                                 {/* Page Content Skeleton */}
@@ -3267,8 +4035,15 @@ function App() {
                                 </div>
 
                                 {/* Bottom Banner Preview (LIVE) */}
-                                {config.position === 'bottom' && (
-                                    <BannerContent isMobileMode={false} />
+                                {previewBar && previewBar.position === 'bottom' && (
+                                    <BannerContent isMobileMode={false} cfg={isPopupSlot ? previewBar : null} />
+                                )}
+
+                                {/* Exit-intent popup (LIVE) */}
+                                {isPopupSlot && !isLoading && (
+                                    <PopupShell isPreview maxWidth={getPopupWidth(config, isPro)} closeColor={config.headlineColor}>
+                                        {renderPopupCard(config)}
+                                    </PopupShell>
                                 )}
                             </div>
                         )}
