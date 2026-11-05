@@ -30,8 +30,8 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * **StockBar (Scarcity Trigger)** – 5 stock bar templates that show items left and sold on product and shop pages, to create purchase urgency and FOMO.
 * **Direct Checkout** – A one-click Buy Now button that skips the cart and takes shoppers straight to checkout.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
-* **WiseVideo Commerce** – Engage shoppers with interactive video galleries and shoppable product video widgets.
-* **Wise Product Table** – Display products in responsive, filterable tables with bulk add-to-cart functionality.
+* **WiseVideo Commerce (Pro)** – Product videos in the WooCommerce product gallery and a row of shoppable vertical reels under Add to Cart.
+* **Wise Product Table (Pro)** – Display products in responsive tables with search, filters and bulk add to cart.
 
 = How wiseCampaign Increases Average Order Value =
 * **Free shipping progress bar:** the side cart shows "Add $12.00 more to get Free shipping" from your WooCommerce free shipping minimum, so shoppers add one more item instead of leaving.
@@ -50,9 +50,9 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 == Why Choose wiseCampaign Over Other Plugins? ==
 
 * **All-in-One Marketing Suite:** Replace 4 to 5 separate plugins (Notification Popup, Exit-Intent Popup, Countdown Bar, Stock Scarcity, Direct Checkout) with one clean plugin.
-* **Zero Speed Impact:** Ultra-lightweight codebase built with scoped styling to ensure zero theme conflicts and blazing-fast site speed.
-* **Granular Display Rules:** Show specific campaigns based on device (Mobile/Desktop), specific pages, or target user roles.
-* **Easy Customizer Integration:** Real-time visual customizer to match your store branding in seconds.
+* **Lightweight:** Modules you turn off on the Getting Started page are not loaded at all, and scoped styles help avoid theme conflicts.
+* **Display Rules:** Show the banner sitewide or only on the pages you pick (Pro), place StockBar and Buy Now on shop or product pages, and turn the exit popup on or off for phones.
+* **Visual Editors with Live Preview:** Match your store branding with a live desktop and mobile preview in every module. No code needed.
 
 ---
 
@@ -62,7 +62,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * Customizable top or bottom notification bars.
 * Built-in urgency countdown timer for limited-time offers.
 * "Click-to-Copy" coupon code functionality with toast feedback.
-* Targeted display on specific products, shop pages, or sitewide.
+* Show it sitewide, or only on the home page and the pages you pick (Pro).
 * Template gallery with live previews, including animated Flash Sale, Halloween, Black Friday, Christmas, New Year, Valentine's Day and Eid collections (Pro). Every template has a matching exit-intent popup design.
 * Built-in banner analytics: impressions, clicks, click-through rate, coupon copies and dismissals, plus attributed orders and revenue (Pro).
 
@@ -112,8 +112,8 @@ Add a **Buy Now** button that puts the product in the cart and takes the shopper
 👉 [Direct Checkout guide](https://wisemattic.com/docs/wisecampaign/direct-checkout/) | [Buy Now button features](https://wisemattic.com/wisecampaign/features/direct-checkout/)
 
 ### 5. Live Sales Notifications – Automated Social Proof
-* Realistic, non-intrusive recent sales alert popups.
-* Highly customizable display timing, positions, and mobile visibility.
+* Popups from your recent WooCommerce orders, or from orders you pick.
+* Set the delay and display time, pick one of 4 corner positions, and choose from 2 free templates (4 more in Pro).
 * Simulated orders (Pro) can show product photos, your own uploaded photos and logos, or friendly cartoon buyer avatars.
 
 👉 [Sales notification features](https://wisemattic.com/wisecampaign/features/sales-notification/)
@@ -131,16 +131,18 @@ Replace the cart page with a side cart that slides out on any page. Shoppers see
 
 👉 [wiseCart guide](https://wisemattic.com/docs/wisecampaign/wisecart/) | [Side cart features](https://wisemattic.com/wisecampaign/features/wisecart/)
 
-### 7. WiseVideo Commerce – Shoppable Video Reels
-* Interactive video widgets and shoppable product video embeds.
-* Engage buyers with video demonstrations directly on product pages.
-* Boosts user engagement, watch time, and conversion rates.
+### 7. WiseVideo Commerce (Pro) – Shoppable Video Reels
+* Add product videos from your Media Library to the WooCommerce product gallery, next to your product images.
+* Show a row of vertical reels under the Add to Cart button. They play muted while on screen and open in a full-screen viewer with sound.
+* A product card with a Buy Now button sits right in the reels viewer.
+* Needs wiseCampaign Pro with an active license.
 
 👉 [WiseVideo Commerce features](https://wisemattic.com/wisecampaign/features/wisevideo-commerce/)
 
-### 8. Wise Product Table – Interactive Product Catalog
-* Responsive, searchable, and filterable product table layouts.
-* Bulk add-to-cart actions for fast wholesale and multi-item orders.
+### 8. Wise Product Table (Pro) – Interactive Product Catalog
+* Responsive product tables with a search box, filters and sorting.
+* Quantity boxes and an Add Selected button for fast wholesale and multi-item orders.
+* Add a table to any page with a shortcode. Needs wiseCampaign Pro with an active license.
 * Perfect for B2B catalogs, restaurant menus, and large product inventories.
 
 ---
@@ -190,8 +192,13 @@ wiseCampaign integrates seamlessly with standard WooCommerce hooks, popular Word
 
 == Usage Instructions ==
 
-1. Go to **WiseCampaign -> Settings**, toggle the status to Active to enable the banner, and select a template from the list of views. Click **Save**.
-2. Go to **Appearance -> Customize -> wiseCampaign** to adjust colors, typography, timers, and layout settings.
+1. Go to **WiseCampaign → Getting Started**. Every module is on by default. Turn off the ones you don't need, and they are not loaded at all.
+2. **Countdown banner:** Go to **WiseCampaign → wiseBanner** and click **Choose a Template**. Edit the text, coupon and countdown on the **Design**, **Content** and **Settings** tabs, then click **Save Changes**.
+3. **Exit-intent popup:** On the same screen, switch from **Banner** to **Exit Popup** and set it up the same way.
+4. **Side cart:** Go to **WiseCampaign → wiseCart** and turn it on. The free shipping bar uses the minimum order amount of your WooCommerce Free shipping method.
+5. **StockBar, Direct Checkout and Sales Notification** each have their own page under **WiseCampaign**, with a live preview.
+6. **Analytics:** Go to **WiseCampaign → Analytics** to see views and clicks for each module (last 7 days in the free version). Pro adds orders, revenue and longer date ranges.
+7. **Pro:** Install wiseCampaign Pro and enter your key under **WiseCampaign → License**. Then set up BOGO, bulk and spend-based discounts under **WiseCampaign → Discount Manager**.
 
 == Frequently Asked Questions ==
 
@@ -202,13 +209,13 @@ A. Any WooCommerce store owner who wants a higher average order value and more c
 A. You need WordPress 5.8+ and WooCommerce active on your website. PHP 7.4 or higher is required.
 
 = Q. Can I choose where the Banner will appear? =
-A. Yes. You can target campaigns sitewide, restrict them to specific products/pages, or target devices (desktop or mobile).
+A. Yes. The banner shows sitewide in the free version. With Pro, you can limit it to the home page and the pages you pick. The exit-intent popup can be turned on or off for phones and tablets.
 
 = Q. What features are included in the free version? =
 A. The free version includes wiseBanner with the exit-intent popup (Basic templates), StockBar, Direct Checkout, Sales Notifications, and wiseCart.
 
 = Q. What extra features are available in the Pro version? =
-A. Pro unlocks the WooCommerce Dynamic Discount Manager (BOGO, bulk pricing, tiered discounts, spend-based rules), advanced targeting filters, premium pre-built templates for the banner and the exit-intent popup, and deeper styling controls.
+A. Pro adds the Discount Manager (BOGO, bulk pricing, bundles, spend & save, next-order coupons), WiseVideo Commerce, Wise Product Table, Flash Sale and seasonal template collections for the banner and the exit-intent popup, page targeting for the banner, more Buy Now button styles and animations, simulated sales notifications, and orders and revenue in Analytics.
 
 = Q. Does wiseCampaign have an exit-intent popup? =
 A. Yes. Go to **WiseCampaign → wiseBanner** and click **Exit Popup**. Pick a template, add your offer and coupon code, and turn it on. It works with the free Basic templates. See the [exit-intent popup guide](https://wisemattic.com/docs/wisecampaign/settings/exit-intent-popup/).
