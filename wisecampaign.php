@@ -6,7 +6,7 @@ use WISECAMPAIGN\Classes\SalesNotification;
  * Plugin Name:       wiseCampaign - WooCommerce Conversions Made Easy
  * Plugin URI:        https://wisemattic.com/wisecampaign
  * Description:       Take Your WooCommerce Store to the Next Level with wiseCampaign: Top Bar Banners, StockBar, Doscounts, Direct Checkout, Sales Notifications and More!
- * Version:           2.1.0
+ * Version:           2.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Tested up to:      7.1
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) {
 }
 
 if (!defined('WISECAMPAIGN_VERSION')) {
-    define('WISECAMPAIGN_VERSION', '2.1.0');
+    define('WISECAMPAIGN_VERSION', '2.2.0');
 }
 
 
@@ -248,6 +248,12 @@ class Wisecampaign
             'dev_port' => 5178
         ]);
 
+        $module_manager->register_module('wise-rewards', [
+            'name' => 'wiseRewards',
+            'menu_slug' => 'wisecampaign_rewards',
+            'dev_port' => 5180
+        ]);
+
         Modules::getInstance();
         // Store-wide analytics for every module; always on, modules that are off simply report nothing
         WISECAMPAIGN\Classes\Analytics::getInstance();
@@ -265,6 +271,9 @@ class Wisecampaign
             }
             if (Modules::is_enabled('producttable')) {
                 \WISECAMPAIGN\Features\WiseProductTable::getInstance();
+            }
+            if (Modules::is_enabled('rewards')) {
+                \WISECAMPAIGN\Rewards\Rewards::getInstance();
             }
         }
 

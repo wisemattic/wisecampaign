@@ -41,6 +41,9 @@ export default function PerformanceCard({ module }) {
     if (module === 'discountmanager') {
         stats.push({ label: 'discount given', value: now?.discount, before: before?.discount, money: true, pro: true });
     }
+    if (module === 'rewards') {
+        stats.push({ label: 'paid with points', value: now?.discount, before: before?.discount, money: true, pro: true });
+    }
     stats.push({ label: 'orders', value: now?.orders, before: before?.orders, pro: true });
     stats.push({ label: 'revenue', value: now?.revenue, before: before?.revenue, money: true, pro: true });
 

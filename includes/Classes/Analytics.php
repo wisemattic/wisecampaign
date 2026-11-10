@@ -18,7 +18,7 @@ use WP_REST_Response;
  * - wisecampaign_orders: one row per paid order and module that took part in it:
  *   "direct"   the module put the product in the cart (Product Table, Buy Now, video add to cart),
  *   "assisted" the shopper used the module before buying (notification click, stock bar shown, ...),
- *   "discount" Discount Manager discounted the order,
+ *   "discount" Discount Manager discounted the order, or wiseRewards points paid part of it,
  *   plus a "store" row for every paid order, so module numbers can be compared with the whole store.
  * Rows are rebuilt whenever an order's status changes or it is refunded, so refunds and
  * cancellations come off the numbers. wiseBanner keeps its own table (BannerAnalytics); its
@@ -414,6 +414,12 @@ class Analytics
                     $rows[] = ['discountmanager', 'rule', absint($rule_id), $net, (float) $amount, 0];
                 }
             }
+        }
+
+        // Points from wiseRewards used on the order, at their value
+        $points_value = (float) $order->get_meta('_wiserewards_redeemed_value');
+        if ($points_value > 0) {
+            $rows[] = ['rewards', 'discount', 0, $net, $points_value, 0];
         }
 
         foreach ($rows as [$module, $type, $object_id, $revenue, $discount_amount, $items]) {

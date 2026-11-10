@@ -12,6 +12,7 @@ import {
     Clapperboard,
     Table,
     BadgePercent,
+    Gift,
     Check,
     Star,
     Users,
@@ -46,7 +47,7 @@ const syncAdminMenu = (modules, id, enabled) => {
     li.appendChild(link);
 
     // Menu order as registered in includes/Classes/Menu.php
-    const order = ["banner", "checkout", "socialproof", "wisecart", "stockbar", "wisevideo", "producttable", "discountmanager"];
+    const order = ["banner", "checkout", "socialproof", "wisecart", "rewards", "stockbar", "wisevideo", "producttable", "discountmanager"];
     const slugOf = (mid) => modules.find((m) => m.id === mid).menuSlug;
     const index = order.indexOf(id);
     const next = order.slice(index + 1).map((mid) => menuItem(slugOf(mid))).find(Boolean);
@@ -61,7 +62,7 @@ const syncAdminMenu = (modules, id, enabled) => {
 
 const GettingStarted = () => {
     const isPro = window.wiseModuleData?.pro?.isLicenseActive || false;
-    const version = window.wiseModuleData?.version || "2.1.0";
+    const version = window.wiseModuleData?.version || "2.2.0";
 
 
     // Video play state
@@ -139,6 +140,19 @@ const GettingStarted = () => {
             activeColor: "bg-indigo-500",
             linkColor: "text-indigo-600 hover:text-indigo-700",
             link: "admin.php?page=wisecampaign_cart"
+        },
+        {
+            id: "rewards",
+            menuSlug: "wisecampaign_rewards",
+            menuTitle: "wiseRewards",
+            title: "WiseRewards",
+            desc: "Points for signups, purchases and reviews that bring shoppers back.",
+            icon: Gift,
+            iconColor: "text-violet-600",
+            iconBg: "bg-violet-50 border border-violet-100",
+            activeColor: "bg-violet-600",
+            linkColor: "text-violet-600 hover:text-violet-700",
+            link: "admin.php?page=wisecampaign_rewards"
         },
         {
             id: "wisevideo",
@@ -489,6 +503,8 @@ const GettingStarted = () => {
                                                                     ? "#F59E0B"
                                                                     : m.id === "wisecart"
                                                                     ? "#6366F1"
+                                                                    : m.id === "rewards"
+                                                                    ? "#7C3AED"
                                                                     : m.id === "wisevideo"
                                                                     ? "#2563EB"
                                                                     : m.id === "producttable"
