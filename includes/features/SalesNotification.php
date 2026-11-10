@@ -168,7 +168,8 @@ class SalesNotification
      */
     private function get_admin_orders($placeholder)
     {
-        $query = new \WC_Order_Query(['limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
+        // Orders only: refunds are order objects too, without billing details
+        $query = new \WC_Order_Query(['type' => 'shop_order', 'limit' => 100, 'orderby' => 'date', 'order' => 'DESC']);
         $orders = [];
         foreach ($query->get_orders() as $order) {
             $items = [];
@@ -638,6 +639,8 @@ class SalesNotification
             ];
         }
 
+        // Orders only: refunds are saved as "completed" too, and have no billing details
+        $order_args['type'] = 'shop_order';
         $query = new \WC_Order_Query($order_args);
         $orders = $query->get_orders();
 
