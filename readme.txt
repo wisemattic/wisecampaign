@@ -134,19 +134,17 @@ Replace the cart page with a side cart that slides out on any page. Shoppers see
 👉 [wiseCart guide](https://wisemattic.com/docs/wisecampaign/wisecart/) | [Side cart features](https://wisemattic.com/wisecampaign/features/wisecart/)
 
 ### 7. wiseRewards – WooCommerce Points & Rewards Loyalty Program
-Reward customers for every purchase, signup and review with points they spend on their next order. Points give shoppers a reason to come back, and "Earn 120 points with this purchase" gives them a reason to buy now.
+Give customers points for purchases, signups and reviews that they spend on their next order, so they have a reason to come back.
 
 ![wiseRewards: points and rewards settings with a live preview of the product page, cart and My Account](https://wisemattic.com/wp-content/uploads/2026/11/wiserewards-settings-preview.png)
 
-* **Earn points:** for every amount spent (e.g. 1 point per $1), a signup bonus and points for product reviews. Points come once the order is completed or paid, and refunds take back their share.
-* **Pay with points:** in the cart and at checkout, classic or block, e.g. 100 points = $1 off. Set a minimum and the most of an order points can pay. Works with coupons and Discount Manager discounts.
-* **On your store:** "Earn X points" on product pages (it follows the chosen variation), what the cart earns, a line in the wiseCart drawer, and a Reward Points page in My Account with the balance and history.
-* **Fair by default:** the signup bonus can wait for the first order, review points go to verified buyers once per product, and points can expire after months without activity.
-* **Customers list:** see every customer's balance and history, and add or take away points.
-* **Your program, your name:** call it "Reward Points", "Stars" or anything you like. Shoppers never see the wiseCampaign name.
-* **Pro:** refer-a-friend links, birthday points, VIP tiers with more points per purchase, double points campaigns, and analytics: revenue and average order value of orders paid with points, points given and used, and what unused points are worth.
+* **Earn:** e.g. 1 point per $1 after discounts, a signup bonus and review points. Refunds take back their share.
+* **Redeem:** in the classic or block cart and checkout, e.g. 100 points = $1 off, alongside coupons and Discount Manager discounts.
+* **On your store:** "Earn X points" on product pages, in the cart and in wiseCart, and a Reward Points page in My Account.
+* **Fair by default:** signup bonus after the first order, review points for verified buyers, optional expiry, and a Customers list to add or take points.
+* **Pro:** referrals, birthday points, VIP tiers, double points campaigns and points analytics.
 
-👉 [wiseRewards guide](https://wisemattic.com/docs/wisecampaign/wiserewards/)
+👉 [wiseRewards guide](https://wisemattic.com/docs/wisecampaign/wiserewards/) | [Points & rewards features](https://wisemattic.com/wisecampaign/features/wiserewards/)
 
 ### 8. WiseVideo Commerce (Pro) – Shoppable Video Reels
 * Add product videos from your Media Library to the WooCommerce product gallery, next to your product images.
@@ -186,11 +184,6 @@ Target products, categories or user roles, set a minimum order value, and schedu
 
 ---
 
-## 24/7 Support & Documentation
-All wiseCampaign users get access to expert support and an extensive knowledge base for setup and configuration help.
-* [Documentation](https://wisemattic.com/docs/wisecampaign/getting-started/requirements/)
-* [Help & Technical Support](https://wisemattic.com/support)
-
 ## Compatibilities
 wiseCampaign integrates seamlessly with standard WooCommerce hooks, popular WordPress themes (Astra, OceanWP, GeneratePress, Storefront), and modern page builders.
 
@@ -207,7 +200,7 @@ wiseCampaign integrates seamlessly with standard WooCommerce hooks, popular Word
 2. Upload the `wisecampaign` folder to the `/wp-content/plugins/` directory.
 3. Activate **wiseCampaign** from your WordPress Plugins page.
 
-== Usage Instructions ==
+= How to Use =
 
 1. Go to **WiseCampaign → Getting Started**. Every module is on by default. Turn off the ones you don't need, and they are not loaded at all.
 2. **Countdown banner:** Go to **WiseCampaign → wiseBanner** and click **Choose a Template**. Edit the text, coupon and countdown on the **Design**, **Content** and **Settings** tabs, then click **Save Changes**.
@@ -311,23 +304,16 @@ A. None at all. Everything is managed through an intuitive WordPress dashboard a
 46. wiseRewards analytics: orders paid with points, average order value, points per day and top customers (Pro).
 
 == Privacy Policy ==
-wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic telemetry data only upon explicit user opt-in via admin notice to help diagnose issues and improve features. 
+wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic telemetry only if you opt in from an admin notice. Nothing is sent by default. See the [Appsero Privacy Policy](https://appsero.com/privacy-policy/).
 
-Appsero SDK *does not gather any data by default* and will not transmit information without your consent. Learn more at [Appsero Privacy Policy](https://appsero.com/privacy-policy/).
+Module data stays in your own WordPress database and is never sent to third-party services:
 
-wiseBanner analytics are stored only in your own WordPress database as daily totals (impressions, clicks, coupon copies and dismissals per banner template and device type). No IP addresses, personal data or per-visitor records are stored, and nothing is sent to third-party services. The exit-intent popup remembers in the visitor's own browser storage when it was last shown, so it does not show again too soon; this is never sent anywhere. When a visitor clicks the banner button, a first-party cookie (`wise_banner_ref`, valid for 7 days) records the banner and the click time so that a resulting WooCommerce order can be attributed to the banner; the cookie is removed once an order is attributed.
-
-wiseRewards keeps each customer's points history in your own WordPress database, linked to their account, and shows it to them in My Account. It is included in WordPress's personal data export and erased with it (Tools → Export / Erase Personal Data). With wiseCampaign Pro, a referral link sets a first-party cookie (`wiserewards_ref`, valid for 30 days) so a new account can be credited to the customer who referred it, and customers can save their birthday (month and day) to get birthday points. Nothing is sent to third-party services.
+* **wiseBanner analytics:** daily totals per template and device, without IP addresses or per-visitor records. A first-party cookie (`wise_banner_ref`, 7 days) links a banner click to the order that follows. The exit-intent popup remembers in the visitor's browser when it was last shown.
+* **wiseRewards:** each customer's points history, linked to their account and shown in My Account, included in WordPress's personal data export and erasure. With Pro, a referral link sets a first-party cookie (`wiserewards_ref`, 30 days), and customers can save their birthday (month and day).
 
 = Credits =
 * Buyer avatars: "Open Peeps" by Pablo Stanley, CC0 1.0 (public domain), generated with DiceBear.
 * Fonts bundled with the seasonal banner templates: Luckiest Guy (Apache License 2.0), Anton and Playfair Display (SIL Open Font License 1.1).
-
-## Join Our Community
-* [Facebook Group](https://www.facebook.com/groups/wisemattic)
-* [YouTube Channel](https://www.youtube.com/@wisemattic/videos)
-* [Contribute Translations](https://translate.wordpress.org/projects/wp-plugins/wisecampaign/)
-* [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
 = v2.2.0 =
