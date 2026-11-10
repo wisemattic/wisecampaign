@@ -135,6 +135,16 @@ class Menu
             );
         }
 
+        if (Modules::is_enabled('rewards')) {
+            $this->add_wc_dependent_submenu(
+                'wisecampaign_getting_started',
+                __('wiseRewards', 'wisecampaign'),
+                __('wiseRewards', 'wisecampaign'),
+                'wisecampaign_rewards',
+                [$this, 'wisecampaign_rewards_page']
+            );
+        }
+
         // wiseStockBar (Modular)
         if (Modules::is_enabled('stockbar')) {
             add_submenu_page(
@@ -679,6 +689,46 @@ class Menu
             }
         </style>
         <div id="wise-cart-app"></div>
+        <?php
+    }
+
+    /**
+     * Render the wiseRewards modular React app (modules/wise-rewards)
+     */
+    function wisecampaign_rewards_page()
+    {
+?>
+        <style>
+            #wpbody-content {
+                padding-bottom: 0 !important;
+            }
+
+            #wpcontent {
+                padding-left: 0 !important;
+            }
+
+            .wrap {
+                margin: 0 !important;
+                max-width: none !important;
+                padding: 0 !important;
+            }
+
+            #wise-rewards-app {
+                width: 100%;
+                margin: 0;
+            }
+
+            #wpfooter {
+                display: none;
+            }
+
+            .notice,
+            .updated,
+            .error {
+                display: none !important;
+            }
+        </style>
+        <div id="wise-rewards-app"></div>
         <?php
     }
 

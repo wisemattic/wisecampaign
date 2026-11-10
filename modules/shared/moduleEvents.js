@@ -42,6 +42,11 @@ export const MODULE_EVENTS = {
         engaged: null,
         credit: 'Orders that got a discount',
     },
+    rewards: {
+        seen: null,
+        engaged: null,
+        credit: 'Orders paid partly with points',
+    },
 };
 
 // Modules that put products in the cart themselves; their adds to cart are counted on the server

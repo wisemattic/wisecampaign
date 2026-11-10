@@ -1,21 +1,21 @@
 === wiseCampaign – WooCommerce Side Cart, BOGO Discounts, Countdown Timer & Exit Intent Popup ===
 Contributors: wisemattic, mehadi13
-Tags: side cart, bogo, average order value, countdown timer, exit intent popup
+Tags: side cart, loyalty program, bogo, countdown timer, exit intent popup
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 WC requires at least: 4.0
 WC tested up to: 11.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 
-Increase WooCommerce average order value (AOV) with a side cart, free shipping bar, BOGO & bulk discounts, flash sale countdowns and exit popups.
+Increase WooCommerce average order value with a side cart, loyalty points & rewards, BOGO discounts, countdown timers and exit popups.
 
 == Description ==
 
-**wiseCampaign** is a WooCommerce marketing plugin that helps you increase average order value (AOV) and turn more visitors into buyers. Give shoppers a side cart with a free shipping progress bar, run flash sales with a countdown timer bar, show live stock and sales popups, and win back leaving visitors with an exit-intent coupon popup. With Pro, add automatic BOGO, bulk pricing, bundle and spend-based discounts. No coding needed.
+**wiseCampaign** is a WooCommerce marketing plugin that helps you increase average order value (AOV) and turn more visitors into buyers. Give shoppers a side cart with a free shipping progress bar, run flash sales with a countdown timer bar, show live stock and sales popups, win back leaving visitors with an exit-intent coupon popup, and bring customers back with a points and rewards loyalty program. With Pro, add automatic BOGO, bulk pricing, bundle and spend-based discounts. No coding needed.
 
 Whether you run Black Friday sales, seasonal promotions, or daily flash deals, wiseCampaign equips your WooCommerce store with battle-tested conversion tools.
 
@@ -27,6 +27,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * **BOGO & Bulk Discounts (Pro)** – 7 automatic WooCommerce discount types: buy one get one (BOGO), bulk pricing, bundles, spend & save, next-order coupons and more. No coupon codes needed.
 * **wiseBanner (Countdown Timer Bar)** – Sticky top/bottom flash sale banners with real-time countdown timers, click-to-copy coupons, CTA buttons, seasonal templates and built-in analytics.
 * **Exit-Intent Popup** – Show a last-chance coupon popup when visitors are about to leave, on desktop and mobile. 26 ready-made designs, once per visit, never on checkout.
+* **wiseRewards (Points & Rewards)** – A WooCommerce loyalty program: points for signups, purchases and product reviews that customers spend in the cart and at checkout. Referrals, birthdays, VIP tiers and double points campaigns in Pro.
 * **StockBar (Scarcity Trigger)** – 5 stock bar templates that show items left and sold on product and shop pages, to create purchase urgency and FOMO.
 * **Direct Checkout** – A one-click Buy Now button that skips the cart and takes shoppers straight to checkout.
 * **Live Sales Notifications** – Real-time social proof popups showing recent customer orders to build instant buyer trust.
@@ -38,6 +39,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 * **Quantity deals (Pro):** BOGO, "3 for $45" bundles and bulk pricing tiers make the second and third item the obvious choice.
 * **Spend goals (Pro):** "Spend $100, get 10% off" and next-order coupons reward bigger and repeat orders.
 * **Urgency and trust:** countdown timers, stock bars, sales popups and exit-intent coupons turn more visits into orders.
+* **Repeat orders:** wiseRewards points give customers a reason to come back, and "You'll earn 120 points with this order" nudges them to add more.
 * **Proof in numbers (Pro):** Analytics compares the average order value of orders that used wiseCampaign with your other orders.
 
 ---
@@ -49,7 +51,7 @@ Whether you run Black Friday sales, seasonal promotions, or daily flash deals, w
 
 == Why Choose wiseCampaign Over Other Plugins? ==
 
-* **All-in-One Marketing Suite:** Replace 4 to 5 separate plugins (Notification Popup, Exit-Intent Popup, Countdown Bar, Stock Scarcity, Direct Checkout) with one clean plugin.
+* **All-in-One Marketing Suite:** Replace 5 to 6 separate plugins (Notification Popup, Exit-Intent Popup, Countdown Bar, Stock Scarcity, Direct Checkout, Points & Rewards) with one clean plugin.
 * **Lightweight:** Modules you turn off on the Getting Started page are not loaded at all, and scoped styles help avoid theme conflicts.
 * **Display Rules:** Show the banner sitewide or only on the pages you pick (Pro), place StockBar and Buy Now on shop or product pages, and turn the exit popup on or off for phones.
 * **Visual Editors with Live Preview:** Match your store branding with a live desktop and mobile preview in every module. No code needed.
@@ -131,7 +133,22 @@ Replace the cart page with a side cart that slides out on any page. Shoppers see
 
 👉 [wiseCart guide](https://wisemattic.com/docs/wisecampaign/wisecart/) | [Side cart features](https://wisemattic.com/wisecampaign/features/wisecart/)
 
-### 7. WiseVideo Commerce (Pro) – Shoppable Video Reels
+### 7. wiseRewards – WooCommerce Points & Rewards Loyalty Program
+Reward customers for every purchase, signup and review with points they spend on their next order. Points give shoppers a reason to come back, and "Earn 120 points with this purchase" gives them a reason to buy now.
+
+![wiseRewards: points and rewards settings with a live preview of the product page, cart and My Account](https://wisemattic.com/wp-content/uploads/2026/11/wiserewards-settings-preview.png)
+
+* **Earn points:** for every amount spent (e.g. 1 point per $1), a signup bonus and points for product reviews. Points come once the order is completed or paid, and refunds take back their share.
+* **Pay with points:** in the cart and at checkout, classic or block, e.g. 100 points = $1 off. Set a minimum and the most of an order points can pay. Works with coupons and Discount Manager discounts.
+* **On your store:** "Earn X points" on product pages (it follows the chosen variation), what the cart earns, a line in the wiseCart drawer, and a Reward Points page in My Account with the balance and history.
+* **Fair by default:** the signup bonus can wait for the first order, review points go to verified buyers once per product, and points can expire after months without activity.
+* **Customers list:** see every customer's balance and history, and add or take away points.
+* **Your program, your name:** call it "Reward Points", "Stars" or anything you like. Shoppers never see the wiseCampaign name.
+* **Pro:** refer-a-friend links, birthday points, VIP tiers with more points per purchase, double points campaigns, and analytics: revenue and average order value of orders paid with points, points given and used, and what unused points are worth.
+
+👉 [wiseRewards guide](https://wisemattic.com/docs/wisecampaign/wiserewards/)
+
+### 8. WiseVideo Commerce (Pro) – Shoppable Video Reels
 * Add product videos from your Media Library to the WooCommerce product gallery, next to your product images.
 * Show a row of vertical reels under the Add to Cart button. They play muted while on screen and open in a full-screen viewer with sound.
 * A product card with a Buy Now button sits right in the reels viewer.
@@ -139,7 +156,7 @@ Replace the cart page with a side cart that slides out on any page. Shoppers see
 
 👉 [WiseVideo Commerce features](https://wisemattic.com/wisecampaign/features/wisevideo-commerce/)
 
-### 8. Wise Product Table (Pro) – Interactive Product Catalog
+### 9. Wise Product Table (Pro) – Interactive Product Catalog
 * Responsive product tables with a search box, filters and sorting.
 * Quantity boxes and an Add Selected button for fast wholesale and multi-item orders.
 * Add a table to any page with a shortcode. Needs wiseCampaign Pro with an active license.
@@ -196,9 +213,10 @@ wiseCampaign integrates seamlessly with standard WooCommerce hooks, popular Word
 2. **Countdown banner:** Go to **WiseCampaign → wiseBanner** and click **Choose a Template**. Edit the text, coupon and countdown on the **Design**, **Content** and **Settings** tabs, then click **Save Changes**.
 3. **Exit-intent popup:** On the same screen, switch from **Banner** to **Exit Popup** and set it up the same way.
 4. **Side cart:** Go to **WiseCampaign → wiseCart** and turn it on. The free shipping bar uses the minimum order amount of your WooCommerce Free shipping method.
-5. **StockBar, Direct Checkout and Sales Notification** each have their own page under **WiseCampaign**, with a live preview.
-6. **Analytics:** Go to **WiseCampaign → Analytics** to see views and clicks for each module (last 7 days in the free version). Pro adds orders, revenue and longer date ranges.
-7. **Pro:** Install wiseCampaign Pro and enter your key under **WiseCampaign → License**. Then set up BOGO, bulk and spend-based discounts under **WiseCampaign → Discount Manager**.
+5. **Points & rewards:** Go to **WiseCampaign → wiseRewards**, set how customers earn and use points, click **Save Changes** and turn it on. It stays off until you do.
+6. **StockBar, Direct Checkout and Sales Notification** each have their own page under **WiseCampaign**, with a live preview.
+7. **Analytics:** Go to **WiseCampaign → Analytics** to see views and clicks for each module (last 7 days in the free version). Pro adds orders, revenue and longer date ranges.
+8. **Pro:** Install wiseCampaign Pro and enter your key under **WiseCampaign → License**. Then set up BOGO, bulk and spend-based discounts under **WiseCampaign → Discount Manager**.
 
 == Frequently Asked Questions ==
 
@@ -212,16 +230,25 @@ A. You need WordPress 5.8+ and WooCommerce active on your website. PHP 7.4 or hi
 A. Yes. The banner shows sitewide in the free version. With Pro, you can limit it to the home page and the pages you pick. The exit-intent popup can be turned on or off for phones and tablets.
 
 = Q. What features are included in the free version? =
-A. The free version includes wiseBanner with the exit-intent popup (Basic templates), StockBar, Direct Checkout, Sales Notifications, and wiseCart.
+A. The free version includes wiseBanner with the exit-intent popup (Basic templates), StockBar, Direct Checkout, Sales Notifications, wiseCart, and wiseRewards points for signups, purchases and reviews.
 
 = Q. What extra features are available in the Pro version? =
-A. Pro adds the Discount Manager (BOGO, bulk pricing, bundles, spend & save, next-order coupons), WiseVideo Commerce, Wise Product Table, Flash Sale and seasonal template collections for the banner and the exit-intent popup, page targeting for the banner, more Buy Now button styles and animations, simulated sales notifications, and orders and revenue in Analytics.
+A. Pro adds the Discount Manager (BOGO, bulk pricing, bundles, spend & save, next-order coupons), WiseVideo Commerce, Wise Product Table, Flash Sale and seasonal template collections for the banner and the exit-intent popup, page targeting for the banner, more Buy Now button styles and animations, simulated sales notifications, wiseRewards referrals, birthdays, tiers and campaigns, and orders and revenue in Analytics.
 
 = Q. Does wiseCampaign have an exit-intent popup? =
 A. Yes. Go to **WiseCampaign → wiseBanner** and click **Exit Popup**. Pick a template, add your offer and coupon code, and turn it on. It works with the free Basic templates. See the [exit-intent popup guide](https://wisemattic.com/docs/wisecampaign/settings/exit-intent-popup/).
 
 = Q. Will the exit-intent popup annoy my visitors? =
 A. It opens only when a visitor is about to leave, not when the page loads, and at most once per visit. You choose how many days to wait before it shows again, visitors who use the offer won't see it for 30 days, and it never opens on the checkout page.
+
+= Q. Does wiseCampaign have a points and rewards (loyalty) program? =
+A. Yes. wiseRewards gives customers points for signing up, buying and reviewing products, and they pay with the points in the cart and at checkout. It is free. Pro adds refer-a-friend links, birthday points, VIP tiers, double points campaigns and points analytics. Go to **WiseCampaign → wiseRewards** to set it up. See the [wiseRewards guide](https://wisemattic.com/docs/wisecampaign/wiserewards/).
+
+= Q. What happens to points when an order is refunded or cancelled? =
+A. Points from an order arrive when it is completed (or paid, if you choose), a partial refund takes back its share, and a cancelled or fully refunded order takes them all back. Points used on an order are taken when it is placed and given back if it is cancelled or fully refunded.
+
+= Q. Can customers use points together with coupons and discounts? =
+A. Yes. Points work like a coupon that comes off after your other coupons and Discount Manager discounts, and customers are only charged the points the discount needs. Coupons must be turned on in WooCommerce.
 
 = Q. How does wiseCampaign increase average order value? =
 A. The free side cart shows how much more a shopper needs to spend for free shipping, and countdown timers, stock bars and exit-intent coupons turn more visits into orders. Pro adds BOGO, bundle, bulk pricing and spend-based discounts that reward bigger orders, and an Analytics view that compares the average order value of wiseCampaign orders with your other orders. See [how to increase WooCommerce average order value](https://wisemattic.com/increase-woocommerce-average-order-value/).
@@ -276,6 +303,12 @@ A. None at all. Everything is managed through an intuitive WordPress dashboard a
 38. wiseBanner editor on the Exit Popup tab, with the popup text, coupon code and a live preview.
 39. Popup templates that match the banner designs, here the Christmas collection (Pro).
 40. Popup behavior settings: phones and tablets, mobile trigger and how often the popup may show.
+41. wiseRewards settings: points for purchases, signups and reviews, with a live preview of the product page, cart and My Account.
+42. Product page with "Earn 120 points with this purchase" above the Add to cart button.
+43. Block cart with 500 reward points used as a discount, and the points the order earns.
+44. My Account Reward Points page with the balance, ways to earn and history. The tier, referral link and birthday need Pro.
+45. wiseRewards Customers: a customer's balance, points you add or take away, and their history.
+46. wiseRewards analytics: orders paid with points, average order value, points per day and top customers (Pro).
 
 == Privacy Policy ==
 wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic telemetry data only upon explicit user opt-in via admin notice to help diagnose issues and improve features. 
@@ -283,6 +316,8 @@ wiseCampaign uses the [Appsero](https://appsero.com) SDK to collect basic teleme
 Appsero SDK *does not gather any data by default* and will not transmit information without your consent. Learn more at [Appsero Privacy Policy](https://appsero.com/privacy-policy/).
 
 wiseBanner analytics are stored only in your own WordPress database as daily totals (impressions, clicks, coupon copies and dismissals per banner template and device type). No IP addresses, personal data or per-visitor records are stored, and nothing is sent to third-party services. The exit-intent popup remembers in the visitor's own browser storage when it was last shown, so it does not show again too soon; this is never sent anywhere. When a visitor clicks the banner button, a first-party cookie (`wise_banner_ref`, valid for 7 days) records the banner and the click time so that a resulting WooCommerce order can be attributed to the banner; the cookie is removed once an order is attributed.
+
+wiseRewards keeps each customer's points history in your own WordPress database, linked to their account, and shows it to them in My Account. It is included in WordPress's personal data export and erased with it (Tools → Export / Erase Personal Data). With wiseCampaign Pro, a referral link sets a first-party cookie (`wiserewards_ref`, valid for 30 days) so a new account can be credited to the customer who referred it, and customers can save their birthday (month and day) to get birthday points. Nothing is sent to third-party services.
 
 = Credits =
 * Buyer avatars: "Open Peeps" by Pablo Stanley, CC0 1.0 (public domain), generated with DiceBear.
@@ -295,6 +330,15 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 * [Leave a Review on WordPress.org](https://wordpress.org/plugins/wisecampaign/#reviews)
 
 == Changelog ==
+= v2.2.0 =
+- Added: wiseRewards, a points and rewards loyalty program for WooCommerce. Customers earn points for purchases (e.g. 1 point per $1), signing up and reviewing products, and pay with them in the cart and at checkout (e.g. 100 points = $1 off). It stays off until you turn it on in WiseCampaign → wiseRewards.
+- Added: "Earn X points" on product pages, following the chosen variation; a points box with what the order earns and the points to use, in the classic and block cart and checkout; a line in the wiseCart drawer; and a Reward Points page in My Account with the balance, ways to earn and history.
+- Added: A Customers list for the store, with search, each customer's history, and points you add or take away with a note.
+- Added: Rules that keep it fair: points arrive once an order is completed (or paid), refunds take back their share, points used on a cancelled or fully refunded order come back, the signup bonus can wait for the first order, review points go to verified buyers once per product, and points can expire after months without activity.
+- Added: Points are used like a coupon after your other coupons and Discount Manager discounts, and customers only pay the points the discount needs. Order notes record the points earned and used.
+- Added: wiseRewards in Analytics and on the Getting Started page, where the module can be turned off. Personal data export and erase include the points history.
+- Pro: Refer-a-friend links, birthday points, VIP tiers, double points campaigns and wiseRewards analytics need wiseCampaign Pro 2.2.0.
+
 = v2.1.0 =
 - Added: wiseBanner exit-intent popup. It shows a last-chance offer when a visitor is about to leave: on desktop when the cursor heads for the browser tabs or the close button, on phones and tablets on a quick scroll back up (or after a delay). It runs alongside the banner, with its own template, text and display pages. Free with the Basic templates.
 - Added: Every wiseBanner template has a matching popup design, with text written for visitors who are about to leave. Without a button link, the popup's button copies the coupon code and closes the popup so the visitor keeps shopping.
@@ -474,6 +518,9 @@ wiseBanner analytics are stored only in your own WordPress database as daily tot
 - Initial release
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+New: wiseRewards points and rewards program (off until you turn it on in WiseCampaign → wiseRewards). Update wiseCampaign Pro to 2.2.0 for referrals, birthdays, tiers, campaigns and points analytics.
 
 = 2.1.0 =
 Adds an exit-intent popup to wiseBanner (free with the Basic templates) and 12 new templates for Flash Sale, Christmas, Valentine's Day and Eid. If you use wiseCampaign Pro, update it to 2.1.0 as well.

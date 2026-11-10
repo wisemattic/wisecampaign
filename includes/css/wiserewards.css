@@ -1,0 +1,211 @@
+/* wiseRewards storefront: kept light so it takes the theme's fonts and colors. */
+.wiserewards-product,
+.wiserewards-box,
+.wiserewards-wisecart,
+.wiserewards-account {
+    --wiserewards-accent: #7c3aed;
+    --wiserewards-soft: rgba(124, 58, 237, 0.07);
+    --wiserewards-line: rgba(124, 58, 237, 0.22);
+}
+
+.wiserewards-icon {
+    flex: none;
+    color: var(--wiserewards-accent);
+}
+
+.wiserewards-points {
+    font-weight: 700;
+}
+
+/* Product page */
+.wiserewards-product {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 1em;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--wiserewards-soft);
+    font-size: 0.92em;
+    line-height: 1.4;
+}
+
+/* Cart and checkout */
+.wiserewards-box {
+    margin: 0 0 1.25em;
+    padding: 12px 14px;
+    border: 1px solid var(--wiserewards-line);
+    border-radius: 10px;
+    background: var(--wiserewards-soft);
+    font-size: 0.92em;
+    line-height: 1.45;
+    transition: opacity 0.2s;
+}
+
+.wiserewards-box.is-block {
+    margin: 12px 0 0;
+}
+
+.wiserewards-box.is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.wiserewards-box p {
+    margin: 0;
+}
+
+.wiserewards-box p + p,
+.wiserewards-box p + .wiserewards-form,
+.wiserewards-earn + .wiserewards-redeem {
+    margin-top: 8px;
+}
+
+.wiserewards-earn {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.wiserewards-earn .wiserewards-icon {
+    margin-top: 1px;
+}
+
+.wiserewards-login {
+    margin-left: 4px;
+    font-weight: 600;
+}
+
+.wiserewards-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.wiserewards-form .wiserewards-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    max-width: 160px;
+    padding: 6px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+    background: #fff;
+    font: inherit;
+}
+
+.wiserewards-form .wiserewards-apply {
+    flex: none;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.wiserewards-hint {
+    opacity: 0.75;
+    font-size: 0.9em;
+}
+
+.wiserewards-applied {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.wiserewards-remove {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9em;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.wiserewards-error {
+    margin-top: 8px !important;
+    color: #b91c1c;
+}
+
+/* wiseCart drawer */
+.wiserewards-wisecart {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 12px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: var(--wiserewards-soft);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+/* My Account */
+.wiserewards-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0 0 1.25em;
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff;
+}
+
+.wiserewards-summary-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wiserewards-summary-label {
+    font-size: 0.8em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.wiserewards-summary-points {
+    font-size: 1.9em;
+    line-height: 1.15;
+}
+
+.wiserewards-summary-value {
+    opacity: 0.9;
+}
+
+.wiserewards-notice {
+    padding: 10px 14px;
+    border-left: 3px solid var(--wiserewards-accent);
+    background: var(--wiserewards-soft);
+}
+
+.wiserewards-ways {
+    margin: 0 0 0.75em 1.2em;
+}
+
+.wiserewards-rate {
+    opacity: 0.85;
+}
+
+.wiserewards-history .wiserewards-num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.wiserewards-history .is-plus {
+    color: #047857;
+}
+
+.wiserewards-history .is-minus {
+    color: #b91c1c;
+}
+
+.wiserewards-pages {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}

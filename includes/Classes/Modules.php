@@ -29,6 +29,7 @@ class Modules
         'checkout'        => 'wisecampaign_checkout',
         'socialproof'     => 'wisecampaign_notification',
         'wisecart'        => 'wisecampaign_cart',
+        'rewards'         => 'wisecampaign_rewards',
         'stockbar'        => 'wise_stock_bar',
         'wisevideo'       => 'wise_video_commerce',
         'producttable'    => 'wise_product_table',
